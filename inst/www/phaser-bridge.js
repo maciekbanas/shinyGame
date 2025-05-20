@@ -1,11 +1,11 @@
 let game, scene, cursors;
 let controlledSprite = null;
 
-function initPhaserGame(containerId) {
+function initPhaserGame(containerId, config) {
   game = new Phaser.Game({
     type: Phaser.AUTO,
-    width: window.innerWidth,
-    height: window.innerHeight,
+    width: config.width,
+    height: config.height,
     parent: containerId,
     physics: {
       default: 'arcade',

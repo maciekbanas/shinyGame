@@ -1,10 +1,24 @@
+#' PhaserGame class object
+#' @export
 PhaserGame <- R6::R6Class(
   "PhaserGame",
   public = list(
+    #' @field id ID of the Game container.
     id = NULL,
-    initialize = function(id = "phaser_game") {
+    #' Create PhaserGame object with configuration
+    #' @param id ID of the Game container.
+    #' @param width Width of canvas element in pixels.
+    #' @param height Height of canvas element in pixels.
+    initialize = function(id = "phaser_game",
+                          width = 800,
+                          height = 600) {
       self$id <- id
+      private$config <- list(
+        width = width,
+        height = height
+      )
     },
+    #' @description Load dependencies and initialize Phaser.Game
     ui = function() {
       htmltools::tagList(
         phaser_dependency(),
@@ -17,7 +31,8 @@ PhaserGame <- R6::R6Class(
           script = "phaser-bridge.js"
         ),
         htmltools::tags$script(
-          sprintf("initPhaserGame('%s');", self$id)
+          sprintf("initPhaserGame('%s', %s);", self$id,
+                  jsonlite::toJSON(private$config, auto_unbox = TRUE))
         )
       )
     },
@@ -26,5 +41,8 @@ PhaserGame <- R6::R6Class(
       js <- sprintf("addPlayerSprite('%s', '%s', %d, %d);", name, url, x, y)
       session$sendCustomMessage("phaser", list(js = js))
     }
+  ),
+  private = list(
+    config = list()
   )
 )

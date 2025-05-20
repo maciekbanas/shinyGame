@@ -1,8 +1,8 @@
 devtools::load_all()
 
-game <- PhaserGame$new()
+game <- PhaserGame$new(width = 1000, height = 800)
 
-ui <- fluidPage(game$ui())
+ui <- game$ui()
 
 server <- function(input, output, session) {
   game$add_player_sprite("hero", "https://labs.phaser.io/assets/sprites/phaser-dude.png", 100, 100)
