@@ -20,6 +20,7 @@ PhaserGame <- R6::R6Class(
     },
     #' @description Load dependencies and initialize Phaser.Game
     ui = function() {
+      addResourcePath("assets", system.file("assets", package = "phaserR"))
       htmltools::tagList(
         phaser_dependency(),
         htmltools::tags$div(id = self$id, style = "width:100vw; height:100vh;"),
@@ -41,6 +42,7 @@ PhaserGame <- R6::R6Class(
       js <- sprintf("addPlayerSprite('%s', '%s', %d, %d);", name, url, x, y)
       session$sendCustomMessage("phaser", list(js = js))
     }
+
   ),
   private = list(
     config = list()
