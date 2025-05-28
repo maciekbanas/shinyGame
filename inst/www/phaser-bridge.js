@@ -30,16 +30,34 @@ function initPhaserGame(containerId, config) {
   });
 }
 
-function addPlayerSprite(name, url, x, y) {
-  scene.load.image(name, url);
+function addPlayerSprite(name, url, x, y, frameCount = 2) {
+  scene.load.spritesheet(name, url, {
+    frameWidth: 100,
+    frameHeight: 100
+  });
+
   scene.load.once('complete', () => {
+    scene.anims.create({
+      key: name + '_anim',
+      frames: scene.anims.generateFrameNumbers(name, {
+        start: 0,
+        end: frameCount - 1
+      }),
+      frameRate: 4,
+      repeat: -1
+    });
+
     const sprite = scene.physics.add.sprite(x, y, name);
     sprite.setCollideWorldBounds(true);
+    sprite.play(name + '_anim');
+
     controlledSprite = sprite;
     scene[name] = sprite;
   });
+
   scene.load.start();
 }
+
 
 Shiny.addCustomMessageHandler("phaser", function (message) {
   eval(message.js);
