@@ -1,11 +1,26 @@
+#' PhaserGame class object
+#' @export
 PhaserGame <- R6::R6Class(
   "PhaserGame",
   public = list(
+    #' @field id ID of the Game container.
     id = NULL,
-    initialize = function(id = "phaser_game") {
+    #' Create PhaserGame object with configuration
+    #' @param id ID of the Game container.
+    #' @param width Width of canvas element in pixels.
+    #' @param height Height of canvas element in pixels.
+    initialize = function(id = "phaser_game",
+                          width = 800,
+                          height = 600) {
       self$id <- id
+      private$config <- list(
+        width = width,
+        height = height
+      )
     },
+    #' @description Load dependencies and initialize Phaser.Game
     ui = function() {
+      addResourcePath("assets", system.file("assets", package = "phaserR"))
       htmltools::tagList(
         phaser_dependency(),
         htmltools::tags$div(id = self$id, style = "width:100vw; height:100vh;"),
@@ -17,14 +32,41 @@ PhaserGame <- R6::R6Class(
           script = "phaser-bridge.js"
         ),
         htmltools::tags$script(
-          sprintf("initPhaserGame('%s');", self$id)
+          sprintf("initPhaserGame('%s', %s);", self$id,
+                  jsonlite::toJSON(private$config, auto_unbox = TRUE))
         )
       )
     },
-    add_player_sprite = function(name, url, x = 100, y = 100,
+    add_player_sprite = function(name, url, x, y, frameCount, frameRate,
                                  session = shiny::getDefaultReactiveDomain()) {
-      js <- sprintf("addPlayerSprite('%s', '%s', %d, %d);", name, url, x, y)
+      js <- sprintf("addPlayerSprite('%s', '%s', %d, %d, %d, %d);",
+                    name, url, x, y, frameCount, frameRate)
+      session$sendCustomMessage("phaser", list(js = js))
+    },
+    add_player_move_right_animation = function(name, url, frameCount, frameRate,
+                                 session = shiny::getDefaultReactiveDomain()) {
+      js <- sprintf("addPlayerMoveRightAnimation('%s', '%s', %d, %d);",
+                    name, url, frameCount, frameRate)
+      session$sendCustomMessage("phaser", list(js = js))
+    },
+    add_player_move_left_animation = function(name, url, frameCount, frameRate,
+                                               session = shiny::getDefaultReactiveDomain()) {
+      js <- sprintf("addPlayerMoveLeftAnimation('%s', '%s', %d, %d);",
+                    name, url, frameCount, frameRate)
+      session$sendCustomMessage("phaser", list(js = js))
+    },
+    #' Enable movement controls (arrow keys) for a player
+    #' @param name Name of the player sprite (as given in add_player_sprite)
+    #' @param speed Movement speed in pixels/sec (default: 200)
+    enable_movement = function(name, speed = 200,
+                               session = shiny::getDefaultReactiveDomain()) {
+      # Send JS command to register controls for this sprite
+      js <- sprintf("addPlayerControls('%s', %d);", name, speed)
       session$sendCustomMessage("phaser", list(js = js))
     }
+
+  ),
+  private = list(
+    config = list()
   )
 )

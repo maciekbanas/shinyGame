@@ -1,45 +1,132 @@
 let game, scene, cursors;
 let controlledSprite = null;
 
-function initPhaserGame(containerId) {
-  game = new Phaser.Game({
+window.GameBridge = window.GameBridge || {};
+GameBridge.playerControls = {};
+
+function initPhaserGame(containerId, config) {
+  const game = new Phaser.Game({
     type: Phaser.AUTO,
-    width: window.innerWidth,
-    height: window.innerHeight,
+    width: config.width,
+    height: config.height,
     parent: containerId,
-    physics: {
-      default: 'arcade',
-      arcade: { gravity: { y: 0 }, debug: false }
-    },
+    physics: { default: 'arcade' },
     scene: {
-      preload: function () { scene = this; },
-      create: function () {
-        cursors = this.input.keyboard.createCursorKeys();
-      },
-      update: function () {
-        if (!controlledSprite || !cursors) return;
-
-        controlledSprite.setVelocity(0);
-        if (cursors.left.isDown) controlledSprite.setVelocityX(-200);
-        else if (cursors.right.isDown) controlledSprite.setVelocityX(200);
-
-        if (cursors.up.isDown) controlledSprite.setVelocityY(-200);
-        else if (cursors.down.isDown) controlledSprite.setVelocityY(200);
-      }
+      preload: preload,
+      create: create,
+      update: update
     }
   });
+
+  let cursors;
+
+   function preload() {
+    scene = this;
+  }
+
+  function create() {
+    cursors = this.input.keyboard.createCursorKeys();
+  }
+
+  function update(time, delta) {
+
+      Object.entries(GameBridge.playerControls).forEach(([name, opts]) => {
+        const sprite = this.children.getByName(name);
+        if (!sprite) return;
+        sprite.body.setVelocityX(0);
+        sprite.body.setVelocityY(0);
+
+        if (cursors.left.isDown) {
+          sprite.body.setVelocityX(-opts.speed);
+          sprite.anims.play(name + '_move_left', true);
+        } else if (cursors.right.isDown) {
+          sprite.body.setVelocityX(opts.speed);
+          sprite.anims.play(name + '_move_right', true);
+        } else if (cursors.down.isDown) {
+          sprite.body.setVelocityY(opts.speed);
+          sprite.anims.play(name + '_move_right', true);
+        } else if (cursors.up.isDown) {
+          sprite.body.setVelocityY(-opts.speed);
+          sprite.anims.play(name + '_move_right', true);
+        } else {
+          sprite.body.setVelocityX(0);
+          sprite.anims.play(name + '_idle', true);
+        }
+      });
+    }
 }
 
-function addPlayerSprite(name, url, x, y) {
-  scene.load.image(name, url);
+function addPlayerMoveRightAnimation(name, url, frameCount, frameRate) {
+  var animName = name + '_move_right';
+  scene.load.spritesheet(animName, url, {
+    frameWidth: 100,
+    frameHeight: 100
+  });
   scene.load.once('complete', () => {
-    const sprite = scene.physics.add.sprite(x, y, name);
-    sprite.setCollideWorldBounds(true);
-    controlledSprite = sprite;
-    scene[name] = sprite;
+    scene.anims.create({
+      key: animName,
+      frames: scene.anims.generateFrameNumbers(animName, {
+        start: 0,
+        end: frameCount - 1
+      }),
+      frameRate: frameRate,
+      repeat: -1
+    });
   });
   scene.load.start();
 }
+
+function addPlayerMoveLeftAnimation(name, url, frameCount, frameRate) {
+  var animName = name + '_move_left';
+  scene.load.spritesheet(animName, url, {
+    frameWidth: 100,
+    frameHeight: 100
+  });
+  scene.load.once('complete', () => {
+    scene.anims.create({
+      key: animName,
+      frames: scene.anims.generateFrameNumbers(animName, {
+        start: 0,
+        end: frameCount - 1
+      }),
+      frameRate: frameRate,
+      repeat: -1
+    });
+  });
+  scene.load.start();
+}
+
+function addPlayerSprite(name, url, x, y, frameCount, frameRate) {
+  scene.load.spritesheet(name, url, {
+    frameWidth: 100,
+    frameHeight: 100
+  });
+
+  scene.load.once('complete', () => {
+    scene.anims.create({
+      key: name + '_idle',
+      frames: scene.anims.generateFrameNumbers(name, {
+        start: 0,
+        end: frameCount - 1
+      }),
+      frameRate: frameRate,
+      repeat: -1
+    });
+
+    const sprite = scene.physics.add.sprite(x, y, name).setName(name);
+    sprite.setCollideWorldBounds(true);
+    sprite.play(name + '_idle');
+
+    controlledSprite = sprite;
+    scene[name] = sprite;
+  });
+
+  scene.load.start();
+}
+
+window.addPlayerControls = function(name, speed) {
+  GameBridge.playerControls[name] = { speed };
+};
 
 Shiny.addCustomMessageHandler("phaser", function (message) {
   eval(message.js);
