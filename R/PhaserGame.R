@@ -37,9 +37,25 @@ PhaserGame <- R6::R6Class(
         )
       )
     },
-    add_player_sprite = function(name, url, x = 100, y = 100,
+    add_player_sprite = function(name, url, x, y, frameCount, frameRate,
                                  session = shiny::getDefaultReactiveDomain()) {
-      js <- sprintf("addPlayerSprite('%s', '%s', %d, %d);", name, url, x, y)
+      js <- sprintf("addPlayerSprite('%s', '%s', %d, %d, %d, %d);",
+                    name, url, x, y, frameCount, frameRate)
+      session$sendCustomMessage("phaser", list(js = js))
+    },
+    add_player_move_animation = function(name, url, frameCount, frameRate,
+                                 session = shiny::getDefaultReactiveDomain()) {
+      js <- sprintf("addPlayerMoveAnimation('%s', '%s', %d, %d);",
+                    name, url, frameCount, frameRate)
+      session$sendCustomMessage("phaser", list(js = js))
+    },
+    #' Enable movement controls (arrow keys) for a player
+    #' @param name Name of the player sprite (as given in add_player_sprite)
+    #' @param speed Movement speed in pixels/sec (default: 200)
+    enable_movement = function(name, speed = 200,
+                               session = shiny::getDefaultReactiveDomain()) {
+      # Send JS command to register controls for this sprite
+      js <- sprintf("addPlayerControls('%s', %d);", name, speed)
       session$sendCustomMessage("phaser", list(js = js))
     }
 
