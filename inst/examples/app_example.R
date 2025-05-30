@@ -7,16 +7,23 @@ ui <- game$ui()
 server <- function(input, output, session) {
   game$add_player_sprite("hero",
                          "assets/hero_idle.png",
-                         100, 100,
+                         x = 100,
+                         y = 100,
                          frameCount = 15,
                          frameRate = 8)
-  game$add_player_move_animation(
-    name = "hero",
-    "assets/hero_move.png",
-    2,
-    4
-  )
   game$enable_movement("hero", speed = 200)
+  game$add_player_move_left_animation(
+    name = "hero",
+    "assets/hero_move_left.png",
+    4,
+    8
+  )
+  game$add_player_move_right_animation(
+    name = "hero",
+    "assets/hero_move_right.png",
+    4,
+    8
+  )
 }
 
 shinyApp(ui, server)

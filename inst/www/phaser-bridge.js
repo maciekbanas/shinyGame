@@ -37,27 +37,47 @@ function initPhaserGame(containerId, config) {
 
         if (cursors.left.isDown) {
           sprite.body.setVelocityX(-opts.speed);
-          sprite.anims.play(name + '_move', true);
+          sprite.anims.play(name + '_move_left', true);
         } else if (cursors.right.isDown) {
           sprite.body.setVelocityX(opts.speed);
-          sprite.anims.play(name + '_move', true);
+          sprite.anims.play(name + '_move_right', true);
         } else {
           sprite.body.setVelocityX(0);
-          sprite.anims.play(name + '_anim', true);
+          sprite.anims.play(name + '_idle', true);
         }
       });
     }
 }
 
-function addPlayerMoveAnimation(name, url, frameCount, frameRate) {
-  animName = name + '_move';
+function addPlayerMoveRightAnimation(name, url, frameCount, frameRate) {
+  var animName = name + '_move_right';
   scene.load.spritesheet(animName, url, {
     frameWidth: 100,
     frameHeight: 100
   });
   scene.load.once('complete', () => {
     scene.anims.create({
-      key: name + '_move',
+      key: animName,
+      frames: scene.anims.generateFrameNumbers(animName, {
+        start: 0,
+        end: frameCount - 1
+      }),
+      frameRate: frameRate,
+      repeat: -1
+    });
+  });
+  scene.load.start();
+}
+
+function addPlayerMoveLeftAnimation(name, url, frameCount, frameRate) {
+  var animName = name + '_move_left';
+  scene.load.spritesheet(animName, url, {
+    frameWidth: 100,
+    frameHeight: 100
+  });
+  scene.load.once('complete', () => {
+    scene.anims.create({
+      key: animName,
       frames: scene.anims.generateFrameNumbers(animName, {
         start: 0,
         end: frameCount - 1
@@ -71,13 +91,13 @@ function addPlayerMoveAnimation(name, url, frameCount, frameRate) {
 
 function addPlayerSprite(name, url, x, y, frameCount, frameRate) {
   scene.load.spritesheet(name, url, {
-    frameWidth: x,
-    frameHeight: y
+    frameWidth: 100,
+    frameHeight: 100
   });
 
   scene.load.once('complete', () => {
     scene.anims.create({
-      key: name + '_anim',
+      key: name + '_idle',
       frames: scene.anims.generateFrameNumbers(name, {
         start: 0,
         end: frameCount - 1
@@ -88,7 +108,7 @@ function addPlayerSprite(name, url, x, y, frameCount, frameRate) {
 
     const sprite = scene.physics.add.sprite(x, y, name).setName(name);
     sprite.setCollideWorldBounds(true);
-    sprite.play(name + '_anim');
+    sprite.play(name + '_idle');
 
     controlledSprite = sprite;
     scene[name] = sprite;

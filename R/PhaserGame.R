@@ -43,9 +43,15 @@ PhaserGame <- R6::R6Class(
                     name, url, x, y, frameCount, frameRate)
       session$sendCustomMessage("phaser", list(js = js))
     },
-    add_player_move_animation = function(name, url, frameCount, frameRate,
+    add_player_move_right_animation = function(name, url, frameCount, frameRate,
                                  session = shiny::getDefaultReactiveDomain()) {
-      js <- sprintf("addPlayerMoveAnimation('%s', '%s', %d, %d);",
+      js <- sprintf("addPlayerMoveRightAnimation('%s', '%s', %d, %d);",
+                    name, url, frameCount, frameRate)
+      session$sendCustomMessage("phaser", list(js = js))
+    },
+    add_player_move_left_animation = function(name, url, frameCount, frameRate,
+                                               session = shiny::getDefaultReactiveDomain()) {
+      js <- sprintf("addPlayerMoveLeftAnimation('%s', '%s', %d, %d);",
                     name, url, frameCount, frameRate)
       session$sendCustomMessage("phaser", list(js = js))
     },
