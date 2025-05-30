@@ -37,22 +37,28 @@ PhaserGame <- R6::R6Class(
         )
       )
     },
-    add_player_sprite = function(name, url, x, y, frameCount, frameRate,
+    #' @param x X position of player sprite.
+    #' @param y Y position of player sprite.
+    #' @param frameWidth Should be adjusted to sprite resolution.
+    #' @param frameHeight Should be adjusted to sprite resolution.
+    #' @param frameCount Number of frames in sprite.
+    #' @param frameRate Speed of rendering frames (number of frames per second).
+    add_player_sprite = function(name, url, x, y, frameWidth, frameHeight, frameCount, frameRate,
                                  session = shiny::getDefaultReactiveDomain()) {
-      js <- sprintf("addPlayerSprite('%s', '%s', %d, %d, %d, %d);",
-                    name, url, x, y, frameCount, frameRate)
+      js <- sprintf("addPlayerSprite('%s', '%s', %d, %d, %d, %d, %d, %d);",
+                    name, url, x, y, frameWidth, frameHeight, frameCount, frameRate)
       session$sendCustomMessage("phaser", list(js = js))
     },
-    add_player_move_right_animation = function(name, url, frameCount, frameRate,
+    add_player_move_right_animation = function(name, url, frameWidth, frameHeight, frameCount, frameRate,
                                  session = shiny::getDefaultReactiveDomain()) {
-      js <- sprintf("addPlayerMoveRightAnimation('%s', '%s', %d, %d);",
-                    name, url, frameCount, frameRate)
+      js <- sprintf("addPlayerMoveRightAnimation('%s', '%s', %d, %d, %d, %d);",
+                    name, url, frameWidth, frameHeight, frameCount, frameRate)
       session$sendCustomMessage("phaser", list(js = js))
     },
-    add_player_move_left_animation = function(name, url, frameCount, frameRate,
+    add_player_move_left_animation = function(name, url, frameWidth, frameHeight, frameCount, frameRate,
                                                session = shiny::getDefaultReactiveDomain()) {
-      js <- sprintf("addPlayerMoveLeftAnimation('%s', '%s', %d, %d);",
-                    name, url, frameCount, frameRate)
+      js <- sprintf("addPlayerMoveLeftAnimation('%s', '%s', %d, %d, %d, %d);",
+                    name, url, frameWidth, frameHeight, frameCount, frameRate)
       session$sendCustomMessage("phaser", list(js = js))
     },
     #' Enable movement controls (arrow keys) for a player

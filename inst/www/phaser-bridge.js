@@ -56,50 +56,11 @@ function initPhaserGame(containerId, config) {
     }
 }
 
-function addPlayerMoveRightAnimation(name, url, frameCount, frameRate) {
-  var animName = name + '_move_right';
-  scene.load.spritesheet(animName, url, {
-    frameWidth: 100,
-    frameHeight: 100
-  });
-  scene.load.once('complete', () => {
-    scene.anims.create({
-      key: animName,
-      frames: scene.anims.generateFrameNumbers(animName, {
-        start: 0,
-        end: frameCount - 1
-      }),
-      frameRate: frameRate,
-      repeat: -1
-    });
-  });
-  scene.load.start();
-}
 
-function addPlayerMoveLeftAnimation(name, url, frameCount, frameRate) {
-  var animName = name + '_move_left';
-  scene.load.spritesheet(animName, url, {
-    frameWidth: 100,
-    frameHeight: 100
-  });
-  scene.load.once('complete', () => {
-    scene.anims.create({
-      key: animName,
-      frames: scene.anims.generateFrameNumbers(animName, {
-        start: 0,
-        end: frameCount - 1
-      }),
-      frameRate: frameRate,
-      repeat: -1
-    });
-  });
-  scene.load.start();
-}
-
-function addPlayerSprite(name, url, x, y, frameCount, frameRate) {
+function addPlayerSprite(name, url, x, y, frameWidth, frameHeight, frameCount, frameRate) {
   scene.load.spritesheet(name, url, {
-    frameWidth: 100,
-    frameHeight: 100
+    frameWidth: frameWidth,
+    frameHeight: frameHeight
   });
 
   scene.load.once('complete', () => {
@@ -121,6 +82,46 @@ function addPlayerSprite(name, url, x, y, frameCount, frameRate) {
     scene[name] = sprite;
   });
 
+  scene.load.start();
+}
+
+function addPlayerMoveRightAnimation(name, url, frameWidth, frameHeight, frameCount, frameRate) {
+  var animName = name + '_move_right';
+  scene.load.spritesheet(animName, url, {
+    frameWidth: frameWidth,
+    frameHeight: frameHeight
+  });
+  scene.load.once('complete', () => {
+    scene.anims.create({
+      key: animName,
+      frames: scene.anims.generateFrameNumbers(animName, {
+        start: 0,
+        end: frameCount - 1
+      }),
+      frameRate: frameRate,
+      repeat: -1
+    });
+  });
+  scene.load.start();
+}
+
+function addPlayerMoveLeftAnimation(name, url, frameWidth, frameHeight, frameCount, frameRate) {
+  var animName = name + '_move_left';
+  scene.load.spritesheet(animName, url, {
+    frameWidth: frameWidth,
+    frameHeight: frameHeight
+  });
+  scene.load.once('complete', () => {
+    scene.anims.create({
+      key: animName,
+      frames: scene.anims.generateFrameNumbers(animName, {
+        start: 0,
+        end: frameCount - 1
+      }),
+      frameRate: frameRate,
+      repeat: -1
+    });
+  });
   scene.load.start();
 }
 
