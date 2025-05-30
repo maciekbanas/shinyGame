@@ -34,12 +34,19 @@ function initPhaserGame(containerId, config) {
         const sprite = this.children.getByName(name);
         if (!sprite) return;
         sprite.body.setVelocityX(0);
+        sprite.body.setVelocityY(0);
 
         if (cursors.left.isDown) {
           sprite.body.setVelocityX(-opts.speed);
           sprite.anims.play(name + '_move_left', true);
         } else if (cursors.right.isDown) {
           sprite.body.setVelocityX(opts.speed);
+          sprite.anims.play(name + '_move_right', true);
+        } else if (cursors.down.isDown) {
+          sprite.body.setVelocityY(opts.speed);
+          sprite.anims.play(name + '_move_right', true);
+        } else if (cursors.up.isDown) {
+          sprite.body.setVelocityY(-opts.speed);
           sprite.anims.play(name + '_move_right', true);
         } else {
           sprite.body.setVelocityX(0);
