@@ -14,6 +14,7 @@ knitr::opts_chunk$set(
 # phaserR <img src="man/figures/phaserR.png" align="right" height="138" style="float:right; height:138px;" alt = "phaserR Logo"/>
 
 <!-- badges: start -->
+[![R-CMD-check](https://github.com/maciekbanas/phaserR/actions/workflows/R-CMD-check.yaml/badge.svg)](https://github.com/maciekbanas/phaserR/actions/workflows/R-CMD-check.yaml)
 <!-- badges: end -->
 
 An R Shiny interface to `phaser.js`

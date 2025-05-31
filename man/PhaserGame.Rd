@@ -22,6 +22,9 @@ Create PhaserGame object with configuration}
 \item \href{#method-PhaserGame-new}{\code{PhaserGame$new()}}
 \item \href{#method-PhaserGame-ui}{\code{PhaserGame$ui()}}
 \item \href{#method-PhaserGame-add_player_sprite}{\code{PhaserGame$add_player_sprite()}}
+\item \href{#method-PhaserGame-add_player_move_right_animation}{\code{PhaserGame$add_player_move_right_animation()}}
+\item \href{#method-PhaserGame-add_player_move_left_animation}{\code{PhaserGame$add_player_move_left_animation()}}
+\item \href{#method-PhaserGame-enable_movement}{\code{PhaserGame$enable_movement()}}
 \item \href{#method-PhaserGame-clone}{\code{PhaserGame$clone()}}
 }
 }
@@ -63,12 +66,90 @@ Load dependencies and initialize Phaser.Game
 \if{html}{\out{<div class="r">}}\preformatted{PhaserGame$add_player_sprite(
   name,
   url,
-  x = 100,
-  y = 100,
+  x,
+  y,
+  frameWidth,
+  frameHeight,
+  frameCount,
+  frameRate,
   session = shiny::getDefaultReactiveDomain()
 )}\if{html}{\out{</div>}}
 }
 
+\subsection{Arguments}{
+\if{html}{\out{<div class="arguments">}}
+\describe{
+\item{\code{x}}{X position of player sprite.}
+
+\item{\code{y}}{Y position of player sprite.}
+
+\item{\code{frameWidth}}{Should be adjusted to sprite resolution.}
+
+\item{\code{frameHeight}}{Should be adjusted to sprite resolution.}
+
+\item{\code{frameCount}}{Number of frames in sprite.}
+
+\item{\code{frameRate}}{Speed of rendering frames (number of frames per second).
+Enable movement controls (arrow keys) for a player}
+}
+\if{html}{\out{</div>}}
+}
+}
+\if{html}{\out{<hr>}}
+\if{html}{\out{<a id="method-PhaserGame-add_player_move_right_animation"></a>}}
+\if{latex}{\out{\hypertarget{method-PhaserGame-add_player_move_right_animation}{}}}
+\subsection{Method \code{add_player_move_right_animation()}}{
+\subsection{Usage}{
+\if{html}{\out{<div class="r">}}\preformatted{PhaserGame$add_player_move_right_animation(
+  name,
+  url,
+  frameWidth,
+  frameHeight,
+  frameCount,
+  frameRate,
+  session = shiny::getDefaultReactiveDomain()
+)}\if{html}{\out{</div>}}
+}
+
+}
+\if{html}{\out{<hr>}}
+\if{html}{\out{<a id="method-PhaserGame-add_player_move_left_animation"></a>}}
+\if{latex}{\out{\hypertarget{method-PhaserGame-add_player_move_left_animation}{}}}
+\subsection{Method \code{add_player_move_left_animation()}}{
+\subsection{Usage}{
+\if{html}{\out{<div class="r">}}\preformatted{PhaserGame$add_player_move_left_animation(
+  name,
+  url,
+  frameWidth,
+  frameHeight,
+  frameCount,
+  frameRate,
+  session = shiny::getDefaultReactiveDomain()
+)}\if{html}{\out{</div>}}
+}
+
+}
+\if{html}{\out{<hr>}}
+\if{html}{\out{<a id="method-PhaserGame-enable_movement"></a>}}
+\if{latex}{\out{\hypertarget{method-PhaserGame-enable_movement}{}}}
+\subsection{Method \code{enable_movement()}}{
+\subsection{Usage}{
+\if{html}{\out{<div class="r">}}\preformatted{PhaserGame$enable_movement(
+  name,
+  speed = 200,
+  session = shiny::getDefaultReactiveDomain()
+)}\if{html}{\out{</div>}}
+}
+
+\subsection{Arguments}{
+\if{html}{\out{<div class="arguments">}}
+\describe{
+\item{\code{name}}{Name of the player sprite (as given in add_player_sprite)}
+
+\item{\code{speed}}{Movement speed in pixels/sec (default: 200)}
+}
+\if{html}{\out{</div>}}
+}
 }
 \if{html}{\out{<hr>}}
 \if{html}{\out{<a id="method-PhaserGame-clone"></a>}}
