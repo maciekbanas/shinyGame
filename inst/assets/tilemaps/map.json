@@ -1,0 +1,82 @@
+{
+  "height": 5,
+  "width":  7,
+  "tilewidth":  100,
+  "tileheight": 100,
+
+  "layers": [
+    {
+      "id": 1,
+      "name": "Ground",
+      "type": "tilelayer",
+      "x": 0,
+      "y": 0,
+      "width": 7,
+      "height": 5,
+      "opacity": 1,
+      "visible": true,
+      "offsetx": 0,
+      "offsety": 0,
+      "properties": [],
+      "encoding": "json",
+      "data": [
+        1, 1, 1, 1, 1, 1, 1,
+        1, 1, 1, 1, 1, 1, 1,
+        1, 2, 1, 1, 1, 1, 1,
+        2, 2, 2, 1, 1, 1, 1,
+        2, 2, 2, 1, 1, 1, 1
+      ]
+    }
+  ],
+
+  "tilesets": [
+    {
+      "firstgid": 1,
+      "name": "grass",
+      "tilewidth":  100,
+      "tileheight": 100,
+      "spacing":    0,
+      "margin":     0,
+      "tilecount":  1,
+      "columns":    1,
+      "image":      "grass.png",
+      "imagewidth":  100,
+      "imageheight": 100,
+      "tiles": []
+    },
+    {
+      "firstgid": 2,
+      "name": "water",
+      "tilewidth":  100,
+      "tileheight": 100,
+      "spacing":    0,
+      "margin":     0,
+      "tilecount":  1,
+      "columns":    1,
+      "image":      "water.png",
+      "imagewidth":  100,
+      "imageheight": 100,
+      "tiles": [
+        {
+          "id": 0,
+          "properties": [
+            {
+              "name": "collides",
+              "type": "bool",
+              "value": true
+            }
+          ]
+        }
+      ]
+    }
+  ],
+
+  "orientation":  "orthogonal",
+  "renderorder":  "right-down",
+  "version":      1.9,
+  "tiledversion": "1.8.3",
+  "nextlayerid":  2,
+  "nextobjectid": 1,
+  "infinite":     false,
+  "backgroundcolor": "#000000"
+}

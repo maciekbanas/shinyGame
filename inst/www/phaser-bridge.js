@@ -129,6 +129,36 @@ window.addPlayerControls = function(name, speed) {
   GameBridge.playerControls[name] = { speed };
 };
 
+function addBackground(mapKey, mapUrl, tilesetUrls, tilesetNames, layerName) {
+  scene.load.tilemapTiledJSON(mapKey, mapUrl);
+  for (let i = 0; i < tilesetNames.length; i++) {
+    scene.load.image(tilesetNames[i], tilesetUrls[i]);
+  }
+
+  scene.load.once('complete', () => {
+    const map = scene.make.tilemap({ key: mapKey });
+
+    const phaserTilesets = [];
+    for (let i = 0; i < tilesetNames.length; i++) {
+      phaserTilesets.push(
+        map.addTilesetImage(tilesetNames[i], tilesetNames[i])
+      );
+    }
+
+    const groundLayer = map.createLayer(layerName, phaserTilesets, 0, 0);
+
+    groundLayer.setCollisionByProperty({ collides: true });
+
+    scene.physics.world.bounds.width  = map.widthInPixels;
+    scene.physics.world.bounds.height = map.heightInPixels;
+    scene.cameras.main.setBounds(0, 0, map.widthInPixels, map.heightInPixels);
+
+     scene.terrainLayer = groundLayer;
+  });
+
+  scene.load.start();
+}
+
 Shiny.addCustomMessageHandler("phaser", function (message) {
   eval(message.js);
 });

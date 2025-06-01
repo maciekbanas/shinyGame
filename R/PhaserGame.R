@@ -61,6 +61,31 @@ PhaserGame <- R6::R6Class(
                     name, url, frameWidth, frameHeight, frameCount, frameRate)
       session$sendCustomMessage("phaser", list(js = js))
     },
+    #' Add a background/tilemap layer from Tiled JSON + tileset image.
+    #'
+    #' @param mapKey A short string key (used internally in Phaser) for your tilemap JSON.
+    #' @param mapUrl URL (relative to www/assets/) of the `.json` exported from Tiled.
+    #' @param tilesetNames The exact names of the tileset as it appears inside Tiled (must match the Tiled "Tileset" name).
+    #' @param tilesetUrls URLs (relative to www/assets/) of the `PNG` or `JPG` used by your Tiled map.
+    #' @param layerName The name of the layer inside the Tiled map (e.g. "Ground") that you want to render.
+    #' @param session Shiny session.
+    # Inside your PhaserGame R6:
+    add_background = function(mapKey,
+                              mapUrl,
+                              tilesetUrls,
+                              tilesetNames,
+                              layerName,
+                              session = shiny::getDefaultReactiveDomain()) {
+      js <- sprintf(
+        "addBackground(%s, %s, %s, %s, %s);",
+        jsonlite::toJSON(mapKey, auto_unbox = TRUE),
+        jsonlite::toJSON(mapUrl, auto_unbox = TRUE),
+        jsonlite::toJSON(tilesetUrls, auto_unbox = TRUE),
+        jsonlite::toJSON(tilesetNames, auto_unbox = TRUE),
+        jsonlite::toJSON(layerName, auto_unbox = TRUE)
+      )
+      session$sendCustomMessage("phaser", list(js = js))
+    },
     #' Enable movement controls (arrow keys) for a player
     #' @param name Name of the player sprite (as given in add_player_sprite)
     #' @param speed Movement speed in pixels/sec (default: 200)
