@@ -153,10 +153,16 @@ function addBackground(mapKey, mapUrl, tilesetUrls, tilesetNames, layerName) {
     scene.physics.world.bounds.height = map.heightInPixels;
     scene.cameras.main.setBounds(0, 0, map.widthInPixels, map.heightInPixels);
 
-     scene.terrainLayer = groundLayer;
+    scene.terrainLayer = groundLayer;
   });
 
   scene.load.start();
+}
+
+function addPlayerTerrainCollider(spriteName) {
+  const sprite = scene.children.getByName(spriteName);
+  if (!sprite || !scene.terrainLayer) return;
+  scene.physics.add.collider(sprite, scene.terrainLayer);
 }
 
 Shiny.addCustomMessageHandler("phaser", function (message) {

@@ -91,11 +91,15 @@ PhaserGame <- R6::R6Class(
     #' @param speed Movement speed in pixels/sec (default: 200)
     enable_movement = function(name, speed = 200,
                                session = shiny::getDefaultReactiveDomain()) {
-      # Send JS command to register controls for this sprite
       js <- sprintf("addPlayerControls('%s', %d);", name, speed)
       session$sendCustomMessage("phaser", list(js = js))
+    },
+    #' Enable terrain collision for a player
+    #' @param name Name of the player sprite (as given in add_player_sprite)
+    enable_terrain_collision = function(name, session = shiny::getDefaultReactiveDomain()) {
+      js <- sprintf("addPlayerTerrainCollider('%s');", name)
+      session$sendCustomMessage("phaser", list(js = js))
     }
-
   ),
   private = list(
     config = list()
