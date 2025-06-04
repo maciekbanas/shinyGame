@@ -24,8 +24,23 @@ server <- function(input, output, session) {
     frameRate = 8
   )
   game$enable_movement(name = "hero", speed = 200)
-  Sys.sleep(0.1) # Necessary workaround for next function to wait for terrain and hero load.
+  Sys.sleep(0.1)
   game$enable_terrain_collision("hero")
+  game$add_obstacle(
+    name = "rock-1",
+    url  = "assets/obstacles/rock.png",
+    x    = 400,
+    y    = 400
+  )
+  game$add_obstacle(
+    name = "rock-2",
+    url  = "assets/obstacles/rock.png",
+    x    = 600,
+    y    = 500
+  )
+  Sys.sleep(0.1)
+  game$enable_obstacle_collision("hero", "rock-1")
+  game$enable_obstacle_collision("hero", "rock-2")
   game$add_player_move_left_animation(
     name = "hero",
     url = "assets/sprites/wolf_hero_move_left.png",
