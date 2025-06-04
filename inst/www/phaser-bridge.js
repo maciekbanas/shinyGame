@@ -169,3 +169,27 @@ Shiny.addCustomMessageHandler("phaser", function (message) {
   eval(message.js);
 });
 
+function addObstacle(name, url, x, y) {
+  scene.load.image(name, url);
+  scene.load.once('complete', () => {
+    const obstacle = scene.physics.add.staticSprite(x, y, name).setName(name);
+    if (scene.terrainLayer) {
+      scene.physics.add.collider(obstacle, scene.terrainLayer);
+    }
+    scene[name] = obstacle;
+  });
+  scene.load.start();
+}
+window.addObstacle = addObstacle;
+
+function enableObstacleCollision(spriteName, obstacleName) {
+  const sprite = scene.children.getByName(spriteName);
+  const obstacle = scene.children.getByName(obstacleName);
+  if (!sprite || !obstacle) {
+    console.warn(`Nie znaleziono obiektu o nazwie '${spriteName}' lub '${obstacleName}'`);
+    return;
+  }
+  scene.physics.add.collider(sprite, obstacle);
+}
+window.enableObstacleCollision = enableObstacleCollision;
+

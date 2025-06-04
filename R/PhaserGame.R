@@ -99,6 +99,25 @@ PhaserGame <- R6::R6Class(
     enable_terrain_collision = function(name, session = shiny::getDefaultReactiveDomain()) {
       js <- sprintf("addPlayerTerrainCollider('%s');", name)
       session$sendCustomMessage("phaser", list(js = js))
+    },
+    #' @description Dodaje przeszkodę (statyczny obiekt) na mapie
+    #' @param name character – unikalna nazwa przeszkody
+    #' @param url character – ścieżka do pliku graficznego
+    #' @param x numeric – pozycja w poziomie (piksele)
+    #' @param y numeric – pozycja w pionie (piksele)
+    add_obstacle = function(name, url, x, y, session = shiny::getDefaultReactiveDomain()) {
+      js <- sprintf("addObstacle('%s','%s',%s,%s);",
+                         name, url, x, y)
+      session$sendCustomMessage("phaser", list(js = js))
+    },
+
+    #' @description Włącza kolizję między sprite'em a przeszkodą
+    #' @param sprite_name character – nazwa sprite’a (np. "hero")
+    #' @param obstacle_name character – nazwa przeszkody (np. "rock")
+    enable_obstacle_collision = function(sprite_name, obstacle_name, session = shiny::getDefaultReactiveDomain()) {
+      js <- sprintf("enableObstacleCollision('%s','%s');",
+                         sprite_name, obstacle_name)
+      session$sendCustomMessage("phaser", list(js = js))
     }
   ),
   private = list(
