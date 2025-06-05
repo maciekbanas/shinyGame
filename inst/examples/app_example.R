@@ -74,6 +74,14 @@ server <- function(input, output, session) {
     frameCount = 3,
     frameRate = 8
   )
+  game$add_enemy_move_animation(
+    name = "basic_enemy_patrol",
+    url = "assets/enemies/goblin_move.png",
+    frameWidth = 100,
+    frameHeight = 100,
+    frameCount = 2,
+    frameRate = 6
+  )
 
   game$spawn_enemy(600, 600,   "basic_enemy_patrol")
   game$spawn_enemy(1200, 500, "basic_enemy_stand")
@@ -82,26 +90,23 @@ server <- function(input, output, session) {
       type = "basic_enemy_patrol",
       dirX = 1,
       dirY = 0,
-      speed = 100,
+      speed = 50,
       distance = 100
     )
-    Sys.sleep(1)
     game$set_enemy_in_motion(
       type = "basic_enemy_patrol",
       dirX = 0,
       dirY = -1,
-      speed = 100,
+      speed = 50,
       distance = 100
     )
-    Sys.sleep(1)
     game$set_enemy_in_motion(
       type = "basic_enemy_patrol",
       dirX = 0,
       dirY = 1,
-      speed = 100,
+      speed = 50,
       distance = 100
     )
-    Sys.sleep(1)
     game$set_enemy_in_motion(
       type = "basic_enemy_patrol",
       dirX = -1,
@@ -109,7 +114,6 @@ server <- function(input, output, session) {
       speed = 50,
       distance = 100
     )
-    Sys.sleep(1)
   })
 
 }

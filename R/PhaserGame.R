@@ -177,6 +177,7 @@ PhaserGame <- R6::R6Class(
                                    speed,
                                    distance,
                                    session = shiny::getDefaultReactiveDomain()) {
+      Sys.sleep(distance/speed)
       js <- sprintf(
         "setEnemyTweenByType('%s', %d, %d, %d, %d);",
         type, dirX, dirY, speed, distance
