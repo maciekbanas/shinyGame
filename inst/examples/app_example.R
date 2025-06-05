@@ -24,19 +24,36 @@ server <- function(input, output, session) {
     frameRate = 8
   )
   game$enable_movement(name = "hero", speed = 200)
+  game$init_enemies()
+  game$add_enemy_sprite(
+    name = "basic_enemy_patrol",
+    url = "assets/enemies/goblin_idle.png",
+    frameWidth = 100,
+    frameHeight= 100,
+    frameCount = 9,
+    frameRate  = 8
+  )
+  game$add_enemy_sprite(
+    name = "basic_enemy_stand",
+    url = "assets/enemies/goblin_idle.png",
+    frameWidth = 100,
+    frameHeight= 100,
+    frameCount = 9,
+    frameRate  = 8
+  )
   Sys.sleep(0.1)
   game$enable_terrain_collision("hero")
   game$add_obstacle(
     name = "rock-1",
-    url  = "assets/obstacles/rock.png",
-    x    = 400,
-    y    = 400
+    url = "assets/obstacles/rock.png",
+    x = 400,
+    y = 400
   )
   game$add_obstacle(
     name = "rock-2",
     url  = "assets/obstacles/rock.png",
-    x    = 600,
-    y    = 500
+    x = 600,
+    y = 500
   )
   Sys.sleep(0.1)
   game$enable_obstacle_collision("hero", "rock-1")
@@ -57,6 +74,44 @@ server <- function(input, output, session) {
     frameCount = 3,
     frameRate = 8
   )
+
+  game$spawn_enemy(600, 600,   "basic_enemy_patrol")
+  game$spawn_enemy(1200, 500, "basic_enemy_stand")
+  repeat({
+    game$set_enemy_in_motion(
+      type = "basic_enemy_patrol",
+      dirX = 1,
+      dirY = 0,
+      speed = 100,
+      distance = 100
+    )
+    Sys.sleep(1)
+    game$set_enemy_in_motion(
+      type = "basic_enemy_patrol",
+      dirX = 0,
+      dirY = -1,
+      speed = 100,
+      distance = 100
+    )
+    Sys.sleep(1)
+    game$set_enemy_in_motion(
+      type = "basic_enemy_patrol",
+      dirX = 0,
+      dirY = 1,
+      speed = 100,
+      distance = 100
+    )
+    Sys.sleep(1)
+    game$set_enemy_in_motion(
+      type = "basic_enemy_patrol",
+      dirX = -1,
+      dirY = 0,
+      speed = 50,
+      distance = 100
+    )
+    Sys.sleep(1)
+  })
+
 }
 
 shinyApp(ui, server)
