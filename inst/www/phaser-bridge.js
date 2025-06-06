@@ -202,7 +202,6 @@ function addObstacle(name, url, x, y) {
   });
   scene.load.start();
 }
-window.addObstacle = addObstacle;
 
 function enableObstacleCollision(spriteName, obstacleName) {
   const sprite = scene.children.getByName(spriteName);
@@ -213,7 +212,6 @@ function enableObstacleCollision(spriteName, obstacleName) {
   }
   scene.physics.add.collider(sprite, obstacle);
 }
-window.enableObstacleCollision = enableObstacleCollision;
 
 function initEnemiesGroup() {
   if (!scene) {
@@ -224,7 +222,6 @@ function initEnemiesGroup() {
     runChildUpdate: true
   });
 }
-window.initEnemiesGroup = initEnemiesGroup;
 
 function addEnemySprite(name, url, frameWidth, frameHeight, frameCount, frameRate) {
   if (!scene) {
@@ -250,7 +247,6 @@ function addEnemySprite(name, url, frameWidth, frameHeight, frameCount, frameRat
 
   scene.load.start();
 }
-window.addEnemySprite = addEnemySprite;
 
 function spawnEnemyCustom(x, y, type) {
   if (!scene || !scene.enemies) {
@@ -305,7 +301,15 @@ function setEnemyTweenByType(type, dirX, dirY, speed, distance) {
       duration: duration,
       ease: 'Linear',
       onStart: () => {
-        playTypeAnim(enemy, type, "move");
+        if (dirX < 0 && scene.anims.exists(type + "_move_left")) {
+          enemy.play(type + "_move_left", true);
+        } else if (dirX > 0 && scene.anims.exists(type + "_move_right")) {
+          enemy.play(type + "_move_right", true);
+        } else if (scene.anims.exists(type + "_move")) {
+          enemy.play(type + "_move", true);
+        } else if (scene.anims.exists(type + "_idle")) {
+          enemy.play(type + "_idle", true);
+        }
       },
       onComplete: () => {
         playTypeAnim(enemy, type, "idle");
@@ -313,7 +317,6 @@ function setEnemyTweenByType(type, dirX, dirY, speed, distance) {
     });
   });
 }
-window.setEnemyTweenByType = setEnemyTweenByType;
 
 Shiny.addCustomMessageHandler("phaser", function (message) {
   eval(message.js);

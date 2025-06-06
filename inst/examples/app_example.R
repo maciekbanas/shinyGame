@@ -74,8 +74,15 @@ server <- function(input, output, session) {
   )
   game$add_sprite_animation(
     name       = "basic_enemy_patrol",
-    suffix     = "move",
-    url        = "assets/enemies/goblin_move.png",
+    suffix     = "move_left",
+    url        = "assets/enemies/goblin_move_left.png",
+    frameWidth = 100, frameHeight = 100,
+    frameCount = 2,   frameRate   = 6
+  )
+  game$add_sprite_animation(
+    name       = "basic_enemy_patrol",
+    suffix     = "move_right",
+    url        = "assets/enemies/goblin_move_right.png",
     frameWidth = 100, frameHeight = 100,
     frameCount = 2,   frameRate   = 6
   )
@@ -87,28 +94,14 @@ server <- function(input, output, session) {
       dirX = 1,
       dirY = 0,
       speed = 50,
-      distance = 100
-    )
-    game$set_enemy_in_motion(
-      type = "basic_enemy_patrol",
-      dirX = 0,
-      dirY = -1,
-      speed = 50,
-      distance = 100
-    )
-    game$set_enemy_in_motion(
-      type = "basic_enemy_patrol",
-      dirX = 0,
-      dirY = 1,
-      speed = 50,
-      distance = 100
+      distance = 200
     )
     game$set_enemy_in_motion(
       type = "basic_enemy_patrol",
       dirX = -1,
       dirY = 0,
       speed = 50,
-      distance = 100
+      distance = 200
     )
   })
 
