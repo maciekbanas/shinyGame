@@ -4,6 +4,16 @@ let controlledSprite = null;
 window.GameBridge = window.GameBridge || {};
 GameBridge.playerControls = {};
 
+function playTypeAnim(sprite, type, suffix) {
+  const key1 = type + "_" + suffix;
+  const key2 = type + "_idle";
+  if (scene.anims.exists(key1)) {
+    sprite.play(key1, true);
+  } else if (scene.anims.exists(key2)) {
+    sprite.play(key2, true);
+  }
+}
+
 function initPhaserGame(containerId, config) {
   const game = new Phaser.Game({
     type: Phaser.AUTO,
@@ -106,46 +116,6 @@ function addPlayerSprite(name, url, x, y, frameWidth, frameHeight, frameCount, f
   scene.load.start();
 }
 
-function addPlayerMoveRightAnimation(name, url, frameWidth, frameHeight, frameCount, frameRate) {
-  var animName = name + '_move_right';
-  scene.load.spritesheet(animName, url, {
-    frameWidth: frameWidth,
-    frameHeight: frameHeight
-  });
-  scene.load.once('complete', () => {
-    scene.anims.create({
-      key: animName,
-      frames: scene.anims.generateFrameNumbers(animName, {
-        start: 0,
-        end: frameCount - 1
-      }),
-      frameRate: frameRate,
-      repeat: -1
-    });
-  });
-  scene.load.start();
-}
-
-function addPlayerMoveLeftAnimation(name, url, frameWidth, frameHeight, frameCount, frameRate) {
-  var animName = name + '_move_left';
-  scene.load.spritesheet(animName, url, {
-    frameWidth: frameWidth,
-    frameHeight: frameHeight
-  });
-  scene.load.once('complete', () => {
-    scene.anims.create({
-      key: animName,
-      frames: scene.anims.generateFrameNumbers(animName, {
-        start: 0,
-        end: frameCount - 1
-      }),
-      frameRate: frameRate,
-      repeat: -1
-    });
-  });
-  scene.load.start();
-}
-
 window.addPlayerControls = function(name, speed) {
   GameBridge.playerControls[name] = { speed };
 };
@@ -184,6 +154,41 @@ function addPlayerTerrainCollider(spriteName) {
   const sprite = scene.children.getByName(spriteName);
   if (!sprite || !scene.terrainLayer) return;
   scene.physics.add.collider(sprite, scene.terrainLayer);
+}
+
+/**
+ * General helper to load & create one spritesheet‐based animation.
+ *
+ * @param {string} name        Base key for the sprite (e.g. "hero" or "basic_enemy").
+ * @param {string} suffix      Animation suffix (e.g. "move_left", "move_right", "move").
+ * @param {string} url         URL (relative to www/) for the spritesheet image.
+ * @param {number} frameWidth  Width of each frame in px.
+ * @param {number} frameHeight Height of each frame in px.
+ * @param {number} frameCount  Number of frames in that spritesheet.
+ * @param {number} frameRate   FPS at which to play (e.g. 8, 10, etc).
+ */
+function addSpriteAnimation(name, suffix, url, frameWidth, frameHeight, frameCount, frameRate) {
+  if (!scene) {
+    console.warn(`addSpriteAnimation("${name}", "${suffix}"): scene not ready`);
+    return;
+  }
+  const animKey = name + "_" + suffix;
+  scene.load.spritesheet(animKey, url, {
+    frameWidth:  frameWidth,
+    frameHeight: frameHeight
+  });
+  scene.load.once("complete", () => {
+    scene.anims.create({
+      key: animKey,
+      frames: scene.anims.generateFrameNumbers(animKey, {
+        start: 0,
+        end: frameCount - 1
+      }),
+      frameRate: frameRate,
+      repeat: -1
+    });
+  });
+  scene.load.start();
 }
 
 function addObstacle(name, url, x, y) {
@@ -247,33 +252,6 @@ function addEnemySprite(name, url, frameWidth, frameHeight, frameCount, frameRat
 }
 window.addEnemySprite = addEnemySprite;
 
-function addEnemyMoveAnimation(name, url, frameWidth, frameHeight, frameCount, frameRate) {
-  if (!scene) {
-    console.warn("addEnemyMoveAnimation(): scene is not ready");
-    return;
-  }
-  const animKey = name + "_move";
-  scene.load.spritesheet(animKey, url, {
-    frameWidth: frameWidth,
-    frameHeight: frameHeight
-  });
-
-  scene.load.once("complete", () => {
-    scene.anims.create({
-      key: animKey,
-      frames: scene.anims.generateFrameNumbers(animKey, {
-        start: 0,
-        end: frameCount - 1
-      }),
-      frameRate: frameRate,
-      repeat: -1
-    });
-  });
-
-  scene.load.start();
-}
-window.addEnemyMoveAnimation = addEnemyMoveAnimation;
-
 function spawnEnemyCustom(x, y, type) {
   if (!scene || !scene.enemies) {
     console.warn("spawnEnemyCustom(): call initEnemiesGroup() first.");
@@ -281,14 +259,9 @@ function spawnEnemyCustom(x, y, type) {
   }
   const enemy = scene.physics.add.sprite(x, y, type).setName(type);
 
-  if (scene.anims.exists(type + "_idle")) {
-    enemy.play(type + "_idle");
-  } else {
-    console.warn("spawnEnemyCustom(): no animation for '" + type + "_idle' found.");
-  }
+  playTypeAnim(enemy, type, "idle");
   scene.enemies.add(enemy);
 }
-window.spawnEnemyCustom = spawnEnemyCustom;
 
 // ─────────────────────────────────────────────────────────────────────────────
 // setEnemyTweenByType(type, dirX, dirY, speed, distance)
@@ -332,16 +305,10 @@ function setEnemyTweenByType(type, dirX, dirY, speed, distance) {
       duration: duration,
       ease: 'Linear',
       onStart: () => {
-        if (scene.anims.exists(type + "_move")) {
-          enemy.play(type + "_move", true);
-        } else if (scene.anims.exists(type + "_idle")) {
-          enemy.play(type + "_idle", true);
-        }
+        playTypeAnim(enemy, type, "move");
       },
       onComplete: () => {
-        if (scene.anims.exists(type + "_idle")) {
-          enemy.play(type + "_idle", true);
-        }
+        playTypeAnim(enemy, type, "idle");
       }
     });
   });

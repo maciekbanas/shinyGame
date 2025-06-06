@@ -49,16 +49,24 @@ PhaserGame <- R6::R6Class(
                     name, url, x, y, frameWidth, frameHeight, frameCount, frameRate)
       session$sendCustomMessage("phaser", list(js = js))
     },
-    add_player_move_right_animation = function(name, url, frameWidth, frameHeight, frameCount, frameRate,
-                                 session = shiny::getDefaultReactiveDomain()) {
-      js <- sprintf("addPlayerMoveRightAnimation('%s', '%s', %d, %d, %d, %d);",
-                    name, url, frameWidth, frameHeight, frameCount, frameRate)
-      session$sendCustomMessage("phaser", list(js = js))
-    },
-    add_player_move_left_animation = function(name, url, frameWidth, frameHeight, frameCount, frameRate,
-                                               session = shiny::getDefaultReactiveDomain()) {
-      js <- sprintf("addPlayerMoveLeftAnimation('%s', '%s', %d, %d, %d, %d);",
-                    name, url, frameWidth, frameHeight, frameCount, frameRate)
+    #' @description Load a custom animation for any sprite.
+    #'   `suffix` should match the suffix you want (e.g. "move_left", "move_right", "move").
+    #' @param name character: base key you used in add_player_sprite() or add_enemy_sprite().
+    #' @param suffix character: one of "move_left", "move_right", "move", etc.
+    #' @param url character: path to the spritesheet image.
+    #' @param frameWidth numeric: width of each frame.
+    #' @param frameHeight numeric: height of each frame.
+    #' @param frameCount numeric: number of frames in the spritesheet.
+    #' @param frameRate numeric: frames per second to play this animation.
+    add_sprite_animation = function(name, suffix, url,
+                                    frameWidth, frameHeight,
+                                    frameCount, frameRate,
+                                    session = shiny::getDefaultReactiveDomain()) {
+      # Build a JS call to addSpriteAnimation(name, suffix, url, frameWidth, frameHeight, frameCount, frameRate)
+      js <- sprintf(
+        "addSpriteAnimation('%s','%s','%s',%d,%d,%d,%d);",
+        name, suffix, url, frameWidth, frameHeight, frameCount, frameRate
+      )
       session$sendCustomMessage("phaser", list(js = js))
     },
     #' Add a background/tilemap layer from Tiled JSON + tileset image.
@@ -134,19 +142,6 @@ PhaserGame <- R6::R6Class(
                                 session = shiny::getDefaultReactiveDomain()) {
       js <- sprintf(
         "addEnemySprite('%s', '%s', %d, %d, %d, %d);",
-        name, url, frameWidth, frameHeight, frameCount, frameRate
-      )
-      session$sendCustomMessage("phaser", list(js = js))
-    },
-
-    #' @description Load a “move” animation for the given enemy name.
-    #'   Example: name = "enemyBasic", url = "assets/enemies/basic_walk.png", frameWidth/Height, frameCount, frameRate.
-    add_enemy_move_animation = function(name, url,
-                                        frameWidth, frameHeight,
-                                        frameCount, frameRate,
-                                        session = shiny::getDefaultReactiveDomain()) {
-      js <- sprintf(
-        "addEnemyMoveAnimation('%s', '%s', %d, %d, %d, %d);",
         name, url, frameWidth, frameHeight, frameCount, frameRate
       )
       session$sendCustomMessage("phaser", list(js = js))

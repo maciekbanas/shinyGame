@@ -58,31 +58,27 @@ server <- function(input, output, session) {
   Sys.sleep(0.1)
   game$enable_obstacle_collision("hero", "rock-1")
   game$enable_obstacle_collision("hero", "rock-2")
-  game$add_player_move_left_animation(
-    name = "hero",
-    url = "assets/sprites/wolf_hero_move_left.png",
-    frameWidth = 100,
-    frameHeight = 100,
-    frameCount = 3,
-    frameRate = 8
+  game$add_sprite_animation(
+    name       = "hero",
+    suffix     = "move_left",
+    url        = "assets/sprites/wolf_hero_move_left.png",
+    frameWidth = 100, frameHeight = 100,
+    frameCount = 3,   frameRate   = 8
   )
-  game$add_player_move_right_animation(
-    name = "hero",
-    url = "assets/sprites/wolf_hero_move_right.png",
-    frameWidth = 100,
-    frameHeight = 100,
-    frameCount = 3,
-    frameRate = 8
+  game$add_sprite_animation(
+    name       = "hero",
+    suffix     = "move_right",
+    url        = "assets/sprites/wolf_hero_move_right.png",
+    frameWidth = 100, frameHeight = 100,
+    frameCount = 3,   frameRate   = 8
   )
-  game$add_enemy_move_animation(
-    name = "basic_enemy_patrol",
-    url = "assets/enemies/goblin_move.png",
-    frameWidth = 100,
-    frameHeight = 100,
-    frameCount = 2,
-    frameRate = 6
+  game$add_sprite_animation(
+    name       = "basic_enemy_patrol",
+    suffix     = "move",
+    url        = "assets/enemies/goblin_move.png",
+    frameWidth = 100, frameHeight = 100,
+    frameCount = 2,   frameRate   = 6
   )
-
   game$spawn_enemy(600, 600,   "basic_enemy_patrol")
   game$spawn_enemy(1200, 500, "basic_enemy_stand")
   repeat({
