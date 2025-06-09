@@ -24,18 +24,21 @@ server <- function(input, output, session) {
     frameRate = 8
   )
   game$enable_movement(name = "hero", speed = 200)
-  game$init_enemies()
-  game$add_enemy_sprite(
-    name = "basic_enemy_patrol",
+  game$add_sprite(
+    name = "goblin",
     url = "assets/enemies/goblin_idle.png",
+    x = 600,
+    y = 600,
     frameWidth = 100,
     frameHeight= 100,
     frameCount = 9,
     frameRate  = 8
   )
-  game$add_enemy_sprite(
-    name = "basic_enemy_stand",
+  game$add_sprite(
+    name = "goblin",
     url = "assets/enemies/goblin_idle.png",
+    x = 1200,
+    y = 500,
     frameWidth = 100,
     frameHeight= 100,
     frameCount = 9,
@@ -59,51 +62,48 @@ server <- function(input, output, session) {
   game$enable_obstacle_collision("hero", "rock-1")
   game$enable_obstacle_collision("hero", "rock-2")
   game$add_sprite_animation(
-    name       = "hero",
-    suffix     = "move_left",
-    url        = "assets/sprites/wolf_hero_move_left.png",
+    name = "hero",
+    suffix = "move_left",
+    url = "assets/sprites/wolf_hero_move_left.png",
     frameWidth = 100, frameHeight = 100,
-    frameCount = 3,   frameRate   = 8
+    frameCount = 3, frameRate = 8
   )
   game$add_sprite_animation(
-    name       = "hero",
-    suffix     = "move_right",
-    url        = "assets/sprites/wolf_hero_move_right.png",
+    name = "hero",
+    suffix = "move_right",
+    url = "assets/sprites/wolf_hero_move_right.png",
     frameWidth = 100, frameHeight = 100,
-    frameCount = 3,   frameRate   = 8
+    frameCount = 3, frameRate = 8
   )
   game$add_sprite_animation(
-    name       = "basic_enemy_patrol",
-    suffix     = "move_left",
-    url        = "assets/enemies/goblin_move_left.png",
+    name = "goblin",
+    suffix = "move_left",
+    url = "assets/enemies/goblin_move_left.png",
     frameWidth = 100, frameHeight = 100,
-    frameCount = 2,   frameRate   = 6
+    frameCount = 2, frameRate = 6
   )
   game$add_sprite_animation(
-    name       = "basic_enemy_patrol",
-    suffix     = "move_right",
-    url        = "assets/enemies/goblin_move_right.png",
+    name = "goblin",
+    suffix = "move_right",
+    url = "assets/enemies/goblin_move_right.png",
     frameWidth = 100, frameHeight = 100,
-    frameCount = 2,   frameRate   = 6
+    frameCount = 2, frameRate = 6
   )
-  game$spawn_enemy(600, 600,   "basic_enemy_patrol")
-  game$spawn_enemy(1200, 500, "basic_enemy_stand")
-  repeat({
-    game$set_enemy_in_motion(
-      type = "basic_enemy_patrol",
-      dirX = 1,
-      dirY = 0,
-      speed = 50,
-      distance = 200
-    )
-    game$set_enemy_in_motion(
-      type = "basic_enemy_patrol",
-      dirX = -1,
-      dirY = 0,
-      speed = 50,
-      distance = 200
-    )
-  })
+
+  game$set_sprite_in_motion(
+    type = "goblin",
+    dirX = 1,
+    dirY = 0,
+    speed = 50,
+    distance = 200
+  )
+  game$set_sprite_in_motion(
+    type = "goblin",
+    dirX = -1,
+    dirY = 0,
+    speed = 50,
+    distance = 200
+  )
 
 }
 
