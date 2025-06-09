@@ -49,16 +49,24 @@ PhaserGame <- R6::R6Class(
                     name, url, x, y, frameWidth, frameHeight, frameCount, frameRate)
       session$sendCustomMessage("phaser", list(js = js))
     },
-    add_player_move_right_animation = function(name, url, frameWidth, frameHeight, frameCount, frameRate,
-                                 session = shiny::getDefaultReactiveDomain()) {
-      js <- sprintf("addPlayerMoveRightAnimation('%s', '%s', %d, %d, %d, %d);",
-                    name, url, frameWidth, frameHeight, frameCount, frameRate)
-      session$sendCustomMessage("phaser", list(js = js))
-    },
-    add_player_move_left_animation = function(name, url, frameWidth, frameHeight, frameCount, frameRate,
-                                               session = shiny::getDefaultReactiveDomain()) {
-      js <- sprintf("addPlayerMoveLeftAnimation('%s', '%s', %d, %d, %d, %d);",
-                    name, url, frameWidth, frameHeight, frameCount, frameRate)
+    #' @description Load a custom animation for any sprite.
+    #'   `suffix` should match the suffix you want (e.g. "move_left", "move_right", "move").
+    #' @param name character: base key you used in add_player_sprite() or add_enemy_sprite().
+    #' @param suffix character: one of "move_left", "move_right", "move", etc.
+    #' @param url character: path to the spritesheet image.
+    #' @param frameWidth numeric: width of each frame.
+    #' @param frameHeight numeric: height of each frame.
+    #' @param frameCount numeric: number of frames in the spritesheet.
+    #' @param frameRate numeric: frames per second to play this animation.
+    add_sprite_animation = function(name, suffix, url,
+                                    frameWidth, frameHeight,
+                                    frameCount, frameRate,
+                                    session = shiny::getDefaultReactiveDomain()) {
+      # Build a JS call to addSpriteAnimation(name, suffix, url, frameWidth, frameHeight, frameCount, frameRate)
+      js <- sprintf(
+        "addSpriteAnimation('%s','%s','%s',%d,%d,%d,%d);",
+        name, suffix, url, frameWidth, frameHeight, frameCount, frameRate
+      )
       session$sendCustomMessage("phaser", list(js = js))
     },
     #' Add a background/tilemap layer from Tiled JSON + tileset image.
@@ -118,7 +126,60 @@ PhaserGame <- R6::R6Class(
       js <- sprintf("enableObstacleCollision('%s','%s');",
                          sprite_name, obstacle_name)
       session$sendCustomMessage("phaser", list(js = js))
+    },
+
+    #' @description Initialize an empty Phaser.Group for enemies.
+    init_enemies = function(session = shiny::getDefaultReactiveDomain()) {
+      js <- sprintf("initEnemiesGroup();")
+      session$sendCustomMessage("phaser", list(js = js))
+    },
+
+    #' @description Load a base enemy spritesheet and create an "idle" animation.
+    #'   Usage: name = "enemyBasic", url = "assets/enemies/basic.png", frameWidth/Height, frameCount, frameRate.
+    add_enemy_sprite = function(name, url,
+                                frameWidth, frameHeight,
+                                frameCount, frameRate,
+                                session = shiny::getDefaultReactiveDomain()) {
+      js <- sprintf(
+        "addEnemySprite('%s', '%s', %d, %d, %d, %d);",
+        name, url, frameWidth, frameHeight, frameCount, frameRate
+      )
+      session$sendCustomMessage("phaser", list(js = js))
+    },
+
+    #' @description Spawn an enemy at (x, y) but with a custom velocity (velX, velY).
+    #' @param x   Numeric X‐coordinate (pixels).
+    #' @param y   Numeric Y‐coordinate (pixels).
+    #' @param type Character string matching the key you used in add_enemy_sprite (e.g. "basic_enemy").
+    spawn_enemy = function(x, y,
+                           type = "basic_enemy",
+                           session = shiny::getDefaultReactiveDomain()) {
+      js <- sprintf("spawnEnemyCustom(%d, %d, '%s');",
+                    x, y, type)
+      session$sendCustomMessage("phaser", list(js = js))
+    },
+
+    #' @description Put all existing enemies of this type into motion along (dirX, dirY)
+    #'   at the given speed, and stop them once they’ve traveled `distance` pixels.
+    #' @param type      character: the key used in add_enemy_sprite()/spawn_enemy()
+    #' @param dirX      numeric: horizontal direction (–1 = left, +1 = right, 0 = no horizontal)
+    #' @param dirY      numeric: vertical direction   (–1 = up,   +1 = down,  0 = no vertical)
+    #' @param speed     numeric: number of px/sec to move in that (dirX,dirY) direction
+    #' @param distance  numeric: how many pixels (Euclidean) to travel before stopping
+    set_enemy_in_motion = function(type,
+                                   dirX,
+                                   dirY,
+                                   speed,
+                                   distance,
+                                   session = shiny::getDefaultReactiveDomain()) {
+      Sys.sleep(distance/speed)
+      js <- sprintf(
+        "setEnemyTweenByType('%s', %d, %d, %d, %d);",
+        type, dirX, dirY, speed, distance
+      )
+      session$sendCustomMessage("phaser", list(js = js))
     }
+
   ),
   private = list(
     config = list()
