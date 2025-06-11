@@ -59,8 +59,8 @@ server <- function(input, output, session) {
     y = 500
   )
   Sys.sleep(0.1)
-  game$enable_obstacle_collision("hero", "rock-1")
-  game$enable_obstacle_collision("hero", "rock-2")
+  game$add_collider("hero", "rock-1")
+  game$add_collider("hero", "rock-2")
   game$add_sprite_animation(
     name = "hero",
     suffix = "move_left",

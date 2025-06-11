@@ -119,12 +119,12 @@ PhaserGame <- R6::R6Class(
       session$sendCustomMessage("phaser", list(js = js))
     },
 
-    #' @description Włącza kolizję między sprite'em a przeszkodą
-    #' @param sprite_name character – nazwa sprite’a (np. "hero")
-    #' @param obstacle_name character – nazwa przeszkody (np. "rock")
-    enable_obstacle_collision = function(sprite_name, obstacle_name, session = shiny::getDefaultReactiveDomain()) {
-      js <- sprintf("enableObstacleCollision('%s','%s');",
-                         sprite_name, obstacle_name)
+    #' @description Adds a collider between two objects
+    #' @param sprite_one_name A character, name of the first object.
+    #' @param sprite_two_name A character, name of the second object.
+    add_collider = function(object_one_name, object_two_name, session = shiny::getDefaultReactiveDomain()) {
+      js <- sprintf("addCollider('%s','%s');",
+                    object_one_name, object_two_name)
       session$sendCustomMessage("phaser", list(js = js))
     },
 

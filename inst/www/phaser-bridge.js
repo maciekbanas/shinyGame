@@ -192,14 +192,10 @@ function addStaticSprite(name, url, x, y) {
   scene.load.start();
 }
 
-function enableObstacleCollision(spriteName, obstacleName) {
-  const sprite = scene.children.getByName(spriteName);
-  const obstacle = scene.children.getByName(obstacleName);
-  if (!sprite || !obstacle) {
-    console.warn(`Nie znaleziono obiektu o nazwie '${spriteName}' lub '${obstacleName}'`);
-    return;
-  }
-  scene.physics.add.collider(sprite, obstacle);
+function addCollider(objectOneName, objectTwoName) {
+  const objectOne = scene.children.getByName(objectOneName);
+  const objectTwo = scene.children.getByName(objectTwoName);
+  scene.physics.add.collider(objectOne, objectTwo);
 }
 
 function addSprite(name, url, x, y, frameWidth, frameHeight, frameCount, frameRate) {
@@ -220,7 +216,7 @@ function addSprite(name, url, x, y, frameWidth, frameHeight, frameCount, frameRa
     });
 
     const sprite = scene.physics.add.sprite(x, y, name).setName(name);
-    //sprite.setCollideWorldBounds(true);
+    sprite.setCollideWorldBounds(true);
     sprite.play(name + '_idle');
 
     scene[name] = sprite;
