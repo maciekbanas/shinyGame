@@ -108,13 +108,13 @@ PhaserGame <- R6::R6Class(
       js <- sprintf("addPlayerTerrainCollider('%s');", name)
       session$sendCustomMessage("phaser", list(js = js))
     },
-    #' @description Dodaje przeszkodę (statyczny obiekt) na mapie
-    #' @param name character – unikalna nazwa przeszkody
-    #' @param url character – ścieżka do pliku graficznego
-    #' @param x numeric – pozycja w poziomie (piksele)
-    #' @param y numeric – pozycja w pionie (piksele)
-    add_obstacle = function(name, url, x, y, session = shiny::getDefaultReactiveDomain()) {
-      js <- sprintf("addObstacle('%s','%s',%s,%s);",
+    #' @description Adds static sprite to scene.
+    #' @param name A character, unique name of the sprite.
+    #' @param url A character, URL or path to the image file.
+    #' @param x A numeric - x position (pixels).
+    #' @param y A numeric - y position (pixels.)
+    add_static_sprite = function(name, url, x, y, session = shiny::getDefaultReactiveDomain()) {
+      js <- sprintf("addStaticSprite('%s','%s',%s,%s);",
                          name, url, x, y)
       session$sendCustomMessage("phaser", list(js = js))
     },

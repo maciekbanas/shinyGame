@@ -180,14 +180,14 @@ function addSpriteAnimation(name, suffix, url, frameWidth, frameHeight, frameCou
   scene.load.start();
 }
 
-function addObstacle(name, url, x, y) {
+function addStaticSprite(name, url, x, y) {
   scene.load.image(name, url);
   scene.load.once('complete', () => {
-    const obstacle = scene.physics.add.staticSprite(x, y, name).setName(name);
+    const staticSprite = scene.physics.add.staticSprite(x, y, name).setName(name);
     if (scene.terrainLayer) {
-      scene.physics.add.collider(obstacle, scene.terrainLayer);
+      scene.physics.add.collider(staticSprite, scene.terrainLayer);
     }
-    scene[name] = obstacle;
+    scene[name] = staticSprite;
   });
   scene.load.start();
 }

@@ -46,13 +46,13 @@ server <- function(input, output, session) {
   )
   Sys.sleep(0.1)
   game$enable_terrain_collision("hero")
-  game$add_obstacle(
+  game$add_static_sprite(
     name = "rock-1",
     url = "assets/obstacles/rock.png",
     x = 400,
     y = 400
   )
-  game$add_obstacle(
+  game$add_static_sprite(
     name = "rock-2",
     url  = "assets/obstacles/rock.png",
     x = 600,
