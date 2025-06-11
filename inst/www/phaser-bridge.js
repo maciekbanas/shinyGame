@@ -156,17 +156,6 @@ function addPlayerTerrainCollider(spriteName) {
   scene.physics.add.collider(sprite, scene.terrainLayer);
 }
 
-/**
- * General helper to load & create one spritesheet‐based animation.
- *
- * @param {string} name        Base key for the sprite (e.g. "hero" or "basic_enemy").
- * @param {string} suffix      Animation suffix (e.g. "move_left", "move_right", "move").
- * @param {string} url         URL (relative to www/) for the spritesheet image.
- * @param {number} frameWidth  Width of each frame in px.
- * @param {number} frameHeight Height of each frame in px.
- * @param {number} frameCount  Number of frames in that spritesheet.
- * @param {number} frameRate   FPS at which to play (e.g. 8, 10, etc).
- */
 function addSpriteAnimation(name, suffix, url, frameWidth, frameHeight, frameCount, frameRate) {
   if (!scene) {
     console.warn(`addSpriteAnimation("${name}", "${suffix}"): scene not ready`);
@@ -191,51 +180,33 @@ function addSpriteAnimation(name, suffix, url, frameWidth, frameHeight, frameCou
   scene.load.start();
 }
 
-function addObstacle(name, url, x, y) {
+function addStaticSprite(name, url, x, y) {
   scene.load.image(name, url);
   scene.load.once('complete', () => {
-    const obstacle = scene.physics.add.staticSprite(x, y, name).setName(name);
+    const staticSprite = scene.physics.add.staticSprite(x, y, name).setName(name);
     if (scene.terrainLayer) {
-      scene.physics.add.collider(obstacle, scene.terrainLayer);
+      scene.physics.add.collider(staticSprite, scene.terrainLayer);
     }
-    scene[name] = obstacle;
+    scene[name] = staticSprite;
   });
   scene.load.start();
 }
 
-function enableObstacleCollision(spriteName, obstacleName) {
-  const sprite = scene.children.getByName(spriteName);
-  const obstacle = scene.children.getByName(obstacleName);
-  if (!sprite || !obstacle) {
-    console.warn(`Nie znaleziono obiektu o nazwie '${spriteName}' lub '${obstacleName}'`);
-    return;
-  }
-  scene.physics.add.collider(sprite, obstacle);
+function addCollider(objectOneName, objectTwoName) {
+  const objectOne = scene.children.getByName(objectOneName);
+  const objectTwo = scene.children.getByName(objectTwoName);
+  scene.physics.add.collider(objectOne, objectTwo);
 }
 
-function initEnemiesGroup() {
-  if (!scene) {
-    console.warn("initEnemiesGroup(): scene is not ready yet");
-    return;
-  }
-  scene.enemies = scene.physics.add.group({
-    runChildUpdate: true
-  });
-}
-
-function addEnemySprite(name, url, frameWidth, frameHeight, frameCount, frameRate) {
-  if (!scene) {
-    console.warn("addEnemySprite(): scene is not ready");
-    return;
-  }
+function addSprite(name, url, x, y, frameWidth, frameHeight, frameCount, frameRate) {
   scene.load.spritesheet(name, url, {
     frameWidth: frameWidth,
     frameHeight: frameHeight
   });
 
-  scene.load.once("complete", () => {
+  scene.load.once('complete', () => {
     scene.anims.create({
-      key: name + "_idle",
+      key: name + '_idle',
       frames: scene.anims.generateFrameNumbers(name, {
         start: 0,
         end: frameCount - 1
@@ -243,51 +214,32 @@ function addEnemySprite(name, url, frameWidth, frameHeight, frameCount, frameRat
       frameRate: frameRate,
       repeat: -1
     });
+
+    const sprite = scene.physics.add.sprite(x, y, name).setName(name);
+    sprite.setCollideWorldBounds(true);
+    sprite.play(name + '_idle');
+
+    scene[name] = sprite;
   });
 
   scene.load.start();
 }
 
-function spawnEnemyCustom(x, y, type) {
-  if (!scene || !scene.enemies) {
-    console.warn("spawnEnemyCustom(): call initEnemiesGroup() first.");
-    return;
-  }
-  const enemy = scene.physics.add.sprite(x, y, type).setName(type);
-
-  playTypeAnim(enemy, type, "idle");
-  scene.enemies.add(enemy);
-}
-
-// ─────────────────────────────────────────────────────────────────────────────
-// setEnemyTweenByType(type, dirX, dirY, speed, distance)
-//   For every sprite in scene.enemies whose .name === type:
-//     1) Compute originX = enemy.x, originY = enemy.y
-//     2) Compute endX = originX + dirX * distance
-//               endY = originY + dirY * distance
-//     3) Compute duration = (distance / speed) * 1000   (ms)
-//     4) Kick off a Phaser tween that moves (x,y) → (endX,endY) over `duration`
-//        using a linear ease.
-//   If speed=0 or distance=0, this does nothing.
-function setEnemyTweenByType(type, dirX, dirY, speed, distance) {
-  if (!scene || !scene.enemies) {
-    console.warn("setEnemyTweenByType(): call initEnemiesGroup() first");
-    return;
-  }
+function setSpriteInMotion(name, dirX, dirY, speed, distance) {
   if (speed <= 0 || distance <= 0) {
-    console.warn("setEnemyTweenByType(): speed and distance must be > 0");
+    console.warn("setSpriteInMotion(): speed and distance must be > 0");
     return;
   }
-  const all = scene.enemies.getChildren();
-  const matches = all.filter(e => e.name === type);
+  const all = scene.children.getChildren();
+  const matches = all.filter(e => e.name === name);
   if (matches.length === 0) {
-    console.warn(`setEnemyTweenByType(): no enemies found with name="${type}"`);
+    console.warn(`setSpriteInMotion(): no sprites found with name="${name}"`);
     return;
   }
 
-  matches.forEach(enemy => {
-    const originX = enemy.x;
-    const originY = enemy.y;
+  matches.forEach(sprite => {
+    const originX = sprite.x;
+    const originY = sprite.y;
 
     const endX = originX + dirX * distance;
     const endY = originY + dirY * distance;
@@ -295,24 +247,24 @@ function setEnemyTweenByType(type, dirX, dirY, speed, distance) {
     const duration = (distance / speed) * 1000;
 
     scene.tweens.add({
-      targets: enemy,
+      targets: sprite,
       x: endX,
       y: endY,
       duration: duration,
       ease: 'Linear',
       onStart: () => {
-        if (dirX < 0 && scene.anims.exists(type + "_move_left")) {
-          enemy.play(type + "_move_left", true);
-        } else if (dirX > 0 && scene.anims.exists(type + "_move_right")) {
-          enemy.play(type + "_move_right", true);
-        } else if (scene.anims.exists(type + "_move")) {
-          enemy.play(type + "_move", true);
-        } else if (scene.anims.exists(type + "_idle")) {
-          enemy.play(type + "_idle", true);
+        if (dirX < 0 && scene.anims.exists(name + "_move_left")) {
+          sprite.play(name + "_move_left", true);
+        } else if (dirX > 0 && scene.anims.exists(name + "_move_right")) {
+          sprite.play(name + "_move_right", true);
+        } else if (scene.anims.exists(name + "_move")) {
+          sprite.play(name + "_move", true);
+        } else if (scene.anims.exists(name + "_idle")) {
+          sprite.play(name + "_idle", true);
         }
       },
       onComplete: () => {
-        playTypeAnim(enemy, type, "idle");
+        playTypeAnim(sprite, name, "idle");
       }
     });
   });

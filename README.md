@@ -8,4 +8,4 @@
 [![R-CMD-check](https://github.com/maciekbanas/phaserR/actions/workflows/R-CMD-check.yaml/badge.svg)](https://github.com/maciekbanas/phaserR/actions/workflows/R-CMD-check.yaml)
 <!-- badges: end -->
 
-An R Shiny interface to `phaser.js`
+This package provides a R Shiny interface to Phaser 3 game framework.
