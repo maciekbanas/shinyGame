@@ -111,8 +111,8 @@ PhaserGame <- R6::R6Class(
     #' @description Adds static sprite to scene.
     #' @param name A character, unique name of the sprite.
     #' @param url A character, URL or path to the image file.
-    #' @param x A numeric - x position (pixels).
-    #' @param y A numeric - y position (pixels.)
+    #' @param x A numeric - horizontal position (in pixels).
+    #' @param y A numeric - vertical position (in pixels.)
     add_static_sprite = function(name, url, x, y, session = shiny::getDefaultReactiveDomain()) {
       js <- sprintf("addStaticSprite('%s','%s',%s,%s);",
                          name, url, x, y)
@@ -128,8 +128,10 @@ PhaserGame <- R6::R6Class(
       session$sendCustomMessage("phaser", list(js = js))
     },
 
-    #' @description Load a base enemy spritesheet and create an "idle" animation.
-    #'   Usage: name = "enemyBasic", url = "assets/enemies/basic.png", frameWidth/Height, frameCount, frameRate.
+    #' @description Load a base spritesheet and create an "idle" animation.
+    #' @param url A character, URL or path to the image file.
+    #' @param x A numeric - horizontal position (in pixels).
+    #' @param y A numeric - vertical position (in pixels.)
     add_sprite = function(name, url,
                           x, y,
                           frameWidth, frameHeight,
@@ -142,13 +144,13 @@ PhaserGame <- R6::R6Class(
       session$sendCustomMessage("phaser", list(js = js))
     },
 
-    #' @description Put all existing enemies of this type into motion along (dirX, dirY)
+    #' @description Put all existing sprites of this type into motion along (dirX, dirY)
     #'   at the given speed, and stop them once they’ve traveled `distance` pixels.
-    #' @param type      character: the key used in add_enemy_sprite()/spawn_enemy()
-    #' @param dirX      numeric: horizontal direction (–1 = left, +1 = right, 0 = no horizontal)
-    #' @param dirY      numeric: vertical direction   (–1 = up,   +1 = down,  0 = no vertical)
-    #' @param speed     numeric: number of px/sec to move in that (dirX,dirY) direction
-    #' @param distance  numeric: how many pixels (Euclidean) to travel before stopping
+    #' @param type A character: the key used in add_sprite()
+    #' @param dirX A numeric: horizontal direction (–1 = left, +1 = right, 0 = no horizontal)
+    #' @param dirY A numeric: vertical direction (–1 = up,   +1 = down,  0 = no vertical)
+    #' @param speed A numeric: number of px/sec to move in that (dirX,dirY) direction
+    #' @param distance  A numeric: how many pixels (Euclidean) to travel before stopping
     set_sprite_in_motion = function(type,
                                     dirX,
                                     dirY,
