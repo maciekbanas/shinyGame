@@ -41,28 +41,30 @@ function initPhaserGame(containerId, config) {
   function update(time, delta) {
 
       Object.entries(GameBridge.playerControls).forEach(([name, opts]) => {
-        const sprite = this.children.getByName(name);
-        if (!sprite) return;
-        sprite.body.setVelocityX(0);
-        sprite.body.setVelocityY(0);
+          const sprite = this.children.getByName(name);
+          if (!sprite) return;
 
-        if (cursors.left.isDown) {
-          sprite.body.setVelocityX(-opts.speed);
-          sprite.anims.play(name + '_move_left', true);
-        } else if (cursors.right.isDown) {
-          sprite.body.setVelocityX(opts.speed);
-          sprite.anims.play(name + '_move_right', true);
-        } else if (cursors.down.isDown) {
-          sprite.body.setVelocityY(opts.speed);
-          sprite.anims.play(name + '_move_right', true);
-        } else if (cursors.up.isDown) {
-          sprite.body.setVelocityY(-opts.speed);
-          sprite.anims.play(name + '_move_right', true);
-        } else {
-          sprite.body.setVelocityX(0);
-          sprite.anims.play(name + '_idle', true);
-        }
-      });
+          sprite.body.setVelocity(0);
+
+          const { speed, directions } = opts;
+          const dir = directions;
+
+          if (cursors.left.isDown && dir.includes("left")) {
+            sprite.body.setVelocityX(-speed);
+            sprite.anims.play(name + '_move_left', true);
+          } else if (cursors.right.isDown && dir.includes("right")) {
+            sprite.body.setVelocityX(speed);
+            sprite.anims.play(name + '_move_right', true);
+          } else if (cursors.up.isDown && dir.includes("up")) {
+            sprite.body.setVelocityY(-speed);
+            sprite.anims.play(name + '_move_up', true);
+          } else if (cursors.down.isDown && dir.includes("down")) {
+            sprite.body.setVelocityY(speed);
+            sprite.anims.play(name + '_move_down', true);
+          } else {
+            sprite.anims.play(name + '_idle', true);
+          }
+        });
 
       if (this.enemies) {
         this.enemies.getChildren().forEach(enemy => {
@@ -116,8 +118,13 @@ function addPlayerSprite(name, url, x, y, frameWidth, frameHeight, frameCount, f
   scene.load.start();
 }
 
-window.addPlayerControls = function(name, speed) {
-  GameBridge.playerControls[name] = { speed };
+function addPlayerControls(name, directions, speed) {
+  GameBridge.playerControls[name] = { speed, directions };
+};
+
+function addImage(imageName, imageUrl) {
+  scene.load.image(imageName, imageUrl);
+  scene.add.image(400, 300, imageName);
 };
 
 function addBackground(mapKey, mapUrl, tilesetUrls, tilesetNames, layerName) {

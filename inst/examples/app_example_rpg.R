@@ -23,7 +23,7 @@ server <- function(input, output, session) {
     frameCount = 17,
     frameRate = 8
   )
-  game$enable_movement(name = "hero", speed = 200)
+  game$add_player_controls(name = "hero", speed = 200)
   game$add_sprite(
     name = "goblin",
     url = "assets/rpg_game/enemies/goblin_idle.png",

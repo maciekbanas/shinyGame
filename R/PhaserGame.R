@@ -97,9 +97,11 @@ PhaserGame <- R6::R6Class(
     #' Enable movement controls (arrow keys) for a player
     #' @param name Name of the player sprite (as given in add_player_sprite)
     #' @param speed Movement speed in pixels/sec (default: 200)
-    enable_movement = function(name, speed = 200,
-                               session = shiny::getDefaultReactiveDomain()) {
-      js <- sprintf("addPlayerControls('%s', %d);", name, speed)
+    add_player_controls = function(name, directions = c("left", "right", "down", "up"),
+                                   speed = 200,
+                                   session = shiny::getDefaultReactiveDomain()) {
+      js_dirs <- jsonlite::toJSON(directions, auto_unbox = TRUE)
+      js <- sprintf("addPlayerControls('%s', '%s', %d);", name, js_dirs, speed)
       session$sendCustomMessage("phaser", list(js = js))
     },
     #' Enable terrain collision for a player
