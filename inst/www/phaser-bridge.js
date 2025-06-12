@@ -65,28 +65,6 @@ function initPhaserGame(containerId, config) {
             sprite.anims.play(name + '_idle', true);
           }
         });
-
-      if (this.enemies) {
-        this.enemies.getChildren().forEach(enemy => {
-          if (enemy.hasMotionStarted) {
-            const dx = enemy.x - enemy.originX;
-            const dy = enemy.y - enemy.originY;
-            const traveled = Math.sqrt(dx*dx + dy*dy);
-            console.log(traveled)
-            console.log(enemy.motionDistance)
-            if (traveled >= enemy.motionDistance) {
-              enemy.body.setVelocity(0, 0);
-              delete enemy.originX;
-              delete enemy.originY;
-              delete enemy.motionDirX;
-              delete enemy.motionDirY;
-              delete enemy.motionSpeed;
-              delete enemy.motionDistance;
-              delete enemy.hasMotionStarted;
-            }
-          }
-        });
-      }
   }
 }
 
