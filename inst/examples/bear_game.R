@@ -8,14 +8,14 @@ server <- function(input, output, session) {
   game$add_image(
     imageName = "sky",
     imageUrl = "assets/bear_game/terrain/sky.png",
-    x = 100,
-    y = 100
+    x = 800,
+    y = 300
   )
   game$add_player_sprite(
     name = "bear",
     url = "assets/bear_game/player_sprites/bear_idle.png",
     x = 100,
-    y = 100,
+    y = 600,
     frameWidth = 100,
     frameHeight = 100,
     frameCount = 10,

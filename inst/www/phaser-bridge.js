@@ -15,7 +15,7 @@ function playTypeAnim(sprite, type, suffix) {
 }
 
 function initPhaserGame(containerId, config) {
-  const game = new Phaser.Game({
+  window.game = new Phaser.Game({
     type: Phaser.AUTO,
     width: config.width,
     height: config.height,
@@ -30,7 +30,7 @@ function initPhaserGame(containerId, config) {
 
   let cursors;
 
-   function preload() {
+  function preload() {
     scene = this;
   }
 
