@@ -19,9 +19,7 @@ game <- PhaserGame$new(id = "my_game", width = 1024, height = 768)
 ## Method `PhaserGame$ui`
 ## ------------------------------------------------
 
-ui <- fluidPage(
-  game$ui()
-)
+ game$ui()
 }
 \section{Public fields}{
 \if{html}{\out{<div class="r6-fields">}}
@@ -94,9 +92,7 @@ HTML tag list containing dependencies and initialization script.
 }
 \subsection{Examples}{
 \if{html}{\out{<div class="r example copy">}}
-\preformatted{ui <- fluidPage(
-  game$ui()
-)
+\preformatted{ game$ui()
 }
 \if{html}{\out{</div>}}
 

@@ -29,9 +29,7 @@ PhaserGame <- R6::R6Class(
     #' @description Load dependencies and initialize the Phaser game in the UI.
     #' @return HTML tag list containing dependencies and initialization script.
     #' @examples
-    #' ui <- fluidPage(
-    #'   game$ui()
-    #' )
+    #'  game$ui()
     ui = function() {
       shiny::addResourcePath("assets", system.file("assets", package = "phaserR"))
       htmltools::tagList(
