@@ -15,7 +15,7 @@ function playTypeAnim(sprite, type, suffix) {
 }
 
 function initPhaserGame(containerId, config) {
-  const game = new Phaser.Game({
+  window.game = new Phaser.Game({
     type: Phaser.AUTO,
     width: config.width,
     height: config.height,
@@ -30,7 +30,7 @@ function initPhaserGame(containerId, config) {
 
   let cursors;
 
-   function preload() {
+  function preload() {
     scene = this;
   }
 
@@ -41,50 +41,30 @@ function initPhaserGame(containerId, config) {
   function update(time, delta) {
 
       Object.entries(GameBridge.playerControls).forEach(([name, opts]) => {
-        const sprite = this.children.getByName(name);
-        if (!sprite) return;
-        sprite.body.setVelocityX(0);
-        sprite.body.setVelocityY(0);
+          const sprite = this.children.getByName(name);
+          if (!sprite) return;
 
-        if (cursors.left.isDown) {
-          sprite.body.setVelocityX(-opts.speed);
-          sprite.anims.play(name + '_move_left', true);
-        } else if (cursors.right.isDown) {
-          sprite.body.setVelocityX(opts.speed);
-          sprite.anims.play(name + '_move_right', true);
-        } else if (cursors.down.isDown) {
-          sprite.body.setVelocityY(opts.speed);
-          sprite.anims.play(name + '_move_right', true);
-        } else if (cursors.up.isDown) {
-          sprite.body.setVelocityY(-opts.speed);
-          sprite.anims.play(name + '_move_right', true);
-        } else {
-          sprite.body.setVelocityX(0);
-          sprite.anims.play(name + '_idle', true);
-        }
-      });
+          sprite.body.setVelocity(0);
 
-      if (this.enemies) {
-        this.enemies.getChildren().forEach(enemy => {
-          if (enemy.hasMotionStarted) {
-            const dx = enemy.x - enemy.originX;
-            const dy = enemy.y - enemy.originY;
-            const traveled = Math.sqrt(dx*dx + dy*dy);
-            console.log(traveled)
-            console.log(enemy.motionDistance)
-            if (traveled >= enemy.motionDistance) {
-              enemy.body.setVelocity(0, 0);
-              delete enemy.originX;
-              delete enemy.originY;
-              delete enemy.motionDirX;
-              delete enemy.motionDirY;
-              delete enemy.motionSpeed;
-              delete enemy.motionDistance;
-              delete enemy.hasMotionStarted;
-            }
+          const { speed, directions } = opts;
+          const dir = directions;
+
+          if (cursors.left.isDown && dir.includes("left")) {
+            sprite.body.setVelocityX(-speed);
+            sprite.anims.play(name + '_move_left', true);
+          } else if (cursors.right.isDown && dir.includes("right")) {
+            sprite.body.setVelocityX(speed);
+            sprite.anims.play(name + '_move_right', true);
+          } else if (cursors.up.isDown && dir.includes("up")) {
+            sprite.body.setVelocityY(-speed);
+            sprite.anims.play(name + '_move_up', true);
+          } else if (cursors.down.isDown && dir.includes("down")) {
+            sprite.body.setVelocityY(speed);
+            sprite.anims.play(name + '_move_down', true);
+          } else {
+            sprite.anims.play(name + '_idle', true);
           }
         });
-      }
   }
 }
 
@@ -116,11 +96,28 @@ function addPlayerSprite(name, url, x, y, frameWidth, frameHeight, frameCount, f
   scene.load.start();
 }
 
-window.addPlayerControls = function(name, speed) {
-  GameBridge.playerControls[name] = { speed };
+function addPlayerControls(name, directions, speed) {
+  GameBridge.playerControls[name] = { speed, directions };
 };
 
-function addBackground(mapKey, mapUrl, tilesetUrls, tilesetNames, layerName) {
+function addImage(imageName, imageUrl, x = null, y = null) {
+  scene.load.image(imageName, imageUrl);
+
+  scene.load.once('complete', () => {
+    const px = x !== null
+      ? x
+      : scene.cameras.main.width  / 2;
+    const py = y !== null
+      ? y
+      : scene.cameras.main.height / 2;
+
+    scene.add.image(px, py, imageName);
+  });
+
+  scene.load.start();
+}
+
+function addMap(mapKey, mapUrl, tilesetUrls, tilesetNames, layerName) {
   scene.load.tilemapTiledJSON(mapKey, mapUrl);
   for (let i = 0; i < tilesetNames.length; i++) {
     scene.load.image(tilesetNames[i], tilesetUrls[i]);

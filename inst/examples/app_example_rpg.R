@@ -6,16 +6,16 @@ ui <- game$ui()
 
 server <- function(input, output, session) {
 
-  game$add_background(
+  game$add_map(
     mapKey = "myMap",
-    mapUrl = "assets/tilemaps/map.json",
-    tilesetUrls = paste0("assets/tilemaps/", c("grass", "water"), ".png"),
+    mapUrl = "assets/rpg_game/tilemaps/map.json",
+    tilesetUrls = paste0("assets/rpg_game/tilemaps/", c("grass", "water"), ".png"),
     tilesetNames = c("grass", "water"),
     layerName = "Ground"
   )
   game$add_player_sprite(
     name = "hero",
-    url = "assets/sprites/wolf_hero_idle.png",
+    url = "assets/rpg_game/sprites/wolf_hero_idle.png",
     x = 100,
     y = 100,
     frameWidth = 100,
@@ -23,10 +23,10 @@ server <- function(input, output, session) {
     frameCount = 17,
     frameRate = 8
   )
-  game$enable_movement(name = "hero", speed = 200)
+  game$add_player_controls(name = "hero", speed = 200)
   game$add_sprite(
     name = "goblin",
-    url = "assets/enemies/goblin_idle.png",
+    url = "assets/rpg_game/enemies/goblin_idle.png",
     x = 600,
     y = 600,
     frameWidth = 100,
@@ -36,7 +36,7 @@ server <- function(input, output, session) {
   )
   game$add_sprite(
     name = "goblin",
-    url = "assets/enemies/goblin_idle.png",
+    url = "assets/rpg_game/enemies/goblin_idle.png",
     x = 1200,
     y = 500,
     frameWidth = 100,
@@ -48,13 +48,13 @@ server <- function(input, output, session) {
   game$enable_terrain_collision("hero")
   game$add_static_sprite(
     name = "rock-1",
-    url = "assets/obstacles/rock.png",
+    url = "assets/rpg_game/obstacles/rock.png",
     x = 400,
     y = 400
   )
   game$add_static_sprite(
     name = "rock-2",
-    url  = "assets/obstacles/rock.png",
+    url  = "assets/rpg_game/obstacles/rock.png",
     x = 600,
     y = 500
   )
@@ -64,28 +64,28 @@ server <- function(input, output, session) {
   game$add_sprite_animation(
     name = "hero",
     suffix = "move_left",
-    url = "assets/sprites/wolf_hero_move_left.png",
+    url = "assets/rpg_game/sprites/wolf_hero_move_left.png",
     frameWidth = 100, frameHeight = 100,
     frameCount = 3, frameRate = 8
   )
   game$add_sprite_animation(
     name = "hero",
     suffix = "move_right",
-    url = "assets/sprites/wolf_hero_move_right.png",
+    url = "assets/rpg_game/sprites/wolf_hero_move_right.png",
     frameWidth = 100, frameHeight = 100,
     frameCount = 3, frameRate = 8
   )
   game$add_sprite_animation(
     name = "goblin",
     suffix = "move_left",
-    url = "assets/enemies/goblin_move_left.png",
+    url = "assets/rpg_game/enemies/goblin_move_left.png",
     frameWidth = 100, frameHeight = 100,
     frameCount = 2, frameRate = 6
   )
   game$add_sprite_animation(
     name = "goblin",
     suffix = "move_right",
-    url = "assets/enemies/goblin_move_right.png",
+    url = "assets/rpg_game/enemies/goblin_move_right.png",
     frameWidth = 100, frameHeight = 100,
     frameCount = 2, frameRate = 6
   )
@@ -104,7 +104,6 @@ server <- function(input, output, session) {
     speed = 50,
     distance = 200
   )
-
 }
 
 shinyApp(ui, server)
