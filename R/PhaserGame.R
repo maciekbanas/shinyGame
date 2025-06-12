@@ -69,6 +69,14 @@ PhaserGame <- R6::R6Class(
       )
       session$sendCustomMessage("phaser", list(js = js))
     },
+    #' @description Adds a static image to the Phaser scene.
+    #'   The image will be placed at the specified (x, y) pixel coordinates.
+    #'
+    #' @param imageName character: a unique key to reference this image in Phaser.
+    #' @param imageUrl character: URL or relative path to the image file.
+    #' @param x numeric: horizontal position in pixels where the image will be placed.
+    #' @param y numeric: vertical position in pixels where the image will be placed.
+    #' @param session Shiny session object (default: shiny::getDefaultReactiveDomain()).
     add_image = function(imageName, imageUrl, x, y, session = shiny::getDefaultReactiveDomain()) {
       js <- sprintf("addImage('%s', '%s', %d, %d);", imageName, imageUrl, x, y)
       session$sendCustomMessage("phaser", list(js = js))
@@ -82,14 +90,14 @@ PhaserGame <- R6::R6Class(
     #' @param layerName The name of the layer inside the Tiled map (e.g. "Ground") that you want to render.
     #' @param session Shiny session.
     # Inside your PhaserGame R6:
-    add_background = function(mapKey,
-                              mapUrl,
-                              tilesetUrls,
-                              tilesetNames,
-                              layerName,
-                              session = shiny::getDefaultReactiveDomain()) {
+    add_map = function(mapKey,
+                       mapUrl,
+                       tilesetUrls,
+                       tilesetNames,
+                       layerName,
+                       session = shiny::getDefaultReactiveDomain()) {
       js <- sprintf(
-        "addBackground(%s, %s, %s, %s, %s);",
+        "addMap(%s, %s, %s, %s, %s);",
         jsonlite::toJSON(mapKey, auto_unbox = TRUE),
         jsonlite::toJSON(mapUrl, auto_unbox = TRUE),
         jsonlite::toJSON(tilesetUrls, auto_unbox = TRUE),

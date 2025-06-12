@@ -139,7 +139,7 @@ function addImage(imageName, imageUrl, x = null, y = null) {
   scene.load.start();
 }
 
-function addBackground(mapKey, mapUrl, tilesetUrls, tilesetNames, layerName) {
+function addMap(mapKey, mapUrl, tilesetUrls, tilesetNames, layerName) {
   scene.load.tilemapTiledJSON(mapKey, mapUrl);
   for (let i = 0; i < tilesetNames.length; i++) {
     scene.load.image(tilesetNames[i], tilesetUrls[i]);

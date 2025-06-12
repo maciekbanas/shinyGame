@@ -6,7 +6,7 @@ ui <- game$ui()
 
 server <- function(input, output, session) {
 
-  game$add_background(
+  game$add_map(
     mapKey = "myMap",
     mapUrl = "assets/rpg_game/tilemaps/map.json",
     tilesetUrls = paste0("assets/rpg_game/tilemaps/", c("grass", "water"), ".png"),
