@@ -5,10 +5,12 @@ game <- PhaserGame$new(width = 1600, height = 800)
 ui <- game$ui()
 
 server <- function(input, output, session) {
-  # game$add_image(
-  #   imageName = "sky",
-  #   imageUrl = "assets/bear_game/terrain/sky.png",
-  # )
+  game$add_image(
+    imageName = "sky",
+    imageUrl = "assets/bear_game/terrain/sky.png",
+    x = 100,
+    y = 100
+  )
   game$add_player_sprite(
     name = "bear",
     url = "assets/bear_game/player_sprites/bear_idle.png",

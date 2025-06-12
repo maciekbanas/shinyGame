@@ -69,6 +69,10 @@ PhaserGame <- R6::R6Class(
       )
       session$sendCustomMessage("phaser", list(js = js))
     },
+    add_image = function(imageName, imageUrl, x, y, session = shiny::getDefaultReactiveDomain()) {
+      js <- sprintf("addImage('%s', '%s', %d, %d);", imageName, imageUrl, x, y)
+      session$sendCustomMessage("phaser", list(js = js))
+    },
     #' Add a background/tilemap layer from Tiled JSON + tileset image.
     #'
     #' @param mapKey A short string key (used internally in Phaser) for your tilemap JSON.

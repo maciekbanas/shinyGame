@@ -122,10 +122,22 @@ function addPlayerControls(name, directions, speed) {
   GameBridge.playerControls[name] = { speed, directions };
 };
 
-function addImage(imageName, imageUrl) {
+function addImage(imageName, imageUrl, x = null, y = null) {
   scene.load.image(imageName, imageUrl);
-  scene.add.image(400, 300, imageName);
-};
+
+  scene.load.once('complete', () => {
+    const px = x !== null
+      ? x
+      : scene.cameras.main.width  / 2;
+    const py = y !== null
+      ? y
+      : scene.cameras.main.height / 2;
+
+    scene.add.image(px, py, imageName);
+  });
+
+  scene.load.start();
+}
 
 function addBackground(mapKey, mapUrl, tilesetUrls, tilesetNames, layerName) {
   scene.load.tilemapTiledJSON(mapKey, mapUrl);
