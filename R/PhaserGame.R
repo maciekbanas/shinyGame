@@ -168,6 +168,20 @@ PhaserGame <- R6::R6Class(
       session$sendCustomMessage("phaser", list(js = js))
     },
 
+    #' @description Adds a collider between two game objects.
+    #' @param object_one_name Character. Name of the first object.
+    #' @param object_two_name Character. Name of the second object.
+    #' @param action
+    #' @param session Shiny session object (default: shiny::getDefaultReactiveDomain()).
+    add_overlap = function(object_one_name,
+                           object_two_name,
+                           action,
+                           session = shiny::getDefaultReactiveDomain()) {
+      js <- sprintf("addOverlap('%s','%s', '%s');",
+                    object_one_name, object_two_name, action)
+      session$sendCustomMessage("phaser", list(js = js))
+    },
+
     #' @description Load a base spritesheet and create an "idle" animation.
     #' @param name Character. Unique key for the sprite and its idle animation.
     #' @param url Character. URL or path to the spritesheet image.

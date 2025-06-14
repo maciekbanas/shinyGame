@@ -195,6 +195,20 @@ function addCollider(objectOneName, objectTwoName) {
   scene.physics.add.collider(objectOne, objectTwo);
 }
 
+function addOverlap(objectOneName, objectTwoName, action) {
+  const objectOne = scene.children.getByName(objectOneName);
+  const objectTwo = scene.children.getByName(objectTwoName);
+  if (action == "disable") {
+    functionCall = disable;
+  }
+  scene.physics.add.overlap(objectOne, objectTwo, functionCall, null, this);
+}
+
+function disable (objectOne, objectTwo)
+{
+    objectTwo.disableBody(true, true);
+}
+
 function addSprite(name, url, x, y, frameWidth, frameHeight, frameCount, frameRate) {
   scene.load.spritesheet(name, url, {
     frameWidth: frameWidth,

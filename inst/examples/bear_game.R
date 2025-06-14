@@ -24,7 +24,39 @@ server <- function(input, output, session) {
   game$add_player_controls(
     name = "bear",
     directions = c("left", "right"),
-    speed = 200
+    speed = 400
+  )
+  game$add_static_sprite(
+    name = "apple",
+    url = "assets/bear_game/perks/apple.png",
+    x = 600,
+    y = 600
+  )
+  game$add_static_sprite(
+    name = "grass",
+    url = "assets/bear_game/terrain/grass.png",
+    x = 800,
+    y = 700
+  )
+  Sys.sleep(0.1)
+  game$add_overlap(
+    object_one_name = "bear",
+    object_two_name = "apple",
+    action = "disable"
+  )
+  game$add_sprite_animation(
+    name = "bear",
+    suffix = "move_right",
+    url = "assets/bear_game/player_sprites/bear_move_right.png",
+    frameWidth = 100, frameHeight = 100,
+    frameCount = 2, frameRate = 6
+  )
+  game$add_sprite_animation(
+    name = "bear",
+    suffix = "move_left",
+    url = "assets/bear_game/player_sprites/bear_move_left.png",
+    frameWidth = 100, frameHeight = 100,
+    frameCount = 2, frameRate = 6
   )
 }
 

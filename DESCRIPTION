@@ -1,10 +1,17 @@
 Package: phaserR
 Title: An R Interface to the Phaser.js Game Framework
-Version: 0.0.0.9007
+Version: 0.0.0.9008
 Authors@R: 
-    person("Maciej", "Banas", , "banasmaciek@gmail.com", role = c("aut", "cre"),
-           comment = c(ORCID = "YOUR-ORCID-ID"))
-Description: This package provides an R-based API to build and control 2D games using the Phaser.js JavaScript engine. It enables integration with Shiny applications, allowing R developers to create interactive games and simulations using a declarative R syntax.
+    person(
+      given = "Maciej", 
+      family = "Banas", 
+      email = "banasmaciek@gmail.com", 
+      role = c("aut", "cre")
+    )
+Description: This package provides an R-based API to build and control 2D games 
+  using the Phaser.js JavaScript engine. It enables integration with Shiny 
+  applications, allowing R developers to create interactive games and
+  simulations using a declarative R syntax.
 License: MIT + file LICENSE
 Encoding: UTF-8
 Roxygen: list(markdown = TRUE)
@@ -14,5 +21,5 @@ Imports:
   R6,
   shiny
 Suggests: 
-    testthat (>= 3.0.0)
+  testthat (>= 3.0.0)
 Config/testthat/edition: 3
