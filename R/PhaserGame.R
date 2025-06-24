@@ -153,9 +153,18 @@ PhaserGame <- R6::R6Class(
     #' @param y Numeric. Y-coordinate in pixels.
     #' @param session Shiny session object (default: shiny::getDefaultReactiveDomain()).
     add_static_sprite = function(name, url, x, y, session = shiny::getDefaultReactiveDomain()) {
-      js <- sprintf("addStaticSprite('%s','%s',%s,%s);",
+      js <- sprintf("addStaticSprite('%s','%s', %s, %s);",
                     name, url, x, y)
       session$sendCustomMessage("phaser", list(js = js))
+    },
+
+    #' @description Adds a static group to the scene (non-animated).
+    #' @param name Character. Unique name of the group.
+    #' @param url Character. URL or path to the image file.
+    add_static_group = function(name, url, session = shiny::getDefaultReactiveDomain()) {
+      js <- sprintf("addStaticGroup('%s','%s');", name, url)
+      session$sendCustomMessage("phaser", list(js = js))
+      return(StaticGroup$new(name = name, session = session))
     },
 
     #' @description Adds a collider between two game objects.
@@ -171,14 +180,21 @@ PhaserGame <- R6::R6Class(
     #' @description Adds a collider between two game objects.
     #' @param object_one_name Character. Name of the first object.
     #' @param object_two_name Character. Name of the second object.
+    #' @param group_name Character. Name of the group.
     #' @param action
     #' @param session Shiny session object (default: shiny::getDefaultReactiveDomain()).
     add_overlap = function(object_one_name,
-                           object_two_name,
+                           object_two_name = NULL,
+                           group_name = NULL,
                            action,
                            session = shiny::getDefaultReactiveDomain()) {
-      js <- sprintf("addOverlap('%s','%s', '%s');",
-                    object_one_name, object_two_name, action)
+      js <- if (!is.null(object_two_name)) {
+        sprintf("addOverlap('%s','%s', '%s');",
+                object_one_name, object_two_name, action)
+      } else if (!is.null(group_name)) {
+        sprintf("addGroupOverlap('%s','%s', '%s');",
+                object_one_name, group_name, action)
+      }
       session$sendCustomMessage("phaser", list(js = js))
     },
 
@@ -230,5 +246,27 @@ PhaserGame <- R6::R6Class(
 
   private = list(
     config = list()
+  )
+)
+
+StaticGroup <- R6::R6Class(
+  classname = "StaticGroup",
+  public = list(
+    initialize = function(name, session) {
+      private$name <- name
+      private$session <- session
+      Sys.sleep(0.1)
+    },
+    create = function(x, y) {
+      js <- sprintf(
+        "addToStaticGroup('%s', %d, %d);",
+        private$name, x, y
+      )
+      private$session$sendCustomMessage("phaser", list(js = js))
+    }
+  ),
+  private = list(
+    name = NULL,
+    session = NULL
   )
 )

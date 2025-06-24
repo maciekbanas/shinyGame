@@ -177,6 +177,20 @@ function addSpriteAnimation(name, suffix, url, frameWidth, frameHeight, frameCou
   scene.load.start();
 }
 
+function addStaticGroup(name, url) {
+  if (!scene[name]) {
+    scene[name] = scene.physics.add.staticGroup();
+  }
+  scene.load.image(name, url);
+  scene.load.once('complete', () => {
+  });
+  scene.load.start();
+}
+
+function addToStaticGroup(groupName, x, y) {
+  scene[groupName].create(x, y, groupName);
+}
+
 function addStaticSprite(name, url, x, y) {
   scene.load.image(name, url);
   scene.load.once('complete', () => {
@@ -195,9 +209,19 @@ function addCollider(objectOneName, objectTwoName) {
   scene.physics.add.collider(objectOne, objectTwo);
 }
 
+
 function addOverlap(objectOneName, objectTwoName, action) {
   const objectOne = scene.children.getByName(objectOneName);
   const objectTwo = scene.children.getByName(objectTwoName);
+  if (action == "disable") {
+    functionCall = disable;
+  }
+  scene.physics.add.overlap(objectOne, objectTwo, functionCall, null, this);
+}
+
+function addGroupOverlap(objectName, groupName, action) {
+  const objectOne = scene.children.getByName(objectName);
+  const objectTwo = scene[groupName];
   if (action == "disable") {
     functionCall = disable;
   }

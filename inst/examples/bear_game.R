@@ -21,16 +21,22 @@ server <- function(input, output, session) {
     frameCount = 10,
     frameRate = 4
   )
+  apples <- game$add_static_group(
+    name = "apples",
+    url = "assets/bear_game/perks/apple.png"
+  )
+  apples$create(
+    x = 600,
+    y = 600
+  )
+  apples$create(
+    x = 1000,
+    y = 600
+  )
   game$add_player_controls(
     name = "bear",
     directions = c("left", "right"),
     speed = 400
-  )
-  game$add_static_sprite(
-    name = "apple",
-    url = "assets/bear_game/perks/apple.png",
-    x = 600,
-    y = 600
   )
   game$add_static_sprite(
     name = "grass",
@@ -41,7 +47,7 @@ server <- function(input, output, session) {
   Sys.sleep(0.1)
   game$add_overlap(
     object_one_name = "bear",
-    object_two_name = "apple",
+    group_name = "apples",
     action = "disable"
   )
   game$add_sprite_animation(
