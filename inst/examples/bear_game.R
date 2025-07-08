@@ -7,6 +7,8 @@ ui <- game$ui()
 server <- function(input, output, session) {
   points <- 0
 
+  game$set_shiny_session()
+
   game$add_image(
     imageName = "sky",
     imageUrl = "assets/bear_game/terrain/sky.png",
