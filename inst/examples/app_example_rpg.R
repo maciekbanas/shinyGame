@@ -6,6 +6,8 @@ ui <- game$ui()
 
 server <- function(input, output, session) {
 
+  game$set_shiny_session()
+
   game$add_map(
     mapKey = "myMap",
     mapUrl = "assets/rpg_game/tilemaps/map.json",
@@ -13,6 +15,7 @@ server <- function(input, output, session) {
     tilesetNames = c("grass", "water"),
     layerName = "Ground"
   )
+
   game$add_player_sprite(
     name = "hero",
     url = "assets/rpg_game/sprites/wolf_hero_idle.png",
