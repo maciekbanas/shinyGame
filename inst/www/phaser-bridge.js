@@ -68,6 +68,14 @@ function initPhaserGame(containerId, config) {
   }
 }
 
+function addText(text, id, x, y, style) {
+  scene[id] = scene.add.text(x, y, text, style);
+}
+
+function setText(text, id) {
+  scene[id].setText(text);
+}
+
 function addPlayerSprite(name, url, x, y, frameWidth, frameHeight, frameCount, frameRate) {
   scene.load.spritesheet(name, url, {
     frameWidth: frameWidth,

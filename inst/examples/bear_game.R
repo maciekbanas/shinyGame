@@ -5,6 +5,8 @@ game <- PhaserGame$new(width = 1600, height = 800)
 ui <- game$ui()
 
 server <- function(input, output, session) {
+  points <- 0
+
   game$add_image(
     imageName = "sky",
     imageUrl = "assets/bear_game/terrain/sky.png",
@@ -41,7 +43,7 @@ server <- function(input, output, session) {
   game$add_player_controls(
     name = "bear",
     directions = c("left", "right"),
-    speed = 400
+    speed = 300
   )
   game$add_static_sprite(
     name = "grass",
@@ -49,11 +51,19 @@ server <- function(input, output, session) {
     x = 800,
     y = 700
   )
+  points_text <- game$add_text(
+    text = "points: 0",
+    id = "points_text",
+    x = 100,
+    y = 100
+  )
   Sys.sleep(0.1)
   game$add_overlap(
     object_one_name = "bear",
     group_name = "apples",
     callback_fun = function(evt) {
+      points <<- points + 1
+      points_text$set(paste0("points: ", points))
       apples$disable(evt)
     },
     input = input

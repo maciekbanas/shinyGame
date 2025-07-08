@@ -51,6 +51,10 @@ PhaserGame <- R6::R6Class(
       )
     },
 
+    add_text = function(text, id, x, y, style = list(fontSize = '22px')) {
+      return(TextObject$new(text, id, x, y, style))
+    },
+
     #' @description Add a player sprite to the scene as an animated spritesheet.
     #' @param name Character. Unique key for the sprite.
     #' @param url Character. URL or relative path to the spritesheet image.
@@ -262,6 +266,28 @@ PhaserGame <- R6::R6Class(
   private = list(
     config = list(),
     input = NULL
+  )
+)
+
+TextObject <- R6::R6Class(
+  classname = "TextObject",
+  public = list(
+    initialize = function(text, id, x, y, style, session = shiny::getDefaultReactiveDomain()) {
+      js <- sprintf("addText('%s', '%s', %d, %d, %s);",
+                    text, id, x, y, jsonlite::toJSON(style, auto_unbox = TRUE))
+      private$id <- id
+      private$session <- session
+      private$session$sendCustomMessage("phaser", list(js = js))
+    },
+    set = function(text) {
+      js <- sprintf("setText('%s', '%s');",
+                    text, private$id)
+      private$session$sendCustomMessage("phaser", list(js = js))
+    }
+  ),
+  private = list(
+    id = NULL,
+    session = NULL
   )
 )
 
