@@ -209,27 +209,39 @@ function addCollider(objectOneName, objectTwoName) {
   scene.physics.add.collider(objectOne, objectTwo);
 }
 
-
-function addOverlap(objectOneName, objectTwoName) {
-  const objectOne = scene.children.getByName(objectOneName);
-  const objectTwo = scene.children.getByName(objectTwoName);
+function addOverlap(objectOneName, objectTwoName, inputId) {
+  const o1 = scene.children.getByName(objectOneName);
+  const o2 = scene.children.getByName(objectTwoName);
   scene.physics.add.overlap(
-    objectOne,
-    objectTwo,
-    function(objectOne, objectTwo) {
-      Shiny.setInputValue("overlap", {objectOne, objectTwo})
+    o1, o2,
+    function(obj1, obj2) {
+      Shiny.setInputValue(
+        inputId,
+        {
+          name1: obj1.name, x1: obj1.x, y1: obj1.y,
+          name2: obj2.name, x2: obj2.x, y2: obj2.y
+        },
+        { priority: "event" }
+      );
     }
   );
 }
 
-function addGroupOverlap(objectName, groupName) {
+
+function addGroupOverlap(objectName, groupName, inputId) {
   const objectOne = scene.children.getByName(objectName);
   const objectTwo = scene[groupName];
   scene.physics.add.overlap(
-    objectOne,
-    objectTwo,
-    function(objectOne, objectTwo) {
-      Shiny.setInputValue("overlap", {objectOne, objectTwo})
+    objectOne, objectTwo,
+    function(obj1, obj2) {
+      Shiny.setInputValue(
+        inputId,
+        {
+          name1: obj1.name, x1: obj1.x, y1: obj1.y,
+          name2: obj2.name, x2: obj2.x, y2: obj2.y
+        },
+        { priority: "event" }
+      );
     }
   );
 }

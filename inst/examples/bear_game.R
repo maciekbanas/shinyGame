@@ -34,6 +34,10 @@ server <- function(input, output, session) {
     x = 1000,
     y = 600
   )
+  apples$create(
+    x = 1200,
+    y = 600
+  )
   game$add_player_controls(
     name = "bear",
     directions = c("left", "right"),
@@ -49,8 +53,8 @@ server <- function(input, output, session) {
   game$add_overlap(
     object_one_name = "bear",
     group_name = "apples",
-    callback_fun = function() {
-      apples$disable()
+    callback_fun = function(evt) {
+      apples$disable(evt)
     },
     input = input
   )

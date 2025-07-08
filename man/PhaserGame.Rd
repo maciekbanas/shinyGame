@@ -40,7 +40,9 @@ game <- PhaserGame$new(id = "my_game", width = 1024, height = 768)
 \item \href{#method-PhaserGame-add_player_controls}{\code{PhaserGame$add_player_controls()}}
 \item \href{#method-PhaserGame-enable_terrain_collision}{\code{PhaserGame$enable_terrain_collision()}}
 \item \href{#method-PhaserGame-add_static_sprite}{\code{PhaserGame$add_static_sprite()}}
+\item \href{#method-PhaserGame-add_static_group}{\code{PhaserGame$add_static_group()}}
 \item \href{#method-PhaserGame-add_collider}{\code{PhaserGame$add_collider()}}
+\item \href{#method-PhaserGame-add_overlap}{\code{PhaserGame$add_overlap()}}
 \item \href{#method-PhaserGame-add_sprite}{\code{PhaserGame$add_sprite()}}
 \item \href{#method-PhaserGame-set_sprite_in_motion}{\code{PhaserGame$set_sprite_in_motion()}}
 \item \href{#method-PhaserGame-clone}{\code{PhaserGame$clone()}}
@@ -341,6 +343,30 @@ Adds a static sprite to the scene (non-animated).
 }
 }
 \if{html}{\out{<hr>}}
+\if{html}{\out{<a id="method-PhaserGame-add_static_group"></a>}}
+\if{latex}{\out{\hypertarget{method-PhaserGame-add_static_group}{}}}
+\subsection{Method \code{add_static_group()}}{
+Adds a static group to the scene (non-animated).
+\subsection{Usage}{
+\if{html}{\out{<div class="r">}}\preformatted{PhaserGame$add_static_group(
+  input,
+  name,
+  url,
+  session = shiny::getDefaultReactiveDomain()
+)}\if{html}{\out{</div>}}
+}
+
+\subsection{Arguments}{
+\if{html}{\out{<div class="arguments">}}
+\describe{
+\item{\code{name}}{Character. Unique name of the group.}
+
+\item{\code{url}}{Character. URL or path to the image file.}
+}
+\if{html}{\out{</div>}}
+}
+}
+\if{html}{\out{<hr>}}
 \if{html}{\out{<a id="method-PhaserGame-add_collider"></a>}}
 \if{latex}{\out{\hypertarget{method-PhaserGame-add_collider}{}}}
 \subsection{Method \code{add_collider()}}{
@@ -359,6 +385,36 @@ Adds a collider between two game objects.
 \item{\code{object_one_name}}{Character. Name of the first object.}
 
 \item{\code{object_two_name}}{Character. Name of the second object.}
+
+\item{\code{session}}{Shiny session object (default: shiny::getDefaultReactiveDomain()).}
+}
+\if{html}{\out{</div>}}
+}
+}
+\if{html}{\out{<hr>}}
+\if{html}{\out{<a id="method-PhaserGame-add_overlap"></a>}}
+\if{latex}{\out{\hypertarget{method-PhaserGame-add_overlap}{}}}
+\subsection{Method \code{add_overlap()}}{
+Adds a collider between two game objects.
+\subsection{Usage}{
+\if{html}{\out{<div class="r">}}\preformatted{PhaserGame$add_overlap(
+  object_one_name,
+  object_two_name = NULL,
+  group_name = NULL,
+  callback_fun,
+  input,
+  session = shiny::getDefaultReactiveDomain()
+)}\if{html}{\out{</div>}}
+}
+
+\subsection{Arguments}{
+\if{html}{\out{<div class="arguments">}}
+\describe{
+\item{\code{object_one_name}}{Character. Name of the first object.}
+
+\item{\code{object_two_name}}{Character. Name of the second object.}
+
+\item{\code{group_name}}{Character. Name of the group.}
 
 \item{\code{session}}{Shiny session object (default: shiny::getDefaultReactiveDomain()).}
 }

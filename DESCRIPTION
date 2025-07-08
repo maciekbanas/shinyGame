@@ -19,6 +19,7 @@ RoxygenNote: 7.2.0
 Imports:
   htmltools,
   R6,
+  rlang,
   shiny
 Suggests: 
   testthat (>= 3.0.0)

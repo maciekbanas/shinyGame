@@ -1,3 +1,5 @@
+#' @importFrom rlang %||%
+#'
 #' @title PhaserGame
 #' @description R6 class to create and manage a Phaser game within a Shiny application.
 #' Provides methods for adding sprites, animations, images, backgrounds, controls, and collision handling.
@@ -185,21 +187,30 @@ PhaserGame <- R6::R6Class(
     #' @param session Shiny session object (default: shiny::getDefaultReactiveDomain()).
     add_overlap = function(object_one_name,
                            object_two_name = NULL,
-                           group_name = NULL,
+                           group_name      = NULL,
                            callback_fun,
                            input,
                            session = shiny::getDefaultReactiveDomain()) {
-      js <- if (!is.null(object_two_name)) {
-        sprintf("addOverlap('%s','%s');",
-                object_one_name, object_two_name)
-      } else if (!is.null(group_name)) {
-        sprintf("addGroupOverlap('%s','%s');",
-                object_one_name, group_name)
+
+      input_id <- paste(
+        c("overlap", object_one_name,
+          object_two_name %||% group_name),
+        collapse = "_"
+      )
+
+      js_call <- if (!is.null(object_two_name)) {
+        sprintf("addOverlap('%s','%s','%s')",
+                object_one_name, object_two_name, input_id)
+      } else {
+        sprintf("addGroupOverlap('%s','%s','%s')",
+                object_one_name, group_name, input_id)
       }
-      session$sendCustomMessage("phaser", list(js = js))
-      shiny::observeEvent(input$overlap, {
-        callback_fun()
-      })
+      session$sendCustomMessage("phaser", list(js = js_call))
+
+      shiny::observeEvent(input[[input_id]], {
+        evt <- input[[input_id]]
+        callback_fun(evt)
+      }, ignoreNULL = TRUE)
     },
 
     #' @description Load a base spritesheet and create an "idle" animation.
@@ -270,9 +281,9 @@ StaticGroup <- R6::R6Class(
       )
       private$session$sendCustomMessage("phaser", list(js = js))
     },
-    disable = function() {
-      x <- private$input$overlap$objectTwo$x
-      y <- private$input$overlap$objectTwo$y
+    disable = function(evt) {
+      x <- evt$x2
+      y <- evt$y2
       js <- sprintf(
         "disableBody('%s', %d, %d);",
         private$name, x, y

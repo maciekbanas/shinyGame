@@ -3,4 +3,5 @@
 export(PhaserGame)
 export(phaser_create_assets)
 importFrom(R6,R6Class)
+importFrom(rlang,"%||%")
 importFrom(shiny,addResourcePath)
