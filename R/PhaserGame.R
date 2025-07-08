@@ -74,7 +74,7 @@ PhaserGame <- R6::R6Class(
     add_player_sprite = function(name, url, x, y, frameWidth, frameHeight, frameCount, frameRate) {
       js <- sprintf("addPlayerSprite('%s', '%s', %d, %d, %d, %d, %d, %d);",
                     name, url, x, y, frameWidth, frameHeight, frameCount, frameRate)
-      private$session$sendCustomMessage("phaser", list(js = js))
+      send_js(private, js)
     },
 
     #' @description Load a custom animation for any sprite previously added.
@@ -93,7 +93,7 @@ PhaserGame <- R6::R6Class(
         "addSpriteAnimation('%s','%s','%s',%d,%d,%d,%d);",
         name, suffix, url, frameWidth, frameHeight, frameCount, frameRate
       )
-      private$session$sendCustomMessage("phaser", list(js = js))
+      send_js(private, js)
     },
 
     #' @description Adds a static image to the Phaser scene.
@@ -104,7 +104,7 @@ PhaserGame <- R6::R6Class(
     #' @return Invisible; sends a custom message to the client.
     add_image = function(imageName, imageUrl, x, y) {
       js <- sprintf("addImage('%s', '%s', %d, %d);", imageName, imageUrl, x, y)
-      private$session$sendCustomMessage("phaser", list(js = js))
+      send_js(private, js)
     },
 
     #' @description Add a background (tilemap) layer from Tiled JSON + tileset image(s).
@@ -127,7 +127,7 @@ PhaserGame <- R6::R6Class(
         jsonlite::toJSON(tilesetNames, auto_unbox = TRUE),
         jsonlite::toJSON(layerName, auto_unbox = TRUE)
       )
-      private$session$sendCustomMessage("phaser", list(js = js))
+      send_js(private, js)
     },
 
     #' @description Enable movement controls (arrow keys) for a player sprite.
@@ -139,14 +139,14 @@ PhaserGame <- R6::R6Class(
                                    speed = 200) {
       js_dirs <- jsonlite::toJSON(directions, auto_unbox = TRUE)
       js <- sprintf("addPlayerControls('%s', %s, %d);", name, js_dirs, speed)
-      private$session$sendCustomMessage("phaser", list(js = js))
+      send_js(private, js)
     },
 
     #' @description Enable terrain collision for a player sprite.
     #' @param name Character. Name of the player sprite (as added via add_player_sprite).
     enable_terrain_collision = function(name) {
       js <- sprintf("addPlayerTerrainCollider('%s');", name)
-      private$session$sendCustomMessage("phaser", list(js = js))
+      send_js(private, js)
     },
 
     #' @description Adds a static sprite to the scene (non-animated).
@@ -157,7 +157,7 @@ PhaserGame <- R6::R6Class(
     add_static_sprite = function(name, url, x, y) {
       js <- sprintf("addStaticSprite('%s','%s', %s, %s);",
                     name, url, x, y)
-      private$session$sendCustomMessage("phaser", list(js = js))
+      send_js(private, js)
     },
 
     #' @description Adds a static group to the scene (non-animated).
@@ -178,7 +178,7 @@ PhaserGame <- R6::R6Class(
     add_collider = function(object_one_name, object_two_name) {
       js <- sprintf("addCollider('%s','%s');",
                     object_one_name, object_two_name)
-      private$session$sendCustomMessage("phaser", list(js = js))
+      send_js(private, js)
     },
 
     #' @description Adds a collider between two game objects.
@@ -198,14 +198,14 @@ PhaserGame <- R6::R6Class(
         collapse = "_"
       )
 
-      js_call <- if (!is.null(object_two_name)) {
+      js <- if (!is.null(object_two_name)) {
         sprintf("addOverlap('%s','%s','%s')",
                 object_one_name, object_two_name, input_id)
       } else {
         sprintf("addGroupOverlap('%s','%s','%s')",
                 object_one_name, group_name, input_id)
       }
-      private$session$sendCustomMessage("phaser", list(js = js_call))
+      send_js(private, js)
 
       shiny::observeEvent(input[[input_id]], {
         evt <- input[[input_id]]
@@ -230,7 +230,7 @@ PhaserGame <- R6::R6Class(
         "addSprite('%s', '%s', %d, %d, %d, %d, %d, %d);",
         name, url, x, y, frameWidth, frameHeight, frameCount, frameRate
       )
-      private$session$sendCustomMessage("phaser", list(js = js))
+      send_js(private, js)
     },
 
     #' @description Move all sprites of a given type along a vector for a set distance.
@@ -251,7 +251,7 @@ PhaserGame <- R6::R6Class(
         "setSpriteInMotion('%s', %d, %d, %d, %d);",
         type, dirX, dirY, speed, distance
       )
-      private$session$sendCustomMessage("phaser", list(js = js))
+      send_js(private, js)
     }
   ),
 
@@ -270,12 +270,12 @@ TextObject <- R6::R6Class(
                     text, id, x, y, jsonlite::toJSON(style, auto_unbox = TRUE))
       private$id <- id
       private$session <- session
-      private$session$sendCustomMessage("phaser", list(js = js))
+      send_js(private, js)
     },
     set = function(text) {
       js <- sprintf("setText('%s', '%s');",
                     text, private$id)
-      private$session$sendCustomMessage("phaser", list(js = js))
+      send_js(private, js)
     }
   ),
   private = list(
@@ -293,7 +293,7 @@ StaticGroup <- R6::R6Class(
       private$session <- session
 
       js <- sprintf("addStaticGroup('%s','%s');", name, url)
-      private$session$sendCustomMessage("phaser", list(js = js))
+      send_js(private, js)
 
       Sys.sleep(0.1)
     },
@@ -302,7 +302,7 @@ StaticGroup <- R6::R6Class(
         "addToStaticGroup('%s', %d, %d);",
         private$name, x, y
       )
-      private$session$sendCustomMessage("phaser", list(js = js))
+      send_js(private, js)
     },
     disable = function(evt) {
       x <- evt$x2
@@ -311,7 +311,7 @@ StaticGroup <- R6::R6Class(
         "disableBody('%s', %d, %d);",
         private$name, x, y
       )
-      private$session$sendCustomMessage("phaser", list(js = js))
+      send_js(private, js)
     }
   ),
   private = list(
@@ -320,3 +320,7 @@ StaticGroup <- R6::R6Class(
     session = NULL
   )
 )
+
+send_js <- function(private, js) {
+  private$session$sendCustomMessage("phaser", list(js = js))
+}
