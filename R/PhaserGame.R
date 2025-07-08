@@ -175,17 +175,38 @@ PhaserGame <- R6::R6Class(
     #' @description Adds a collider between two game objects.
     #' @param object_one_name Character. Name of the first object.
     #' @param object_two_name Character. Name of the second object.
-    add_collider = function(object_one_name, object_two_name) {
-      js <- sprintf("addCollider('%s','%s');",
-                    object_one_name, object_two_name)
+    add_collider = function(object_one_name,
+                            object_two_name = NULL,
+                            group_name      = NULL,
+                            callback_fun    = NULL,
+                            input) {
+      input_id <- paste(
+        c("collide", object_one_name,
+          object_two_name %||% group_name),
+        collapse = "_"
+      )
+
+      js <- if (!is.null(object_two_name)) {
+        sprintf("addCollider('%s','%s','%s')",
+                object_one_name, object_two_name, input_id)
+      } else {
+        sprintf("addGroupCollider('%s','%s','%s')",
+                object_one_name, group_name, input_id)
+      }
       send_js(private, js)
+      if (!is.null(callback_fun)) {
+        shiny::observeEvent(input[[input_id]], {
+          evt <- input[[input_id]]
+          callback_fun(evt)
+        }, ignoreNULL = TRUE)
+      }
     },
 
     #' @description Adds a collider between two game objects.
     #' @param object_one_name Character. Name of the first object.
     #' @param object_two_name Character. Name of the second object.
     #' @param group_name Character. Name of the group.
-    #' @param action
+    #' @param callback_fun A function to be run when overlap occurs.
     add_overlap = function(object_one_name,
                            object_two_name = NULL,
                            group_name      = NULL,

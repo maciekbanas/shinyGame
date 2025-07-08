@@ -6,6 +6,8 @@ ui <- game$ui()
 
 server <- function(input, output, session) {
 
+  life_points = 100
+
   game$set_shiny_session()
 
   game$add_map(
@@ -49,21 +51,40 @@ server <- function(input, output, session) {
   )
   Sys.sleep(0.1)
   game$enable_terrain_collision("hero")
-  game$add_static_sprite(
-    name = "rock-1",
-    url = "assets/rpg_game/obstacles/rock.png",
+  rocks <- game$add_static_group(
+    input = input,
+    name = "rocks",
+    url = "assets/rpg_game/obstacles/rock.png"
+  )
+  rocks$create(
     x = 400,
     y = 400
   )
-  game$add_static_sprite(
-    name = "rock-2",
-    url  = "assets/rpg_game/obstacles/rock.png",
+  rocks$create(
     x = 600,
     y = 500
   )
+  life_points_text <- game$add_text(
+    text = "life: 100/100",
+    id = "life_points",
+    x = 1000,
+    y = 50
+  )
   Sys.sleep(0.1)
-  game$add_collider("hero", "rock-1")
-  game$add_collider("hero", "rock-2")
+  game$add_collider(
+    object_one = "hero",
+    group_name = "rocks",
+    input = input
+  )
+  game$add_collider(
+    object_one = "hero",
+    object_two = "goblin",
+    callback_fun = function(evt) {
+      life_points <<- life_points - 10
+      life_points_text$set(paste0("life: ", life_points, "/100"))
+    },
+    input = input
+  )
   game$add_sprite_animation(
     name = "hero",
     suffix = "move_left",

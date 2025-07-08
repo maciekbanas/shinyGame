@@ -211,17 +211,11 @@ function addStaticSprite(name, url, x, y) {
   scene.load.start();
 }
 
-function addCollider(objectOneName, objectTwoName) {
+function addCollider(objectOneName, objectTwoName, inputId) {
   const objectOne = scene.children.getByName(objectOneName);
   const objectTwo = scene.children.getByName(objectTwoName);
-  scene.physics.add.collider(objectOne, objectTwo);
-}
-
-function addOverlap(objectOneName, objectTwoName, inputId) {
-  const o1 = scene.children.getByName(objectOneName);
-  const o2 = scene.children.getByName(objectTwoName);
-  scene.physics.add.overlap(
-    o1, o2,
+  scene.physics.add.collider(
+    objectOne, objectTwo,
     function(obj1, obj2) {
       Shiny.setInputValue(
         inputId,
@@ -235,6 +229,41 @@ function addOverlap(objectOneName, objectTwoName, inputId) {
   );
 }
 
+function addGroupCollider(objectName, groupName, inputId) {
+  const objectOne = scene.children.getByName(objectName);
+  const objectTwo = scene[groupName];
+  scene.physics.add.collider(
+    objectOne, objectTwo,
+    function(obj1, obj2) {
+      Shiny.setInputValue(
+        inputId,
+        {
+          name1: obj1.name, x1: obj1.x, y1: obj1.y,
+          name2: obj2.name, x2: obj2.x, y2: obj2.y
+        },
+        { priority: "event" }
+      );
+    }
+  );
+}
+
+function addOverlap(objectOneName, objectTwoName, inputId) {
+  const objectOne = scene.children.getByName(objectOneName);
+  const objectTwo = scene.children.getByName(objectTwoName);
+  scene.physics.add.overlap(
+    objectOne, objectTwo,
+    function(obj1, obj2) {
+      Shiny.setInputValue(
+        inputId,
+        {
+          name1: obj1.name, x1: obj1.x, y1: obj1.y,
+          name2: obj2.name, x2: obj2.x, y2: obj2.y
+        },
+        { priority: "event" }
+      );
+    }
+  );
+}
 
 function addGroupOverlap(objectName, groupName, inputId) {
   const objectOne = scene.children.getByName(objectName);
