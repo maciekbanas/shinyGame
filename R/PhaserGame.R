@@ -48,7 +48,7 @@ PhaserGame <- R6::R6Class(
           version = "0.1",
           package = "phaserR",
           src = "www",
-          script = c("phaser-bridge.js", "phaser-groups.js")
+          script = c("phaser-game.js", "phaser-groups.js")
         ),
         htmltools::tags$script(
           sprintf("initPhaserGame('%s', %s);", self$id,
