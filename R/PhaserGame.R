@@ -164,9 +164,12 @@ PhaserGame <- R6::R6Class(
     #' @param name Character. Unique name of the group.
     #' @param url Character. URL or path to the image file.
     add_static_group = function(input, name, url) {
-      js <- sprintf("addStaticGroup('%s','%s');", name, url)
-      private$session$sendCustomMessage("phaser", list(js = js))
-      return(StaticGroup$new(input = input, name = name, session = private$session))
+      return(StaticGroup$new(
+        input = input,
+        name = name,
+        url = url,
+        session = private$session)
+      )
     },
 
     #' @description Adds a collider between two game objects.
@@ -284,10 +287,14 @@ TextObject <- R6::R6Class(
 StaticGroup <- R6::R6Class(
   classname = "StaticGroup",
   public = list(
-    initialize = function(input, name, session) {
+    initialize = function(input, name, url, session) {
       private$input <- input
       private$name <- name
       private$session <- session
+
+      js <- sprintf("addStaticGroup('%s','%s');", name, url)
+      private$session$sendCustomMessage("phaser", list(js = js))
+
       Sys.sleep(0.1)
     },
     create = function(x, y) {
