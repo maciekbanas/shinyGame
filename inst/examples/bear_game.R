@@ -22,6 +22,7 @@ server <- function(input, output, session) {
     frameRate = 4
   )
   apples <- game$add_static_group(
+    input = input,
     name = "apples",
     url = "assets/bear_game/perks/apple.png"
   )
@@ -48,7 +49,10 @@ server <- function(input, output, session) {
   game$add_overlap(
     object_one_name = "bear",
     group_name = "apples",
-    action = "disable"
+    callback_fun = function() {
+      apples$disable()
+    },
+    input = input
   )
   game$add_sprite_animation(
     name = "bear",

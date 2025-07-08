@@ -40,7 +40,7 @@ PhaserGame <- R6::R6Class(
           version = "0.1",
           package = "phaserR",
           src = "www",
-          script = "phaser-bridge.js"
+          script = c("phaser-bridge.js", "phaser-groups.js")
         ),
         htmltools::tags$script(
           sprintf("initPhaserGame('%s', %s);", self$id,
@@ -161,10 +161,10 @@ PhaserGame <- R6::R6Class(
     #' @description Adds a static group to the scene (non-animated).
     #' @param name Character. Unique name of the group.
     #' @param url Character. URL or path to the image file.
-    add_static_group = function(name, url, session = shiny::getDefaultReactiveDomain()) {
+    add_static_group = function(input, name, url, session = shiny::getDefaultReactiveDomain()) {
       js <- sprintf("addStaticGroup('%s','%s');", name, url)
       session$sendCustomMessage("phaser", list(js = js))
-      return(StaticGroup$new(name = name, session = session))
+      return(StaticGroup$new(input = input, name = name, session = session))
     },
 
     #' @description Adds a collider between two game objects.
@@ -186,16 +186,20 @@ PhaserGame <- R6::R6Class(
     add_overlap = function(object_one_name,
                            object_two_name = NULL,
                            group_name = NULL,
-                           action,
+                           callback_fun,
+                           input,
                            session = shiny::getDefaultReactiveDomain()) {
       js <- if (!is.null(object_two_name)) {
-        sprintf("addOverlap('%s','%s', '%s');",
-                object_one_name, object_two_name, action)
+        sprintf("addOverlap('%s','%s');",
+                object_one_name, object_two_name)
       } else if (!is.null(group_name)) {
-        sprintf("addGroupOverlap('%s','%s', '%s');",
-                object_one_name, group_name, action)
+        sprintf("addGroupOverlap('%s','%s');",
+                object_one_name, group_name)
       }
       session$sendCustomMessage("phaser", list(js = js))
+      shiny::observeEvent(input$overlap, {
+        callback_fun()
+      })
     },
 
     #' @description Load a base spritesheet and create an "idle" animation.
@@ -245,14 +249,16 @@ PhaserGame <- R6::R6Class(
   ),
 
   private = list(
-    config = list()
+    config = list(),
+    input = NULL
   )
 )
 
 StaticGroup <- R6::R6Class(
   classname = "StaticGroup",
   public = list(
-    initialize = function(name, session) {
+    initialize = function(input, name, session) {
+      private$input <- input
       private$name <- name
       private$session <- session
       Sys.sleep(0.1)
@@ -263,9 +269,19 @@ StaticGroup <- R6::R6Class(
         private$name, x, y
       )
       private$session$sendCustomMessage("phaser", list(js = js))
+    },
+    disable = function() {
+      x <- private$input$overlap$objectTwo$x
+      y <- private$input$overlap$objectTwo$y
+      js <- sprintf(
+        "disableBody('%s', %d, %d);",
+        private$name, x, y
+      )
+      private$session$sendCustomMessage("phaser", list(js = js))
     }
   ),
   private = list(
+    input = NULL,
     name = NULL,
     session = NULL
   )

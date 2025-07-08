@@ -210,27 +210,28 @@ function addCollider(objectOneName, objectTwoName) {
 }
 
 
-function addOverlap(objectOneName, objectTwoName, action) {
+function addOverlap(objectOneName, objectTwoName) {
   const objectOne = scene.children.getByName(objectOneName);
   const objectTwo = scene.children.getByName(objectTwoName);
-  if (action == "disable") {
-    functionCall = disable;
-  }
-  scene.physics.add.overlap(objectOne, objectTwo, functionCall, null, this);
+  scene.physics.add.overlap(
+    objectOne,
+    objectTwo,
+    function(objectOne, objectTwo) {
+      Shiny.setInputValue("overlap", {objectOne, objectTwo})
+    }
+  );
 }
 
-function addGroupOverlap(objectName, groupName, action) {
+function addGroupOverlap(objectName, groupName) {
   const objectOne = scene.children.getByName(objectName);
   const objectTwo = scene[groupName];
-  if (action == "disable") {
-    functionCall = disable;
-  }
-  scene.physics.add.overlap(objectOne, objectTwo, functionCall, null, this);
-}
-
-function disable (objectOne, objectTwo)
-{
-    objectTwo.disableBody(true, true);
+  scene.physics.add.overlap(
+    objectOne,
+    objectTwo,
+    function(objectOne, objectTwo) {
+      Shiny.setInputValue("overlap", {objectOne, objectTwo})
+    }
+  );
 }
 
 function addSprite(name, url, x, y, frameWidth, frameHeight, frameCount, frameRate) {
