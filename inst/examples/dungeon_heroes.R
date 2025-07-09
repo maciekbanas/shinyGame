@@ -52,7 +52,6 @@ server <- function(input, output, session) {
   Sys.sleep(0.1)
   game$enable_terrain_collision("hero")
   rocks <- game$add_static_group(
-    input = input,
     name = "rocks",
     url = "assets/rpg_game/obstacles/rock.png"
   )
@@ -80,7 +79,7 @@ server <- function(input, output, session) {
     object_one = "hero",
     object_two = "goblin",
     callback_fun = function(evt) {
-      life_points <<- life_points - 10
+      life_points <<- life_points - 5
       life_points_text$set(paste0("life: ", life_points, "/100"))
     },
     input = input
