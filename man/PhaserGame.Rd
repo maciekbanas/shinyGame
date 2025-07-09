@@ -32,7 +32,9 @@ game <- PhaserGame$new(id = "my_game", width = 1024, height = 768)
 \subsection{Public methods}{
 \itemize{
 \item \href{#method-PhaserGame-new}{\code{PhaserGame$new()}}
+\item \href{#method-PhaserGame-set_shiny_session}{\code{PhaserGame$set_shiny_session()}}
 \item \href{#method-PhaserGame-ui}{\code{PhaserGame$ui()}}
+\item \href{#method-PhaserGame-add_text}{\code{PhaserGame$add_text()}}
 \item \href{#method-PhaserGame-add_player_sprite}{\code{PhaserGame$add_player_sprite()}}
 \item \href{#method-PhaserGame-add_sprite_animation}{\code{PhaserGame$add_sprite_animation()}}
 \item \href{#method-PhaserGame-add_image}{\code{PhaserGame$add_image()}}
@@ -40,7 +42,9 @@ game <- PhaserGame$new(id = "my_game", width = 1024, height = 768)
 \item \href{#method-PhaserGame-add_player_controls}{\code{PhaserGame$add_player_controls()}}
 \item \href{#method-PhaserGame-enable_terrain_collision}{\code{PhaserGame$enable_terrain_collision()}}
 \item \href{#method-PhaserGame-add_static_sprite}{\code{PhaserGame$add_static_sprite()}}
+\item \href{#method-PhaserGame-add_static_group}{\code{PhaserGame$add_static_group()}}
 \item \href{#method-PhaserGame-add_collider}{\code{PhaserGame$add_collider()}}
+\item \href{#method-PhaserGame-add_overlap}{\code{PhaserGame$add_overlap()}}
 \item \href{#method-PhaserGame-add_sprite}{\code{PhaserGame$add_sprite()}}
 \item \href{#method-PhaserGame-set_sprite_in_motion}{\code{PhaserGame$set_sprite_in_motion()}}
 \item \href{#method-PhaserGame-clone}{\code{PhaserGame$clone()}}
@@ -79,6 +83,22 @@ A new PhaserGame object.
 
 }
 \if{html}{\out{<hr>}}
+\if{html}{\out{<a id="method-PhaserGame-set_shiny_session"></a>}}
+\if{latex}{\out{\hypertarget{method-PhaserGame-set_shiny_session}{}}}
+\subsection{Method \code{set_shiny_session()}}{
+\subsection{Usage}{
+\if{html}{\out{<div class="r">}}\preformatted{PhaserGame$set_shiny_session(session = shiny::getDefaultReactiveDomain())}\if{html}{\out{</div>}}
+}
+
+\subsection{Arguments}{
+\if{html}{\out{<div class="arguments">}}
+\describe{
+\item{\code{session}}{Shiny session object (default: shiny::getDefaultReactiveDomain()).}
+}
+\if{html}{\out{</div>}}
+}
+}
+\if{html}{\out{<hr>}}
 \if{html}{\out{<a id="method-PhaserGame-ui"></a>}}
 \if{latex}{\out{\hypertarget{method-PhaserGame-ui}{}}}
 \subsection{Method \code{ui()}}{
@@ -100,6 +120,15 @@ HTML tag list containing dependencies and initialization script.
 
 }
 \if{html}{\out{<hr>}}
+\if{html}{\out{<a id="method-PhaserGame-add_text"></a>}}
+\if{latex}{\out{\hypertarget{method-PhaserGame-add_text}{}}}
+\subsection{Method \code{add_text()}}{
+\subsection{Usage}{
+\if{html}{\out{<div class="r">}}\preformatted{PhaserGame$add_text(text, id, x, y, style = list(fontSize = "22px"))}\if{html}{\out{</div>}}
+}
+
+}
+\if{html}{\out{<hr>}}
 \if{html}{\out{<a id="method-PhaserGame-add_player_sprite"></a>}}
 \if{latex}{\out{\hypertarget{method-PhaserGame-add_player_sprite}{}}}
 \subsection{Method \code{add_player_sprite()}}{
@@ -113,8 +142,7 @@ Add a player sprite to the scene as an animated spritesheet.
   frameWidth,
   frameHeight,
   frameCount,
-  frameRate,
-  session = shiny::getDefaultReactiveDomain()
+  frameRate
 )}\if{html}{\out{</div>}}
 }
 
@@ -136,8 +164,6 @@ Add a player sprite to the scene as an animated spritesheet.
 \item{\code{frameCount}}{Numeric. Total number of frames.}
 
 \item{\code{frameRate}}{Numeric. Frames per second for the animation.}
-
-\item{\code{session}}{Shiny session object (default: shiny::getDefaultReactiveDomain()).}
 }
 \if{html}{\out{</div>}}
 }
@@ -158,8 +184,7 @@ Load a custom animation for any sprite previously added.
   frameWidth,
   frameHeight,
   frameCount,
-  frameRate,
-  session = shiny::getDefaultReactiveDomain()
+  frameRate
 )}\if{html}{\out{</div>}}
 }
 
@@ -179,8 +204,6 @@ Load a custom animation for any sprite previously added.
 \item{\code{frameCount}}{Numeric. Number of frames in the spritesheet.}
 
 \item{\code{frameRate}}{Numeric. Frames per second for playback.}
-
-\item{\code{session}}{Shiny session object (default: shiny::getDefaultReactiveDomain()).}
 }
 \if{html}{\out{</div>}}
 }
@@ -194,13 +217,7 @@ Invisible; sends a custom message to the client.
 \subsection{Method \code{add_image()}}{
 Adds a static image to the Phaser scene.
 \subsection{Usage}{
-\if{html}{\out{<div class="r">}}\preformatted{PhaserGame$add_image(
-  imageName,
-  imageUrl,
-  x,
-  y,
-  session = shiny::getDefaultReactiveDomain()
-)}\if{html}{\out{</div>}}
+\if{html}{\out{<div class="r">}}\preformatted{PhaserGame$add_image(imageName, imageUrl, x, y)}\if{html}{\out{</div>}}
 }
 
 \subsection{Arguments}{
@@ -213,8 +230,6 @@ Adds a static image to the Phaser scene.
 \item{\code{x}}{Numeric. X-coordinate in pixels.}
 
 \item{\code{y}}{Numeric. Y-coordinate in pixels.}
-
-\item{\code{session}}{Shiny session object (default: shiny::getDefaultReactiveDomain()).}
 }
 \if{html}{\out{</div>}}
 }
@@ -228,14 +243,7 @@ Invisible; sends a custom message to the client.
 \subsection{Method \code{add_map()}}{
 Add a background (tilemap) layer from Tiled JSON + tileset image(s).
 \subsection{Usage}{
-\if{html}{\out{<div class="r">}}\preformatted{PhaserGame$add_map(
-  mapKey,
-  mapUrl,
-  tilesetUrls,
-  tilesetNames,
-  layerName,
-  session = shiny::getDefaultReactiveDomain()
-)}\if{html}{\out{</div>}}
+\if{html}{\out{<div class="r">}}\preformatted{PhaserGame$add_map(mapKey, mapUrl, tilesetUrls, tilesetNames, layerName)}\if{html}{\out{</div>}}
 }
 
 \subsection{Arguments}{
@@ -250,8 +258,6 @@ Add a background (tilemap) layer from Tiled JSON + tileset image(s).
 \item{\code{tilesetNames}}{Character vector. Names of tilesets as defined in Tiled.}
 
 \item{\code{layerName}}{Character. Name of the layer to render from Tiled.}
-
-\item{\code{session}}{Shiny session object (default: shiny::getDefaultReactiveDomain()).}
 }
 \if{html}{\out{</div>}}
 }
@@ -268,8 +274,7 @@ Enable movement controls (arrow keys) for a player sprite.
 \if{html}{\out{<div class="r">}}\preformatted{PhaserGame$add_player_controls(
   name,
   directions = c("left", "right", "down", "up"),
-  speed = 200,
-  session = shiny::getDefaultReactiveDomain()
+  speed = 200
 )}\if{html}{\out{</div>}}
 }
 
@@ -281,8 +286,6 @@ Enable movement controls (arrow keys) for a player sprite.
 \item{\code{directions}}{Character vector. Directions to enable (defaults to c("left","right","down","up")).}
 
 \item{\code{speed}}{Numeric. Movement speed in pixels/second (default: 200).}
-
-\item{\code{session}}{Shiny session object (default: shiny::getDefaultReactiveDomain()).}
 }
 \if{html}{\out{</div>}}
 }
@@ -293,18 +296,13 @@ Enable movement controls (arrow keys) for a player sprite.
 \subsection{Method \code{enable_terrain_collision()}}{
 Enable terrain collision for a player sprite.
 \subsection{Usage}{
-\if{html}{\out{<div class="r">}}\preformatted{PhaserGame$enable_terrain_collision(
-  name,
-  session = shiny::getDefaultReactiveDomain()
-)}\if{html}{\out{</div>}}
+\if{html}{\out{<div class="r">}}\preformatted{PhaserGame$enable_terrain_collision(name)}\if{html}{\out{</div>}}
 }
 
 \subsection{Arguments}{
 \if{html}{\out{<div class="arguments">}}
 \describe{
 \item{\code{name}}{Character. Name of the player sprite (as added via add_player_sprite).}
-
-\item{\code{session}}{Shiny session object (default: shiny::getDefaultReactiveDomain()).}
 }
 \if{html}{\out{</div>}}
 }
@@ -315,13 +313,7 @@ Enable terrain collision for a player sprite.
 \subsection{Method \code{add_static_sprite()}}{
 Adds a static sprite to the scene (non-animated).
 \subsection{Usage}{
-\if{html}{\out{<div class="r">}}\preformatted{PhaserGame$add_static_sprite(
-  name,
-  url,
-  x,
-  y,
-  session = shiny::getDefaultReactiveDomain()
-)}\if{html}{\out{</div>}}
+\if{html}{\out{<div class="r">}}\preformatted{PhaserGame$add_static_sprite(name, url, x, y)}\if{html}{\out{</div>}}
 }
 
 \subsection{Arguments}{
@@ -334,8 +326,25 @@ Adds a static sprite to the scene (non-animated).
 \item{\code{x}}{Numeric. X-coordinate in pixels.}
 
 \item{\code{y}}{Numeric. Y-coordinate in pixels.}
+}
+\if{html}{\out{</div>}}
+}
+}
+\if{html}{\out{<hr>}}
+\if{html}{\out{<a id="method-PhaserGame-add_static_group"></a>}}
+\if{latex}{\out{\hypertarget{method-PhaserGame-add_static_group}{}}}
+\subsection{Method \code{add_static_group()}}{
+Adds a static group to the scene (non-animated).
+\subsection{Usage}{
+\if{html}{\out{<div class="r">}}\preformatted{PhaserGame$add_static_group(input, name, url)}\if{html}{\out{</div>}}
+}
 
-\item{\code{session}}{Shiny session object (default: shiny::getDefaultReactiveDomain()).}
+\subsection{Arguments}{
+\if{html}{\out{<div class="arguments">}}
+\describe{
+\item{\code{name}}{Character. Unique name of the group.}
+
+\item{\code{url}}{Character. URL or path to the image file.}
 }
 \if{html}{\out{</div>}}
 }
@@ -346,10 +355,31 @@ Adds a static sprite to the scene (non-animated).
 \subsection{Method \code{add_collider()}}{
 Adds a collider between two game objects.
 \subsection{Usage}{
-\if{html}{\out{<div class="r">}}\preformatted{PhaserGame$add_collider(
+\if{html}{\out{<div class="r">}}\preformatted{PhaserGame$add_collider(object_one_name, object_two_name)}\if{html}{\out{</div>}}
+}
+
+\subsection{Arguments}{
+\if{html}{\out{<div class="arguments">}}
+\describe{
+\item{\code{object_one_name}}{Character. Name of the first object.}
+
+\item{\code{object_two_name}}{Character. Name of the second object.}
+}
+\if{html}{\out{</div>}}
+}
+}
+\if{html}{\out{<hr>}}
+\if{html}{\out{<a id="method-PhaserGame-add_overlap"></a>}}
+\if{latex}{\out{\hypertarget{method-PhaserGame-add_overlap}{}}}
+\subsection{Method \code{add_overlap()}}{
+Adds a collider between two game objects.
+\subsection{Usage}{
+\if{html}{\out{<div class="r">}}\preformatted{PhaserGame$add_overlap(
   object_one_name,
-  object_two_name,
-  session = shiny::getDefaultReactiveDomain()
+  object_two_name = NULL,
+  group_name = NULL,
+  callback_fun,
+  input
 )}\if{html}{\out{</div>}}
 }
 
@@ -360,7 +390,7 @@ Adds a collider between two game objects.
 
 \item{\code{object_two_name}}{Character. Name of the second object.}
 
-\item{\code{session}}{Shiny session object (default: shiny::getDefaultReactiveDomain()).}
+\item{\code{group_name}}{Character. Name of the group.}
 }
 \if{html}{\out{</div>}}
 }
@@ -379,8 +409,7 @@ Load a base spritesheet and create an "idle" animation.
   frameWidth,
   frameHeight,
   frameCount,
-  frameRate,
-  session = shiny::getDefaultReactiveDomain()
+  frameRate
 )}\if{html}{\out{</div>}}
 }
 
@@ -402,8 +431,6 @@ Load a base spritesheet and create an "idle" animation.
 \item{\code{frameCount}}{Numeric. Number of frames in the spritesheet.}
 
 \item{\code{frameRate}}{Numeric. Frames per second for the idle animation.}
-
-\item{\code{session}}{Shiny session object (default: shiny::getDefaultReactiveDomain()).}
 }
 \if{html}{\out{</div>}}
 }
@@ -420,8 +447,7 @@ Move all sprites of a given type along a vector for a set distance.
   dirY,
   speed,
   distance,
-  lag = distance/speed,
-  session = shiny::getDefaultReactiveDomain()
+  lag = distance/speed
 )}\if{html}{\out{</div>}}
 }
 
@@ -439,8 +465,6 @@ Move all sprites of a given type along a vector for a set distance.
 \item{\code{distance}}{Numeric. Distance in pixels to travel before stopping.}
 
 \item{\code{lag}}{Numeric. Optional delay before sending the command (defaults to distance/speed).}
-
-\item{\code{session}}{Shiny session object (default: shiny::getDefaultReactiveDomain()).}
 }
 \if{html}{\out{</div>}}
 }
