@@ -67,7 +67,7 @@ server <- function(input, output, session) {
   life_points_text <- game$add_text(
     text = "life: 100/100",
     id = "life_points",
-    x = 1000,
+    x = 1200,
     y = 50
   )
   Sys.sleep(0.1)
