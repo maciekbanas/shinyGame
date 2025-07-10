@@ -118,6 +118,15 @@ server <- function(input, output, session) {
   )
   game$add_collider(
     object_one = "hero",
+    group_name = "goblin",
+    callback_fun = function(evt) {
+      life_points <<- life_points - 5
+      life_points_text$set(paste0("life: ", life_points, "/100"))
+    },
+    input = input
+  )
+  game$add_collider(
+    object_one = "hero",
     object_two = "goblin_1",
     callback_fun = function(evt) {
       life_points <<- life_points - 5
