@@ -46,6 +46,14 @@ Sprite <- R6::R6Class(
       js <- sprintf("addPlayerControls('%s', %s, %d);", private$name, js_dirs, speed)
       send_js(private, js)
     },
+
+    set_gravity = function(x = 100, y = 100) {
+      Sys.sleep(0.1)
+      js <- sprintf("setGravity('%s', %d, %d);",
+                    private$name, x, y)
+      send_js(private, js)
+    },
+
     #' @param dirX Numeric. Horizontal direction (-1 = left, +1 = right, 0 = none).
     #' @param dirY Numeric. Vertical direction (-1 = up, +1 = down, 0 = none).
     #' @param speed Numeric. Speed in pixels/second.

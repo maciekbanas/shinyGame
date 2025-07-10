@@ -24,7 +24,7 @@ Group <- R6::R6Class(
     },
     create = function(x, y) {
       js <- sprintf(
-        "const spr = addToGroup('%s', %d, %d);",
+        "addToGroup('%s', %d, %d);",
         private$name, x, y
       )
       send_js(private, js)

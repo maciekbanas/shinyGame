@@ -120,3 +120,8 @@ function addSpriteAnimation(name, suffix, url, frameWidth, frameHeight, frameCou
   });
   scene.load.start();
 }
+
+function setGravity(name, x, y) {
+  const sprite = scene[name];
+  sprite.body.setGravity(x, y);
+}
