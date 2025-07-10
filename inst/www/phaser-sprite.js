@@ -52,7 +52,6 @@ function move(name, dirX, dirY, speed, distance) {
   });
 }
 
-
 function setSpriteInMotion(name, dirX, dirY, speed, distance) {
   if (speed <= 0 || distance <= 0) {
     console.warn("setSpriteInMotion(): speed and distance must be > 0");

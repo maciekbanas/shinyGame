@@ -62,22 +62,6 @@ PhaserGame <- R6::R6Class(
       return(TextObject$new(text, id, x, y, style))
     },
 
-    #' @description Add a player sprite to the scene as an animated spritesheet.
-    #' @param name Character. Unique key for the sprite.
-    #' @param url Character. URL or relative path to the spritesheet image.
-    #' @param x Numeric. X-coordinate in pixels.
-    #' @param y Numeric. Y-coordinate in pixels.
-    #' @param frameWidth Numeric. Width of each frame in the spritesheet.
-    #' @param frameHeight Numeric. Height of each frame in the spritesheet.
-    #' @param frameCount Numeric. Total number of frames.
-    #' @param frameRate Numeric. Frames per second for the animation.
-    #' @return Invisible; sends a custom message to the client.
-    add_player_sprite = function(name, url, x, y, frameWidth, frameHeight, frameCount, frameRate) {
-      js <- sprintf("addPlayerSprite('%s', '%s', %d, %d, %d, %d, %d, %d);",
-                    name, url, x, y, frameWidth, frameHeight, frameCount, frameRate)
-      send_js(private, js)
-    },
-
     #' @description Load a custom animation for any sprite previously added.
     #' @param name Character. Base key used in add_player_sprite or add_enemy_sprite.
     #' @param suffix Character. Identifier for this animation (e.g. "move_left").

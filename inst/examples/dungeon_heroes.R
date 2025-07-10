@@ -18,7 +18,7 @@ server <- function(input, output, session) {
     layerName = "Ground"
   )
 
-  game$add_player_sprite(
+  game$add_sprite(
     name = "hero",
     url = "assets/rpg_game/sprites/wolf_hero_idle.png",
     x = 100,

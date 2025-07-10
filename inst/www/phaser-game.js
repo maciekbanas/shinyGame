@@ -76,34 +76,6 @@ function setText(text, id) {
   scene[id].setText(text);
 }
 
-function addPlayerSprite(name, url, x, y, frameWidth, frameHeight, frameCount, frameRate) {
-  scene.load.spritesheet(name, url, {
-    frameWidth: frameWidth,
-    frameHeight: frameHeight
-  });
-
-  scene.load.once('complete', () => {
-    scene.anims.create({
-      key: name + '_idle',
-      frames: scene.anims.generateFrameNumbers(name, {
-        start: 0,
-        end: frameCount - 1
-      }),
-      frameRate: frameRate,
-      repeat: -1
-    });
-
-    const sprite = scene.physics.add.sprite(x, y, name).setName(name);
-    sprite.setCollideWorldBounds(true);
-    sprite.play(name + '_idle');
-
-    controlledSprite = sprite;
-    scene[name] = sprite;
-  });
-
-  scene.load.start();
-}
-
 function addPlayerControls(name, directions, speed) {
   GameBridge.playerControls[name] = { speed, directions };
 };

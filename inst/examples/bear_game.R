@@ -15,7 +15,7 @@ server <- function(input, output, session) {
     x = 800,
     y = 300
   )
-  game$add_player_sprite(
+  game$add_sprite(
     name = "bear",
     url = "assets/bear_game/player_sprites/bear_idle.png",
     x = 100,
