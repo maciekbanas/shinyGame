@@ -133,20 +133,6 @@ function addPlayerTerrainCollider(spriteName) {
   scene.physics.add.collider(sprite, scene.terrainLayer);
 }
 
-function addStaticGroup(name, url) {
-  if (!scene[name]) {
-    scene[name] = scene.physics.add.staticGroup();
-  }
-  scene.load.image(name, url);
-  scene.load.once('complete', () => {
-  });
-  scene.load.start();
-}
-
-function addToStaticGroup(groupName, x, y) {
-  scene[groupName].create(x, y, groupName);
-}
-
 function addCollider(objectOneName, objectTwoName, inputId) {
   const objectOne = scene.children.getByName(objectOneName);
   const objectTwo = scene.children.getByName(objectTwoName);

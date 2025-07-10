@@ -103,6 +103,28 @@ PhaserGame <- R6::R6Class(
       send_js(private, js)
     },
 
+    #' @description Load a base spritesheet and create an "idle" animation.
+    #' @param name Character. Unique key for the sprite and its idle animation.
+    #' @param url Character. URL or path to the spritesheet image.
+    #' @param x Numeric. X-coordinate in pixels.
+    #' @param y Numeric. Y-coordinate in pixels.
+    #' @param frameWidth Numeric. Width of each frame.
+    #' @param frameHeight Numeric. Height of each frame.
+    #' @param frameCount Numeric. Number of frames in the spritesheet.
+    #' @param frameRate Numeric. Frames per second for the idle animation.
+    add_sprite = function(name, url,
+                          x, y,
+                          frameWidth, frameHeight,
+                          frameCount = 1, frameRate = 1) {
+      return(Sprite$new(name, url, x, y, frameWidth, frameHeight, frameCount, frameRate))
+    },
+
+    #' @description Adds a dynamic group from a spritesheet.
+    #' @param name Character. Unique name of the group.
+    add_group = function(name) {
+      return(Group$new(name))
+   },
+
     #' @description Adds a static sprite to the scene (non-animated).
     #' @param name Character. Unique name of the sprite.
     #' @param url Character. URL or path to the image file.
@@ -118,9 +140,8 @@ PhaserGame <- R6::R6Class(
     add_static_group = function(name, url) {
       return(StaticGroup$new(
         name = name,
-        url = url,
-        session = private$session)
-      )
+        url = url
+      ))
     },
 
     #' @description Adds a collider between two game objects.
@@ -183,22 +204,6 @@ PhaserGame <- R6::R6Class(
         evt <- input[[input_id]]
         callback_fun(evt)
       }, ignoreNULL = TRUE)
-    },
-
-    #' @description Load a base spritesheet and create an "idle" animation.
-    #' @param name Character. Unique key for the sprite and its idle animation.
-    #' @param url Character. URL or path to the spritesheet image.
-    #' @param x Numeric. X-coordinate in pixels.
-    #' @param y Numeric. Y-coordinate in pixels.
-    #' @param frameWidth Numeric. Width of each frame.
-    #' @param frameHeight Numeric. Height of each frame.
-    #' @param frameCount Numeric. Number of frames in the spritesheet.
-    #' @param frameRate Numeric. Frames per second for the idle animation.
-    add_sprite = function(name, url,
-                          x, y,
-                          frameWidth, frameHeight,
-                          frameCount = 1, frameRate = 1) {
-      return(Sprite$new(name, url, x, y, frameWidth, frameHeight, frameCount, frameRate))
     }
   ),
   private = list(
@@ -230,10 +235,48 @@ TextObject <- R6::R6Class(
   )
 )
 
+Group <- R6::R6Class(
+  classname = "Group",
+  public = list(
+    initialize = function(name,
+                          session = shiny::getDefaultReactiveDomain()) {
+      private$name <- name
+      private$session <- session
+
+      js <- sprintf("addGroup('%s');",name)
+      send_js(private, js)
+
+      Sys.sleep(0.1)
+    },
+    add_animation = function(suffix, url,
+                             frameWidth, frameHeight,
+                             frameCount, frameRate) {
+      js <- sprintf(
+        "addGroupAnimation('%s','%s','%s',%d,%d,%d,%d);",
+        private$name, suffix, url,
+        frameWidth, frameHeight, frameCount, frameRate
+      )
+      send_js(private, js)
+      Sys.sleep(0.1)
+    },
+    create = function(x, y) {
+      js <- sprintf(
+          "const spr = addToGroup('%s', %d, %d);",
+          private$name, x, y
+        )
+      send_js(private, js)
+    }
+  ),
+  private = list(
+    name = NULL,
+    session = NULL
+  )
+)
+
 StaticGroup <- R6::R6Class(
   classname = "StaticGroup",
   public = list(
-    initialize = function(name, url, session) {
+    initialize = function(name, url, session = shiny::getDefaultReactiveDomain()) {
       private$name <- name
       private$session <- session
 
@@ -244,7 +287,7 @@ StaticGroup <- R6::R6Class(
     },
     create = function(x, y) {
       js <- sprintf(
-        "addToStaticGroup('%s', %d, %d);",
+        "addToGroup('%s', %d, %d);",
         private$name, x, y
       )
       send_js(private, js)
