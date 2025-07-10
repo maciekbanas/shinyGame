@@ -37,21 +37,18 @@ function addStaticSprite(name, url, x, y) {
   scene.load.start();
 }
 
-function move(name, dx, dy, duration) {
+function move(name, dirX, dirY, speed, distance) {
   const spr = scene[name];
-  if (spr.getData('isMoving')) {
-    return;
-  }
-  spr.setData('isMoving', true);
+
+  const endX = spr.x + dirX * distance;
+  const endY = spr.y + dirY * distance;
+  const duration = (distance / speed) * 1000;
   scene.tweens.add({
     targets: spr,
-    x: spr.x + dx,
-    y: spr.y + dy,
+    x: endX,
+    y: endY,
     duration: duration,
-    ease: 'Linear',
-    onComplete: () => {
-      spr.setData('isMoving', false);
-    }
+    ease: 'Linear'
   });
 }
 

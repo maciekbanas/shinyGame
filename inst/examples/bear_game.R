@@ -72,9 +72,10 @@ server <- function(input, output, session) {
     object_two_name = "wooden_box",
     callback_fun = function(evt) {
       wooden_box$move(
-        dx = 10,
-        dy = 0,
-        duration = 100
+        dirX = 1,
+        dirY = 0,
+        speed = 350,
+        distance = 50
       )
     },
     input = input

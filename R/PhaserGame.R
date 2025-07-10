@@ -337,6 +337,14 @@ StaticGroup <- R6::R6Class(
 Sprite <- R6::R6Class(
   classname = "Sprite",
   public = list(
+    #' @param name Character. Unique key for the sprite and its idle animation.
+    #' @param url Character. URL or path to the spritesheet image.
+    #' @param x Numeric. X-coordinate in pixels.
+    #' @param y Numeric. Y-coordinate in pixels.
+    #' @param frameWidth Numeric. Width of each frame.
+    #' @param frameHeight Numeric. Height of each frame.
+    #' @param frameCount Numeric. Number of frames in the spritesheet.
+    #' @param frameRate Numeric. Frames per second for the idle animation.
     initialize = function(name, url, x, y,
                           frameWidth, frameHeight, frameCount, frameRate,
                           session = getDefaultReactiveDomain()) {
@@ -348,9 +356,13 @@ Sprite <- R6::R6Class(
       )
       send_js(private, js)
     },
-    move = function(dx = NULL, dy = NULL, duration) {
-      js <- sprintf("move('%s', %d, %d, %d);",
-                    private$name, dx, dy, duration)
+    #' @param dirX Numeric. Horizontal direction (-1 = left, +1 = right, 0 = none).
+    #' @param dirY Numeric. Vertical direction (-1 = up, +1 = down, 0 = none).
+    #' @param speed Numeric. Speed in pixels/second.
+    #' @param distance Numeric. Distance in pixels to travel before stopping.
+    move = function(dirX = 0, dirY = 0, speed, distance) {
+      js <- sprintf("move('%s', %d, %d, %d, %d);",
+                    private$name, dirX, dirY, speed, distance)
       send_js(private, js)
     }
   ),
