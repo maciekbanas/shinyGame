@@ -15,7 +15,8 @@ server <- function(input, output, session) {
     x = 800,
     y = 300
   )
-  game$add_sprite(
+
+  bear <- game$add_sprite(
     name = "bear",
     url = "assets/bear_game/player_sprites/bear_idle.png",
     x = 100,
@@ -25,6 +26,23 @@ server <- function(input, output, session) {
     frameCount = 10,
     frameRate = 4
   )
+  bear$add_animation(
+    suffix = "move_right",
+    url = "assets/bear_game/player_sprites/bear_move_right.png",
+    frameWidth = 100, frameHeight = 100,
+    frameCount = 2, frameRate = 6
+  )
+  bear$add_animation(
+    suffix = "move_left",
+    url = "assets/bear_game/player_sprites/bear_move_left.png",
+    frameWidth = 100, frameHeight = 100,
+    frameCount = 2, frameRate = 6
+  )
+  bear$add_player_controls(
+    directions = c("left", "right"),
+    speed = 300
+  )
+
   apples <- game$add_static_group(
     name = "apples",
     url = "assets/bear_game/perks/apple.png"
@@ -40,11 +58,6 @@ server <- function(input, output, session) {
   apples$create(
     x = 1200,
     y = 600
-  )
-  game$add_player_controls(
-    name = "bear",
-    directions = c("left", "right"),
-    speed = 300
   )
   grass <- game$add_static_sprite(
     name = "grass",
@@ -89,20 +102,6 @@ server <- function(input, output, session) {
       apples$disable(evt)
     },
     input = input
-  )
-  game$add_sprite_animation(
-    name = "bear",
-    suffix = "move_right",
-    url = "assets/bear_game/player_sprites/bear_move_right.png",
-    frameWidth = 100, frameHeight = 100,
-    frameCount = 2, frameRate = 6
-  )
-  game$add_sprite_animation(
-    name = "bear",
-    suffix = "move_left",
-    url = "assets/bear_game/player_sprites/bear_move_left.png",
-    frameWidth = 100, frameHeight = 100,
-    frameCount = 2, frameRate = 6
   )
 }
 

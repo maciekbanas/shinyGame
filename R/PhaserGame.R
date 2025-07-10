@@ -62,25 +62,6 @@ PhaserGame <- R6::R6Class(
       return(TextObject$new(text, id, x, y, style))
     },
 
-    #' @description Load a custom animation for any sprite previously added.
-    #' @param name Character. Base key used in add_player_sprite or add_enemy_sprite.
-    #' @param suffix Character. Identifier for this animation (e.g. "move_left").
-    #' @param url Character. URL or path to the spritesheet.
-    #' @param frameWidth Numeric. Width of each frame.
-    #' @param frameHeight Numeric. Height of each frame.
-    #' @param frameCount Numeric. Number of frames in the spritesheet.
-    #' @param frameRate Numeric. Frames per second for playback.
-    #' @return Invisible; sends a custom message to the client.
-    add_sprite_animation = function(name, suffix, url,
-                                    frameWidth, frameHeight,
-                                    frameCount, frameRate) {
-      js <- sprintf(
-        "addSpriteAnimation('%s','%s','%s',%d,%d,%d,%d);",
-        name, suffix, url, frameWidth, frameHeight, frameCount, frameRate
-      )
-      send_js(private, js)
-    },
-
     #' @description Adds a static image to the Phaser scene.
     #' @param imageName Character. Unique key to reference this image.
     #' @param imageUrl Character. URL or path to the image file.
@@ -112,18 +93,6 @@ PhaserGame <- R6::R6Class(
         jsonlite::toJSON(tilesetNames, auto_unbox = TRUE),
         jsonlite::toJSON(layerName, auto_unbox = TRUE)
       )
-      send_js(private, js)
-    },
-
-    #' @description Enable movement controls (arrow keys) for a player sprite.
-    #' @param name Character. Name of the player sprite (as added via add_player_sprite).
-    #' @param directions Character vector. Directions to enable (defaults to c("left","right","down","up")).
-    #' @param speed Numeric. Movement speed in pixels/second (default: 200).
-    add_player_controls = function(name,
-                                   directions = c("left", "right", "down", "up"),
-                                   speed = 200) {
-      js_dirs <- jsonlite::toJSON(directions, auto_unbox = TRUE)
-      js <- sprintf("addPlayerControls('%s', %s, %d);", name, js_dirs, speed)
       send_js(private, js)
     },
 
@@ -230,30 +199,8 @@ PhaserGame <- R6::R6Class(
                           frameWidth, frameHeight,
                           frameCount = 1, frameRate = 1) {
       return(Sprite$new(name, url, x, y, frameWidth, frameHeight, frameCount, frameRate))
-    },
-
-    #' @description Move all sprites of a given type along a vector for a set distance.
-    #' @param type Character. Key used in add_sprite().
-    #' @param dirX Numeric. Horizontal direction (-1 = left, +1 = right, 0 = none).
-    #' @param dirY Numeric. Vertical direction (-1 = up, +1 = down, 0 = none).
-    #' @param speed Numeric. Speed in pixels/second.
-    #' @param distance Numeric. Distance in pixels to travel before stopping.
-    #' @param lag Numeric. Optional delay before sending the command (defaults to distance/speed).
-    set_sprite_in_motion = function(type,
-                                    dirX,
-                                    dirY,
-                                    speed,
-                                    distance,
-                                    lag = distance/speed) {
-      Sys.sleep(lag)
-      js <- sprintf(
-        "setSpriteInMotion('%s', %d, %d, %d, %d);",
-        type, dirX, dirY, speed, distance
-      )
-      send_js(private, js)
     }
   ),
-
   private = list(
     config = list(),
     input = NULL,
@@ -340,6 +287,32 @@ Sprite <- R6::R6Class(
       )
       send_js(private, js)
     },
+    #' @description Load a custom animation for any sprite previously added.
+    #' @param suffix Character. Identifier for this animation (e.g. "move_left").
+    #' @param url Character. URL or path to the spritesheet.
+    #' @param frameWidth Numeric. Width of each frame.
+    #' @param frameHeight Numeric. Height of each frame.
+    #' @param frameCount Numeric. Number of frames in the spritesheet.
+    #' @param frameRate Numeric. Frames per second for playback.
+    #' @return Invisible; sends a custom message to the client.
+    add_animation = function(suffix, url,
+                             frameWidth, frameHeight,
+                             frameCount, frameRate) {
+      js <- sprintf(
+        "addSpriteAnimation('%s','%s','%s',%d,%d,%d,%d);",
+        private$name, suffix, url, frameWidth, frameHeight, frameCount, frameRate
+      )
+      send_js(private, js)
+    },
+    #' @description Enable movement controls (arrow keys) for a player sprite.
+    #' @param directions Character vector. Directions to enable (defaults to c("left","right","down","up")).
+    #' @param speed Numeric. Movement speed in pixels/second (default: 200).
+    add_player_controls = function(directions = c("left", "right", "down", "up"),
+                                   speed = 200) {
+      js_dirs <- jsonlite::toJSON(directions, auto_unbox = TRUE)
+      js <- sprintf("addPlayerControls('%s', %s, %d);", private$name, js_dirs, speed)
+      send_js(private, js)
+    },
     #' @param dirX Numeric. Horizontal direction (-1 = left, +1 = right, 0 = none).
     #' @param dirY Numeric. Vertical direction (-1 = up, +1 = down, 0 = none).
     #' @param speed Numeric. Speed in pixels/second.
@@ -347,6 +320,25 @@ Sprite <- R6::R6Class(
     move = function(dirX = 0, dirY = 0, speed, distance) {
       js <- sprintf("move('%s', %d, %d, %d, %d);",
                     private$name, dirX, dirY, speed, distance)
+      send_js(private, js)
+    },
+
+    #' @description Move sprite along a vector for a set distance.
+    #' @param dirX Numeric. Horizontal direction (-1 = left, +1 = right, 0 = none).
+    #' @param dirY Numeric. Vertical direction (-1 = up, +1 = down, 0 = none).
+    #' @param speed Numeric. Speed in pixels/second.
+    #' @param distance Numeric. Distance in pixels to travel before stopping.
+    #' @param lag Numeric. Optional delay before sending the command (defaults to distance/speed).
+    set_in_motion = function(dirX,
+                             dirY,
+                             speed,
+                             distance,
+                             lag = distance/speed) {
+      Sys.sleep(lag)
+      js <- sprintf(
+        "setSpriteInMotion('%s', %d, %d, %d, %d);",
+        private$name, dirX, dirY, speed, distance
+      )
       send_js(private, js)
     }
   ),
