@@ -42,6 +42,10 @@ server <- function(input, output, session) {
     directions = c("left", "right"),
     speed = 300
   )
+  bear$set_gravity(
+    x = 0,
+    y = 300
+  )
 
   apples <- game$add_static_group(
     name = "apples",
@@ -73,6 +77,10 @@ server <- function(input, output, session) {
     frameWidth = 80,
     frameHeight = 80,
   )
+  wooden_box$set_gravity(
+    x = 0,
+    y = 500
+  )
   points_text <- game$add_text(
     text = "points: 0",
     id = "points_text",
@@ -80,6 +88,14 @@ server <- function(input, output, session) {
     y = 100
   )
   Sys.sleep(0.1)
+  game$add_collider(
+    object_one_name = "bear",
+    object_two_name = "grass"
+  )
+  game$add_collider(
+    object_one_name = "wooden_box",
+    object_two_name = "grass"
+  )
   game$add_overlap(
     object_one_name = "bear",
     object_two_name = "wooden_box",
