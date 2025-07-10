@@ -54,6 +54,13 @@ Sprite <- R6::R6Class(
       send_js(private, js)
     },
 
+    set_bounce = function(x) {
+      Sys.sleep(0.1)
+      js <- sprintf("setBounce('%s', %f);",
+                    private$name, x)
+      send_js(private, js)
+    },
+
     #' @param dirX Numeric. Horizontal direction (-1 = left, +1 = right, 0 = none).
     #' @param dirY Numeric. Vertical direction (-1 = up, +1 = down, 0 = none).
     #' @param speed Numeric. Speed in pixels/second.

@@ -125,3 +125,8 @@ function setGravity(name, x, y) {
   const sprite = scene[name];
   sprite.body.setGravity(x, y);
 }
+
+function setBounce(name, x) {
+  const sprite = scene[name];
+  sprite.setBounce(x);
+}

@@ -46,6 +46,7 @@ server <- function(input, output, session) {
     x = 0,
     y = 300
   )
+  bear$set_bounce(0.2)
 
   apples <- game$add_static_group(
     name = "apples",
