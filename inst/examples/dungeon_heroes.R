@@ -18,7 +18,7 @@ server <- function(input, output, session) {
     layerName = "Ground"
   )
 
-  game$add_player_sprite(
+  wolf_hero <- game$add_sprite(
     name = "hero",
     url = "assets/rpg_game/sprites/wolf_hero_idle.png",
     x = 100,
@@ -28,9 +28,36 @@ server <- function(input, output, session) {
     frameCount = 17,
     frameRate = 8
   )
-  game$add_player_controls(name = "hero", speed = 200)
-  game$add_sprite(
-    name = "goblin",
+  wolf_hero$add_player_controls(
+    speed = 200
+  )
+  wolf_hero$add_animation(
+    suffix = "move_left",
+    url = "assets/rpg_game/sprites/wolf_hero_move_left.png",
+    frameWidth = 100, frameHeight = 100,
+    frameCount = 3, frameRate = 8
+  )
+  wolf_hero$add_animation(
+    suffix = "move_right",
+    url = "assets/rpg_game/sprites/wolf_hero_move_right.png",
+    frameWidth = 100, frameHeight = 100,
+    frameCount = 3, frameRate = 8
+  )
+  wolf_hero$add_animation(
+    suffix = "move_up",
+    url = "assets/rpg_game/sprites/wolf_hero_move_left.png",
+    frameWidth = 100, frameHeight = 100,
+    frameCount = 3, frameRate = 8
+  )
+  wolf_hero$add_animation(
+    suffix = "move_down",
+    url = "assets/rpg_game/sprites/wolf_hero_move_right.png",
+    frameWidth = 100, frameHeight = 100,
+    frameCount = 3, frameRate = 8
+  )
+
+  goblin_1 <- game$add_sprite(
+    name = "goblin_1",
     url = "assets/rpg_game/enemies/goblin_idle.png",
     x = 600,
     y = 600,
@@ -39,8 +66,8 @@ server <- function(input, output, session) {
     frameCount = 9,
     frameRate  = 8
   )
-  game$add_sprite(
-    name = "goblin",
+  goblin_2 <- game$add_sprite(
+    name = "goblin_2",
     url = "assets/rpg_game/enemies/goblin_idle.png",
     x = 1200,
     y = 500,
@@ -49,10 +76,23 @@ server <- function(input, output, session) {
     frameCount = 9,
     frameRate  = 8
   )
-  Sys.sleep(0.1)
+
+  goblins <- game$add_group(name = "goblin")
+
+  goblins$add_animation(
+    suffix = "idle",
+    url = "assets/rpg_game/enemies/goblin_idle.png",
+    frameWidth = 100,
+    frameHeight = 100,
+    frameCount = 9,
+    frameRate = 8
+  )
+
+  goblins$create(x = 800, y = 350)
+  goblins$create(x = 600, y = 400)
+
   game$enable_terrain_collision("hero")
   rocks <- game$add_static_group(
-    input = input,
     name = "rocks",
     url = "assets/rpg_game/obstacles/rock.png"
   )
@@ -78,51 +118,51 @@ server <- function(input, output, session) {
   )
   game$add_collider(
     object_one = "hero",
-    object_two = "goblin",
+    group_name = "goblin",
     callback_fun = function(evt) {
-      life_points <<- life_points - 10
+      life_points <<- life_points - 5
       life_points_text$set(paste0("life: ", life_points, "/100"))
     },
     input = input
   )
-  game$add_sprite_animation(
-    name = "hero",
-    suffix = "move_left",
-    url = "assets/rpg_game/sprites/wolf_hero_move_left.png",
-    frameWidth = 100, frameHeight = 100,
-    frameCount = 3, frameRate = 8
+  game$add_collider(
+    object_one = "hero",
+    object_two = "goblin_1",
+    callback_fun = function(evt) {
+      life_points <<- life_points - 5
+      life_points_text$set(paste0("life: ", life_points, "/100"))
+    },
+    input = input
   )
-  game$add_sprite_animation(
-    name = "hero",
-    suffix = "move_right",
-    url = "assets/rpg_game/sprites/wolf_hero_move_right.png",
-    frameWidth = 100, frameHeight = 100,
-    frameCount = 3, frameRate = 8
+  game$add_collider(
+    object_one = "hero",
+    object_two = "goblin_2",
+    callback_fun = function(evt) {
+      life_points <<- life_points - 5
+      life_points_text$set(paste0("life: ", life_points, "/100"))
+    },
+    input = input
   )
-  game$add_sprite_animation(
-    name = "goblin",
+
+  goblin_1$add_animation(
     suffix = "move_left",
     url = "assets/rpg_game/enemies/goblin_move_left.png",
     frameWidth = 100, frameHeight = 100,
     frameCount = 2, frameRate = 6
   )
-  game$add_sprite_animation(
-    name = "goblin",
+  goblin_1$add_animation(
     suffix = "move_right",
     url = "assets/rpg_game/enemies/goblin_move_right.png",
     frameWidth = 100, frameHeight = 100,
     frameCount = 2, frameRate = 6
   )
-
-  game$set_sprite_in_motion(
-    type = "goblin",
+  goblin_1$set_in_motion(
     dirX = 1,
     dirY = 0,
     speed = 50,
     distance = 200
   )
-  game$set_sprite_in_motion(
-    type = "goblin",
+  goblin_1$set_in_motion(
     dirX = -1,
     dirY = 0,
     speed = 50,

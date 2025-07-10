@@ -48,7 +48,8 @@ PhaserGame <- R6::R6Class(
           version = "0.1",
           package = "phaserR",
           src = "www",
-          script = c("phaser-game.js", "phaser-groups.js")
+          script = c("phaser-game.js", "phaser-groups.js",
+                     "phaser-sprite.js")
         ),
         htmltools::tags$script(
           sprintf("initPhaserGame('%s', %s);", self$id,
@@ -59,41 +60,6 @@ PhaserGame <- R6::R6Class(
 
     add_text = function(text, id, x, y, style = list(fontSize = '22px')) {
       return(TextObject$new(text, id, x, y, style))
-    },
-
-    #' @description Add a player sprite to the scene as an animated spritesheet.
-    #' @param name Character. Unique key for the sprite.
-    #' @param url Character. URL or relative path to the spritesheet image.
-    #' @param x Numeric. X-coordinate in pixels.
-    #' @param y Numeric. Y-coordinate in pixels.
-    #' @param frameWidth Numeric. Width of each frame in the spritesheet.
-    #' @param frameHeight Numeric. Height of each frame in the spritesheet.
-    #' @param frameCount Numeric. Total number of frames.
-    #' @param frameRate Numeric. Frames per second for the animation.
-    #' @return Invisible; sends a custom message to the client.
-    add_player_sprite = function(name, url, x, y, frameWidth, frameHeight, frameCount, frameRate) {
-      js <- sprintf("addPlayerSprite('%s', '%s', %d, %d, %d, %d, %d, %d);",
-                    name, url, x, y, frameWidth, frameHeight, frameCount, frameRate)
-      send_js(private, js)
-    },
-
-    #' @description Load a custom animation for any sprite previously added.
-    #' @param name Character. Base key used in add_player_sprite or add_enemy_sprite.
-    #' @param suffix Character. Identifier for this animation (e.g. "move_left").
-    #' @param url Character. URL or path to the spritesheet.
-    #' @param frameWidth Numeric. Width of each frame.
-    #' @param frameHeight Numeric. Height of each frame.
-    #' @param frameCount Numeric. Number of frames in the spritesheet.
-    #' @param frameRate Numeric. Frames per second for playback.
-    #' @return Invisible; sends a custom message to the client.
-    add_sprite_animation = function(name, suffix, url,
-                                    frameWidth, frameHeight,
-                                    frameCount, frameRate) {
-      js <- sprintf(
-        "addSpriteAnimation('%s','%s','%s',%d,%d,%d,%d);",
-        name, suffix, url, frameWidth, frameHeight, frameCount, frameRate
-      )
-      send_js(private, js)
     },
 
     #' @description Adds a static image to the Phaser scene.
@@ -130,18 +96,6 @@ PhaserGame <- R6::R6Class(
       send_js(private, js)
     },
 
-    #' @description Enable movement controls (arrow keys) for a player sprite.
-    #' @param name Character. Name of the player sprite (as added via add_player_sprite).
-    #' @param directions Character vector. Directions to enable (defaults to c("left","right","down","up")).
-    #' @param speed Numeric. Movement speed in pixels/second (default: 200).
-    add_player_controls = function(name,
-                                   directions = c("left", "right", "down", "up"),
-                                   speed = 200) {
-      js_dirs <- jsonlite::toJSON(directions, auto_unbox = TRUE)
-      js <- sprintf("addPlayerControls('%s', %s, %d);", name, js_dirs, speed)
-      send_js(private, js)
-    },
-
     #' @description Enable terrain collision for a player sprite.
     #' @param name Character. Name of the player sprite (as added via add_player_sprite).
     enable_terrain_collision = function(name) {
@@ -149,27 +103,45 @@ PhaserGame <- R6::R6Class(
       send_js(private, js)
     },
 
+    #' @description Load a base spritesheet and create an "idle" animation.
+    #' @param name Character. Unique key for the sprite and its idle animation.
+    #' @param url Character. URL or path to the spritesheet image.
+    #' @param x Numeric. X-coordinate in pixels.
+    #' @param y Numeric. Y-coordinate in pixels.
+    #' @param frameWidth Numeric. Width of each frame.
+    #' @param frameHeight Numeric. Height of each frame.
+    #' @param frameCount Numeric. Number of frames in the spritesheet.
+    #' @param frameRate Numeric. Frames per second for the idle animation.
+    add_sprite = function(name, url,
+                          x, y,
+                          frameWidth, frameHeight,
+                          frameCount = 1, frameRate = 1) {
+      return(Sprite$new(name, url, x, y, frameWidth, frameHeight, frameCount, frameRate))
+    },
+
+    #' @description Adds a dynamic group from a spritesheet.
+    #' @param name Character. Unique name of the group.
+    add_group = function(name) {
+      return(Group$new(name))
+   },
+
     #' @description Adds a static sprite to the scene (non-animated).
     #' @param name Character. Unique name of the sprite.
     #' @param url Character. URL or path to the image file.
     #' @param x Numeric. X-coordinate in pixels.
     #' @param y Numeric. Y-coordinate in pixels.
     add_static_sprite = function(name, url, x, y) {
-      js <- sprintf("addStaticSprite('%s','%s', %s, %s);",
-                    name, url, x, y)
-      send_js(private, js)
+      return(StaticSprite$new(name, url, x, y))
     },
 
     #' @description Adds a static group to the scene (non-animated).
     #' @param name Character. Unique name of the group.
     #' @param url Character. URL or path to the image file.
-    add_static_group = function(input, name, url) {
+    add_static_group = function(name, url) {
       return(StaticGroup$new(
-        input = input,
         name = name,
-        url = url,
-        session = private$session)
-      )
+        url = url
+      ))
     },
 
     #' @description Adds a collider between two game objects.
@@ -232,50 +204,8 @@ PhaserGame <- R6::R6Class(
         evt <- input[[input_id]]
         callback_fun(evt)
       }, ignoreNULL = TRUE)
-    },
-
-    #' @description Load a base spritesheet and create an "idle" animation.
-    #' @param name Character. Unique key for the sprite and its idle animation.
-    #' @param url Character. URL or path to the spritesheet image.
-    #' @param x Numeric. X-coordinate in pixels.
-    #' @param y Numeric. Y-coordinate in pixels.
-    #' @param frameWidth Numeric. Width of each frame.
-    #' @param frameHeight Numeric. Height of each frame.
-    #' @param frameCount Numeric. Number of frames in the spritesheet.
-    #' @param frameRate Numeric. Frames per second for the idle animation.
-    add_sprite = function(name, url,
-                          x, y,
-                          frameWidth, frameHeight,
-                          frameCount, frameRate) {
-      js <- sprintf(
-        "addSprite('%s', '%s', %d, %d, %d, %d, %d, %d);",
-        name, url, x, y, frameWidth, frameHeight, frameCount, frameRate
-      )
-      send_js(private, js)
-    },
-
-    #' @description Move all sprites of a given type along a vector for a set distance.
-    #' @param type Character. Key used in add_sprite().
-    #' @param dirX Numeric. Horizontal direction (-1 = left, +1 = right, 0 = none).
-    #' @param dirY Numeric. Vertical direction (-1 = up, +1 = down, 0 = none).
-    #' @param speed Numeric. Speed in pixels/second.
-    #' @param distance Numeric. Distance in pixels to travel before stopping.
-    #' @param lag Numeric. Optional delay before sending the command (defaults to distance/speed).
-    set_sprite_in_motion = function(type,
-                                    dirX,
-                                    dirY,
-                                    speed,
-                                    distance,
-                                    lag = distance/speed) {
-      Sys.sleep(lag)
-      js <- sprintf(
-        "setSpriteInMotion('%s', %d, %d, %d, %d);",
-        type, dirX, dirY, speed, distance
-      )
-      send_js(private, js)
     }
   ),
-
   private = list(
     config = list(),
     input = NULL,
@@ -304,44 +234,3 @@ TextObject <- R6::R6Class(
     session = NULL
   )
 )
-
-StaticGroup <- R6::R6Class(
-  classname = "StaticGroup",
-  public = list(
-    initialize = function(input, name, url, session) {
-      private$input <- input
-      private$name <- name
-      private$session <- session
-
-      js <- sprintf("addStaticGroup('%s','%s');", name, url)
-      send_js(private, js)
-
-      Sys.sleep(0.1)
-    },
-    create = function(x, y) {
-      js <- sprintf(
-        "addToStaticGroup('%s', %d, %d);",
-        private$name, x, y
-      )
-      send_js(private, js)
-    },
-    disable = function(evt) {
-      x <- evt$x2
-      y <- evt$y2
-      js <- sprintf(
-        "disableBody('%s', %d, %d);",
-        private$name, x, y
-      )
-      send_js(private, js)
-    }
-  ),
-  private = list(
-    input = NULL,
-    name = NULL,
-    session = NULL
-  )
-)
-
-send_js <- function(private, js) {
-  private$session$sendCustomMessage("phaser", list(js = js))
-}

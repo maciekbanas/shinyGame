@@ -15,7 +15,8 @@ server <- function(input, output, session) {
     x = 800,
     y = 300
   )
-  game$add_player_sprite(
+
+  bear <- game$add_sprite(
     name = "bear",
     url = "assets/bear_game/player_sprites/bear_idle.png",
     x = 100,
@@ -25,8 +26,24 @@ server <- function(input, output, session) {
     frameCount = 10,
     frameRate = 4
   )
+  bear$add_animation(
+    suffix = "move_right",
+    url = "assets/bear_game/player_sprites/bear_move_right.png",
+    frameWidth = 100, frameHeight = 100,
+    frameCount = 2, frameRate = 6
+  )
+  bear$add_animation(
+    suffix = "move_left",
+    url = "assets/bear_game/player_sprites/bear_move_left.png",
+    frameWidth = 100, frameHeight = 100,
+    frameCount = 2, frameRate = 6
+  )
+  bear$add_player_controls(
+    directions = c("left", "right"),
+    speed = 300
+  )
+
   apples <- game$add_static_group(
-    input = input,
     name = "apples",
     url = "assets/bear_game/perks/apple.png"
   )
@@ -42,16 +59,19 @@ server <- function(input, output, session) {
     x = 1200,
     y = 600
   )
-  game$add_player_controls(
-    name = "bear",
-    directions = c("left", "right"),
-    speed = 300
-  )
-  game$add_static_sprite(
+  grass <- game$add_static_sprite(
     name = "grass",
     url = "assets/bear_game/terrain/grass.png",
     x = 800,
     y = 700
+  )
+  wooden_box <- game$add_sprite(
+    name = "wooden_box",
+    url = "assets/bear_game/obstacles/wooden_box.png",
+    x = 300,
+    y = 600,
+    frameWidth = 80,
+    frameHeight = 80,
   )
   points_text <- game$add_text(
     text = "points: 0",
@@ -62,6 +82,19 @@ server <- function(input, output, session) {
   Sys.sleep(0.1)
   game$add_overlap(
     object_one_name = "bear",
+    object_two_name = "wooden_box",
+    callback_fun = function(evt) {
+      wooden_box$move(
+        dirX = 1,
+        dirY = 0,
+        speed = 350,
+        distance = 50
+      )
+    },
+    input = input
+  )
+  game$add_overlap(
+    object_one_name = "bear",
     group_name = "apples",
     callback_fun = function(evt) {
       points <<- points + 1
@@ -69,20 +102,6 @@ server <- function(input, output, session) {
       apples$disable(evt)
     },
     input = input
-  )
-  game$add_sprite_animation(
-    name = "bear",
-    suffix = "move_right",
-    url = "assets/bear_game/player_sprites/bear_move_right.png",
-    frameWidth = 100, frameHeight = 100,
-    frameCount = 2, frameRate = 6
-  )
-  game$add_sprite_animation(
-    name = "bear",
-    suffix = "move_left",
-    url = "assets/bear_game/player_sprites/bear_move_left.png",
-    frameWidth = 100, frameHeight = 100,
-    frameCount = 2, frameRate = 6
   )
 }
 
