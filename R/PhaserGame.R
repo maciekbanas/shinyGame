@@ -48,7 +48,8 @@ PhaserGame <- R6::R6Class(
           version = "0.1",
           package = "phaserR",
           src = "www",
-          script = c("phaser-game.js", "phaser-groups.js")
+          script = c("phaser-game.js", "phaser-groups.js",
+                     "phaser-sprite.js")
         ),
         htmltools::tags$script(
           sprintf("initPhaserGame('%s', %s);", self$id,
@@ -155,17 +156,14 @@ PhaserGame <- R6::R6Class(
     #' @param x Numeric. X-coordinate in pixels.
     #' @param y Numeric. Y-coordinate in pixels.
     add_static_sprite = function(name, url, x, y) {
-      js <- sprintf("addStaticSprite('%s','%s', %s, %s);",
-                    name, url, x, y)
-      send_js(private, js)
+      return(StaticSprite$new(name, url, x, y))
     },
 
     #' @description Adds a static group to the scene (non-animated).
     #' @param name Character. Unique name of the group.
     #' @param url Character. URL or path to the image file.
-    add_static_group = function(input, name, url) {
+    add_static_group = function(name, url) {
       return(StaticGroup$new(
-        input = input,
         name = name,
         url = url,
         session = private$session)
@@ -246,12 +244,8 @@ PhaserGame <- R6::R6Class(
     add_sprite = function(name, url,
                           x, y,
                           frameWidth, frameHeight,
-                          frameCount, frameRate) {
-      js <- sprintf(
-        "addSprite('%s', '%s', %d, %d, %d, %d, %d, %d);",
-        name, url, x, y, frameWidth, frameHeight, frameCount, frameRate
-      )
-      send_js(private, js)
+                          frameCount = 1, frameRate = 1) {
+      return(Sprite$new(name, url, x, y, frameWidth, frameHeight, frameCount, frameRate))
     },
 
     #' @description Move all sprites of a given type along a vector for a set distance.
@@ -308,8 +302,7 @@ TextObject <- R6::R6Class(
 StaticGroup <- R6::R6Class(
   classname = "StaticGroup",
   public = list(
-    initialize = function(input, name, url, session) {
-      private$input <- input
+    initialize = function(name, url, session) {
       private$name <- name
       private$session <- session
 
@@ -336,7 +329,49 @@ StaticGroup <- R6::R6Class(
     }
   ),
   private = list(
-    input = NULL,
+    name = NULL,
+    session = NULL
+  )
+)
+
+Sprite <- R6::R6Class(
+  classname = "Sprite",
+  public = list(
+    initialize = function(name, url, x, y,
+                          frameWidth, frameHeight, frameCount, frameRate,
+                          session = getDefaultReactiveDomain()) {
+      private$session <- session
+      private$name <- name
+      js <- sprintf(
+        "addSprite('%s', '%s', %d, %d, %d, %d, %d, %d);",
+        name, url, x, y, frameWidth, frameHeight, frameCount, frameRate
+      )
+      send_js(private, js)
+    },
+    move = function(dx = NULL, dy = NULL, duration) {
+      js <- sprintf("move('%s', %d, %d, %d);",
+                    private$name, dx, dy, duration)
+      send_js(private, js)
+    }
+  ),
+  private = list(
+    name = NULL,
+    session = NULL
+  )
+)
+
+StaticSprite <- R6::R6Class(
+  classname = "StaticSprite",
+  public = list(
+    initialize = function(name, url, x, y, session = getDefaultReactiveDomain()) {
+      private$session <- session
+      private$name <- name
+      js <- sprintf("addStaticSprite('%s','%s', %s, %s);",
+                    name, url, x, y)
+      send_js(private, js)
+    }
+  ),
+  private = list(
     name = NULL,
     session = NULL
   )

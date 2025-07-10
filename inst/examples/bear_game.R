@@ -26,7 +26,6 @@ server <- function(input, output, session) {
     frameRate = 4
   )
   apples <- game$add_static_group(
-    input = input,
     name = "apples",
     url = "assets/bear_game/perks/apple.png"
   )
@@ -47,11 +46,19 @@ server <- function(input, output, session) {
     directions = c("left", "right"),
     speed = 300
   )
-  game$add_static_sprite(
+  grass <- game$add_static_sprite(
     name = "grass",
     url = "assets/bear_game/terrain/grass.png",
     x = 800,
     y = 700
+  )
+  wooden_box <- game$add_sprite(
+    name = "wooden_box",
+    url = "assets/bear_game/obstacles/wooden_box.png",
+    x = 300,
+    y = 600,
+    frameWidth = 80,
+    frameHeight = 80,
   )
   points_text <- game$add_text(
     text = "points: 0",
@@ -60,6 +67,18 @@ server <- function(input, output, session) {
     y = 100
   )
   Sys.sleep(0.1)
+  game$add_overlap(
+    object_one_name = "bear",
+    object_two_name = "wooden_box",
+    callback_fun = function(evt) {
+      wooden_box$move(
+        dx = 10,
+        dy = 0,
+        duration = 100
+      )
+    },
+    input = input
+  )
   game$add_overlap(
     object_one_name = "bear",
     group_name = "apples",
