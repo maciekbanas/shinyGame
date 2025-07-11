@@ -47,6 +47,24 @@ Sprite <- R6::R6Class(
       send_js(private, js)
     },
 
+    #' @key A character, accepts Javascript key events (they need to align with
+    #'   event.code).
+    #' @action A function to be run after key is pressed.
+    add_control = function(key, action, input) {
+      event <- paste0(key, "_action")
+      js <- sprintf("addKeyControl('%s');", key)
+      send_js(private, js)
+      shiny::observeEvent(input[[event]], {
+        action()
+      })
+    },
+
+    set_velocity_y = function(x = 100) {
+      js <- sprintf("setVelocityY('%s', %d);",
+                    private$name, x)
+      send_js(private, js)
+    },
+
     set_gravity = function(x = 100, y = 100) {
       Sys.sleep(0.1)
       js <- sprintf("setGravity('%s', %d, %d);",

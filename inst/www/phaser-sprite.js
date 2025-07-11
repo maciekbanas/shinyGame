@@ -126,7 +126,25 @@ function setGravity(name, x, y) {
   sprite.body.setGravity(x, y);
 }
 
+function setVelocityY(name, x) {
+  const sprite = scene[name];
+  sprite.body.setVelocityY(x);
+}
+
 function setBounce(name, x) {
   const sprite = scene[name];
   sprite.setBounce(x);
+}
+
+function addKeyControl(key) {
+  document.addEventListener('keydown', function(e) {
+    const inputId = key + "_action";
+    if (key == e.code) {
+      Shiny.setInputValue(
+        inputId,
+        e.code,
+        { priority: "event" }
+      );
+    }
+  });
 }

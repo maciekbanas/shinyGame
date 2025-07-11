@@ -20,7 +20,7 @@ server <- function(input, output, session) {
     name = "bear",
     url = "assets/bear_game/player_sprites/bear_idle.png",
     x = 100,
-    y = 600,
+    y = 550,
     frameWidth = 100,
     frameHeight = 100,
     frameCount = 10,
@@ -42,11 +42,18 @@ server <- function(input, output, session) {
     directions = c("left", "right"),
     speed = 300
   )
+  bear$add_control(
+    "ArrowUp",
+    action = function() {
+      bear$set_velocity_y(-1e3)
+    },
+    input
+  )
   bear$set_gravity(
     x = 0,
-    y = 300
+    y = 5e3
   )
-  bear$set_bounce(0.2)
+  bear$set_bounce(1)
 
   apples <- game$add_static_group(
     name = "apples",
