@@ -37,6 +37,16 @@ Sprite <- R6::R6Class(
       )
       send_js(private, js)
     },
+
+    play_animation = function(anim_name) {
+      Sys.sleep(0.1)
+      js <- sprintf(
+        "playAnimation('%s','%s');",
+        private$name, anim_name
+      )
+      send_js(private, js)
+    },
+
     #' @description Enable movement controls (arrow keys) for a player sprite.
     #' @param directions Character vector. Directions to enable (defaults to c("left","right","down","up")).
     #' @param speed Numeric. Movement speed in pixels/second (default: 200).
@@ -57,6 +67,12 @@ Sprite <- R6::R6Class(
       shiny::observeEvent(input[[event]], {
         action()
       })
+    },
+
+    set_velocity_x = function(x = 100) {
+      js <- sprintf("setVelocityX('%s', %d);",
+                    private$name, x)
+      send_js(private, js)
     },
 
     set_velocity_y = function(x = 100) {
@@ -84,7 +100,7 @@ Sprite <- R6::R6Class(
     #' @param speed Numeric. Speed in pixels/second.
     #' @param distance Numeric. Distance in pixels to travel before stopping.
     move = function(dirX = 0, dirY = 0, speed, distance) {
-      js <- sprintf("move('%s', %d, %d, %d, %d);",
+      js <- sprintf("moveSprite('%s', %d, %d, %d, %d);",
                     private$name, dirX, dirY, speed, distance)
       send_js(private, js)
     },

@@ -37,7 +37,7 @@ function addStaticSprite(name, url, x, y) {
   scene.load.start();
 }
 
-function move(name, dirX, dirY, speed, distance) {
+function moveSprite(name, dirX, dirY, speed, distance, addAnim) {
   const spr = scene[name];
 
   const endX = spr.x + dirX * distance;
@@ -48,7 +48,76 @@ function move(name, dirX, dirY, speed, distance) {
     x: endX,
     y: endY,
     duration: duration,
-    ease: 'Linear'
+    ease: 'Linear',
+    onStart: () => {
+      if (scene.anims.exists(addAnim)) {
+        spr.anims.play(addAnim, true);
+      }
+    }
+  });
+
+}
+
+function addSpriteAnimation(name, suffix, url, frameWidth, frameHeight, frameCount, frameRate) {
+  if (!scene) {
+    console.warn(`addSpriteAnimation("${name}", "${suffix}"): scene not ready`);
+    return;
+  }
+  const animKey = name + "_" + suffix;
+  scene.load.spritesheet(animKey, url, {
+    frameWidth:  frameWidth,
+    frameHeight: frameHeight
+  });
+  scene.load.once("complete", () => {
+    scene.anims.create({
+      key: animKey,
+      frames: scene.anims.generateFrameNumbers(animKey, {
+        start: 0,
+        end: frameCount - 1
+      }),
+      frameRate: frameRate,
+      repeat: -1
+    });
+  });
+  scene.load.start();
+}
+
+function playAnimation(name, animName) {
+  const sprite = scene[name];
+  debugger;
+  sprite.play(animName, true);
+}
+
+function setGravity(name, x, y) {
+  const sprite = scene[name];
+  sprite.body.setGravity(x, y);
+}
+
+function setVelocityX(name, x) {
+  const sprite = scene[name];
+  sprite.body.setVelocityX(x);
+}
+
+function setVelocityY(name, x) {
+  const sprite = scene[name];
+  sprite.body.setVelocityY(x);
+}
+
+function setBounce(name, x) {
+  const sprite = scene[name];
+  sprite.setBounce(x);
+}
+
+function addKeyControl(key) {
+  document.addEventListener('keydown', function(e) {
+    const inputId = key + "_action";
+    if (key == e.code) {
+      Shiny.setInputValue(
+        inputId,
+        e.code,
+        { priority: "event" }
+      );
+    }
   });
 }
 
@@ -94,57 +163,5 @@ function setSpriteInMotion(name, dirX, dirY, speed, distance) {
         playTypeAnim(sprite, name, "idle");
       }
     });
-  });
-}
-
-function addSpriteAnimation(name, suffix, url, frameWidth, frameHeight, frameCount, frameRate) {
-  if (!scene) {
-    console.warn(`addSpriteAnimation("${name}", "${suffix}"): scene not ready`);
-    return;
-  }
-  const animKey = name + "_" + suffix;
-  scene.load.spritesheet(animKey, url, {
-    frameWidth:  frameWidth,
-    frameHeight: frameHeight
-  });
-  scene.load.once("complete", () => {
-    scene.anims.create({
-      key: animKey,
-      frames: scene.anims.generateFrameNumbers(animKey, {
-        start: 0,
-        end: frameCount - 1
-      }),
-      frameRate: frameRate,
-      repeat: -1
-    });
-  });
-  scene.load.start();
-}
-
-function setGravity(name, x, y) {
-  const sprite = scene[name];
-  sprite.body.setGravity(x, y);
-}
-
-function setVelocityY(name, x) {
-  const sprite = scene[name];
-  sprite.body.setVelocityY(x);
-}
-
-function setBounce(name, x) {
-  const sprite = scene[name];
-  sprite.setBounce(x);
-}
-
-function addKeyControl(key) {
-  document.addEventListener('keydown', function(e) {
-    const inputId = key + "_action";
-    if (key == e.code) {
-      Shiny.setInputValue(
-        inputId,
-        e.code,
-        { priority: "event" }
-      );
-    }
   });
 }
