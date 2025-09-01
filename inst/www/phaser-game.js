@@ -80,7 +80,7 @@ function addPlayerControls(name, directions, speed) {
   GameBridge.playerControls[name] = { speed, directions };
 };
 
-function addImage(imageName, imageUrl, x = null, y = null) {
+function addImage(imageName, imageUrl, x = null, y = null, visible = true) {
   scene.load.image(imageName, imageUrl);
 
   scene.load.once('complete', () => {
@@ -91,7 +91,8 @@ function addImage(imageName, imageUrl, x = null, y = null) {
       ? y
       : scene.cameras.main.height / 2;
 
-    scene.add.image(px, py, imageName);
+    scene[imageName] = scene.add.image(px, py, imageName);
+    scene[imageName].setVisible(visible);
   });
 
   scene.load.start();
@@ -185,6 +186,33 @@ function addOverlap(objectOneName, objectTwoName, inputId) {
       );
     }
   );
+}
+
+function addOverlapEnd(objectOneName, objectTwoName, inputId) {
+  const obj1 = scene.children.getByName(objectOneName);
+  const obj2 = scene.children.getByName(objectTwoName);
+
+  let wasOverlapping = false;
+
+  scene.events.on("update", () => {
+    const currentlyOverlapping = Phaser.Geom.Intersects.RectangleToRectangle(
+      obj1.getBounds(),
+      obj2.getBounds()
+    );
+
+    if (wasOverlapping && !currentlyOverlapping) {
+      Shiny.setInputValue(
+        inputId,
+        {
+          name1: obj1.name, x1: obj1.x, y1: obj1.y,
+          name2: obj2.name, x2: obj2.x, y2: obj2.y
+        },
+        { priority: "event" }
+      );
+    }
+
+    wasOverlapping = currentlyOverlapping;
+  });
 }
 
 function addGroupOverlap(objectName, groupName, inputId) {
