@@ -20,7 +20,7 @@ server <- function(input, output, session) {
     name = "bear",
     url = "assets/bear_game/player_sprites/bear_idle.png",
     x = 100,
-    y = 600,
+    y = 550,
     frameWidth = 100,
     frameHeight = 100,
     frameCount = 10,
@@ -38,13 +38,46 @@ server <- function(input, output, session) {
     frameWidth = 100, frameHeight = 100,
     frameCount = 2, frameRate = 6
   )
+  bear$add_animation(
+    suffix = "jump",
+    url = "assets/bear_game/player_sprites/bear_jump.png",
+    frameWidth = 100, frameHeight = 100,
+    frameCount = 2, frameRate = 6
+  )
+  bear$add_animation(
+    suffix = "attack_1",
+    url = "assets/bear_game/player_sprites/bear_attack_1.png",
+    frameWidth = 100, frameHeight = 100,
+    frameCount = 1, frameRate = 2
+  )
   bear$add_player_controls(
     directions = c("left", "right"),
     speed = 300
   )
+  Sys.sleep(0.1)
+  bear$add_control(
+    "ArrowUp",
+    action = function() {
+      bear$move(
+        dirY = -1,
+        speed = 300,
+        distance = 100
+      )
+    },
+    input
+  )
+  bear$add_control(
+    "Space",
+    action = function() {
+      bear$play_animation(
+        anim_name = "bear_attack_1"
+      )
+    },
+    input
+  )
   bear$set_gravity(
     x = 0,
-    y = 300
+    y = 8e3
   )
 
   apples <- game$add_static_group(
