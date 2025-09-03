@@ -80,24 +80,6 @@ function addPlayerControls(name, directions, speed) {
   GameBridge.playerControls[name] = { speed, directions };
 };
 
-function addImage(imageName, imageUrl, x = null, y = null, visible = true) {
-  scene.load.image(imageName, imageUrl);
-
-  scene.load.once('complete', () => {
-    const px = x !== null
-      ? x
-      : scene.cameras.main.width  / 2;
-    const py = y !== null
-      ? y
-      : scene.cameras.main.height / 2;
-
-    scene[imageName] = scene.add.image(px, py, imageName);
-    scene[imageName].setVisible(visible);
-  });
-
-  scene.load.start();
-}
-
 function addMap(mapKey, mapUrl, tilesetUrls, tilesetNames, layerName) {
   scene.load.tilemapTiledJSON(mapKey, mapUrl);
   for (let i = 0; i < tilesetNames.length; i++) {
