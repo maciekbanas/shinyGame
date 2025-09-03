@@ -49,7 +49,7 @@ PhaserGame <- R6::R6Class(
           package = "phaserR",
           src = "www",
           script = c("phaser-game.js", "phaser-groups.js",
-                     "phaser-sprite.js")
+                     "phaser-sprite.js", "phaser-image.js")
         ),
         htmltools::tags$script(
           sprintf("initPhaserGame('%s', %s);", self$id,
@@ -63,14 +63,13 @@ PhaserGame <- R6::R6Class(
     },
 
     #' @description Adds a static image to the Phaser scene.
-    #' @param imageName Character. Unique key to reference this image.
-    #' @param imageUrl Character. URL or path to the image file.
+    #' @param name Character. Unique key to reference this image.
+    #' @param url Character. URL or path to the image file.
     #' @param x Numeric. X-coordinate in pixels.
     #' @param y Numeric. Y-coordinate in pixels.
     #' @return Invisible; sends a custom message to the client.
-    add_image = function(imageName, imageUrl, x, y) {
-      js <- sprintf("addImage('%s', '%s', %d, %d);", imageName, imageUrl, x, y)
-      send_js(private, js)
+    add_image = function(name, url, x, y, visible = TRUE) {
+      return(Image$new(name, url, x, y, visible))
     },
 
     #' @description Add a background (tilemap) layer from Tiled JSON + tileset image(s).
@@ -184,7 +183,7 @@ PhaserGame <- R6::R6Class(
                            group_name      = NULL,
                            callback_fun,
                            input) {
-
+      Sys.sleep(0.1)
       input_id <- paste(
         c("overlap", object_one_name,
           object_two_name %||% group_name),
@@ -204,7 +203,28 @@ PhaserGame <- R6::R6Class(
         evt <- input[[input_id]]
         callback_fun(evt)
       }, ignoreNULL = TRUE)
-    }
+    },
+
+   add_overlap_end = function(object_one_name,
+                              object_two_name = NULL,
+                              group_name = NULL,
+                              callback_fun,
+                              input,
+                              session = shiny::getDefaultReactiveDomain()) {
+     input_id <- paste(
+       c("overlap_end", object_one_name,
+         object_two_name %||% group_name),
+       collapse = "_"
+     )
+     js <- sprintf("addOverlapEnd('%s','%s','%s');",
+                   object_one_name, object_two_name, input_id)
+     session$sendCustomMessage("phaser", list(js = js))
+
+     shiny::observeEvent(input[[input_id]], {
+       evt <- input[[input_id]]
+       callback_fun(evt)
+     })
+   }
   ),
   private = list(
     config = list(),
