@@ -215,6 +215,18 @@ function addGroupOverlap(objectName, groupName, inputId) {
   );
 }
 
+function addRectangle(name, x, y, width, height, fillColor, visible = true, clickable = true) {
+  scene[name] = scene.add.rectangle(x, y, width, height, fillColor);
+  if (clickable) {
+    scene[name].setInteractive();
+  }
+  scene[name].setVisible(visible);
+}
+
+function addGraphics(name, x, y, width, height, fillColor) {
+  scene[name] = scene.add.rectangle(x, y, width, height, fillColor);
+}
+
 Shiny.addCustomMessageHandler("phaser", function (message) {
   eval(message.js);
 });
