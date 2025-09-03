@@ -69,7 +69,8 @@ server <- function(input, output, session) {
     url = "assets/hero_game/buttons/talk.png",
     y = 600,
     x = 600,
-    visible = FALSE
+    visible = FALSE,
+    clickable = TRUE
   )
   game$add_overlap(
     object_one = "hero",
@@ -84,6 +85,12 @@ server <- function(input, output, session) {
     object_two = "wizard",
     callback_fun = function(evt) {
       talk_btn$hide()
+    },
+    input = input
+  )
+  talk_btn$click(
+    event_fun = function(evt) {
+      browser()
     },
     input = input
   )

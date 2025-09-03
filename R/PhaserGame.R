@@ -68,8 +68,8 @@ PhaserGame <- R6::R6Class(
     #' @param x Numeric. X-coordinate in pixels.
     #' @param y Numeric. Y-coordinate in pixels.
     #' @return Invisible; sends a custom message to the client.
-    add_image = function(name, url, x, y, visible = TRUE) {
-      return(Image$new(name, url, x, y, visible))
+    add_image = function(name, url, x, y, visible = TRUE, clickable = FALSE) {
+      return(Image$new(name, url, x, y, visible, clickable))
     },
 
     #' @description Add a background (tilemap) layer from Tiled JSON + tileset image(s).
