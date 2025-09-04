@@ -64,11 +64,13 @@ server <- function(input, output, session) {
     frameCount = 17,
     frameRate = 4
   )
-  talk_btn <- game$add_image(
+  talk_btn <- game$add_rectangle(
     name = "talk_btn",
-    url = "assets/hero_game/buttons/talk.png",
     y = 600,
     x = 600,
+    width = 100,
+    height = 40,
+    color = '0xffffff',
     visible = FALSE,
     clickable = TRUE
   )
@@ -90,9 +92,20 @@ server <- function(input, output, session) {
   )
   talk_btn$click(
     event_fun = function(evt) {
-      browser()
+      show_wizard_window(game)
     },
     input = input
+  )
+}
+
+show_wizard_window <- function(game) {
+  game$add_rectangle(
+    name = "redbox",
+    x = 500,
+    y = 200,
+    width = 400,
+    height = 400,
+    color = '0xff0000'
   )
 }
 

@@ -62,6 +62,10 @@ PhaserGame <- R6::R6Class(
       return(TextObject$new(text, id, x, y, style))
     },
 
+    add_rectangle = function(name, x, y, width, height, color, visible = TRUE, clickable = FALSE) {
+      return(Rectangle$new(name, x, y, width, height, color, visible, clickable))
+    },
+
     #' @description Adds a static image to the Phaser scene.
     #' @param name Character. Unique key to reference this image.
     #' @param url Character. URL or path to the image file.
