@@ -65,8 +65,9 @@ PhaserGame <- R6::R6Class(
     #' @param x Numeric. X-coordinate in pixels.
     #' @param y Numeric. Y-coordinate in pixels.
     #' @param style Named list. Styling options passed to Phaser text rendering.
-    add_text = function(text, id, x, y, style = list(font_size = '22px')) {
-      return(Text$new(text, id, x, y, style))
+    #' @param visible Logical. Whether text is initially visible.
+    add_text = function(text, id, x, y, style = list(font_size = '22px'), visible = TRUE) {
+      return(Text$new(text, id, x, y, style, visible))
     },
 
     #' @description Add a rectangle object to the Phaser scene.
@@ -312,10 +313,13 @@ Text <- R6::R6Class(
     #' @param x Numeric. X-coordinate in pixels.
     #' @param y Numeric. Y-coordinate in pixels.
     #' @param style Named list. Styling options passed to Phaser text rendering.
+    #' @param visible Logical. Whether text is initially visible.
     #' @param session Shiny session object.
-    initialize = function(text, id, x, y, style, session = shiny::getDefaultReactiveDomain()) {
-      js <- sprintf("addText('%s', '%s', %d, %d, %s);",
-                    text, id, x, y, jsonlite::toJSON(style, auto_unbox = TRUE))
+    initialize = function(text, id, x, y, style, visible = TRUE,
+                          session = shiny::getDefaultReactiveDomain()) {
+      js <- sprintf("addText('%s', '%s', %d, %d, %s, %s);",
+                    text, id, x, y, jsonlite::toJSON(style, auto_unbox = TRUE),
+                    tolower(visible))
       private$id <- id
       private$session <- session
       send_js(private, js)
@@ -325,6 +329,16 @@ Text <- R6::R6Class(
     set = function(text) {
       js <- sprintf("setText('%s', '%s');",
                     text, private$id)
+      send_js(private, js)
+    },
+    #' @description Show a previously added text object.
+    show = function() {
+      js <- sprintf("showText('%s');", private$id)
+      send_js(private, js)
+    },
+    #' @description Hide a previously added text object.
+    hide = function() {
+      js <- sprintf("hideText('%s');", private$id)
       send_js(private, js)
     }
   ),
