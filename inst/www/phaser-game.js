@@ -98,12 +98,21 @@ function initPhaserGame(containerId, config) {
   }
 }
 
-function addText(text, id, x, y, style) {
+function addText(text, id, x, y, style, visible = true) {
   scene[id] = scene.add.text(x, y, text, style);
+  scene[id].setVisible(visible);
 }
 
 function setText(text, id) {
   scene[id].setText(text);
+}
+
+function showText(id) {
+  scene[id].setVisible(true);
+}
+
+function hideText(id) {
+  scene[id].setVisible(false);
 }
 
 function addPlayerControls(name, directions, speed) {

@@ -12,6 +12,8 @@ dynamic updates to its content. Created with PhaserGame$add_text() method.
 \itemize{
 \item \href{#method-Text-new}{\code{Text$new()}}
 \item \href{#method-Text-set}{\code{Text$set()}}
+\item \href{#method-Text-show}{\code{Text$show()}}
+\item \href{#method-Text-hide}{\code{Text$hide()}}
 \item \href{#method-Text-clone}{\code{Text$clone()}}
 }
 }
@@ -21,7 +23,15 @@ dynamic updates to its content. Created with PhaserGame$add_text() method.
 \subsection{Method \code{new()}}{
 Create a text object in the Phaser scene.
 \subsection{Usage}{
-\if{html}{\out{<div class="r">}}\preformatted{Text$new(text, id, x, y, style, session = shiny::getDefaultReactiveDomain())}\if{html}{\out{</div>}}
+\if{html}{\out{<div class="r">}}\preformatted{Text$new(
+  text,
+  id,
+  x,
+  y,
+  style,
+  visible = TRUE,
+  session = shiny::getDefaultReactiveDomain()
+)}\if{html}{\out{</div>}}
 }
 
 \subsection{Arguments}{
@@ -36,6 +46,8 @@ Create a text object in the Phaser scene.
 \item{\code{y}}{Numeric. Y-coordinate in pixels.}
 
 \item{\code{style}}{Named list. Styling options passed to Phaser text rendering.}
+
+\item{\code{visible}}{Logical. Whether text is initially visible.}
 
 \item{\code{session}}{Shiny session object.}
 }
@@ -59,6 +71,25 @@ Update the text content of this object.
 \if{html}{\out{</div>}}
 }
 }
+\if{html}{\out{<hr>}}
+\if{html}{\out{<a id="method-Text-show"></a>}}
+\if{latex}{\out{\hypertarget{method-Text-show}{}}}
+\subsection{Method \code{show()}}{
+Show a previously added text object.
+\subsection{Usage}{
+\if{html}{\out{<div class="r">}}\preformatted{Text$show()}\if{html}{\out{</div>}}
+}
+}
+\if{html}{\out{<hr>}}
+\if{html}{\out{<a id="method-Text-hide"></a>}}
+\if{latex}{\out{\hypertarget{method-Text-hide}{}}}
+\subsection{Method \code{hide()}}{
+Hide a previously added text object.
+\subsection{Usage}{
+\if{html}{\out{<div class="r">}}\preformatted{Text$hide()}\if{html}{\out{</div>}}
+}
+}
+
 \if{html}{\out{<hr>}}
 \if{html}{\out{<a id="method-Text-clone"></a>}}
 \if{latex}{\out{\hypertarget{method-Text-clone}{}}}

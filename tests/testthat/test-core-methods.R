@@ -70,6 +70,22 @@ test_that("Sprite utility methods send expected JS", {
   expect_true(any(grepl("destroySprite\\('hero'\\);", msgs)))
 })
 
+
+test_that("Text methods send expected JS", {
+  session <- make_mock_session()
+  txt <- Text$new("Score", "score_text", 15, 25, list(font_size = "22px"),
+                  visible = FALSE, session = session)
+  txt$set("Score: 1")
+  txt$show()
+  txt$hide()
+
+  msgs <- vapply(session$get_messages(), function(m) m$message$js, character(1))
+  expect_true(any(grepl("addText\\('Score', 'score_text', 15, 25, .*false\\);", msgs)))
+  expect_true(any(grepl("setText\\('Score: 1', 'score_text'\\);", msgs)))
+  expect_true(any(grepl("showText\\('score_text'\\);", msgs)))
+  expect_true(any(grepl("hideText\\('score_text'\\);", msgs)))
+})
+
 test_that("sample app and hedgehog assets are available", {
   sample_app <- system.file("sample_app", "app.R", package = "shinyphaser")
   expect_true(file.exists(sample_app))

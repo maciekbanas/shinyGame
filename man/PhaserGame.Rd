@@ -127,7 +127,7 @@ HTML tag list containing dependencies and initialization script.
 \subsection{Method \code{add_text()}}{
 Add a text object to the Phaser scene.
 \subsection{Usage}{
-\if{html}{\out{<div class="r">}}\preformatted{PhaserGame$add_text(text, id, x, y, style = list(font_size = "22px"))}\if{html}{\out{</div>}}
+\if{html}{\out{<div class="r">}}\preformatted{PhaserGame$add_text(text, id, x, y, style = list(font_size = "22px"), visible = TRUE)}\if{html}{\out{</div>}}
 }
 
 \subsection{Arguments}{
@@ -142,6 +142,8 @@ Add a text object to the Phaser scene.
 \item{\code{y}}{Numeric. Y-coordinate in pixels.}
 
 \item{\code{style}}{Named list. Styling options passed to Phaser text rendering.}
+
+\item{\code{visible}}{Logical. Whether text is initially visible.}
 }
 \if{html}{\out{</div>}}
 }
