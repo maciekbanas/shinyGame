@@ -45,6 +45,16 @@ test_that("Group and StaticGroup methods send expected JS", {
   expect_true(any(grepl("disableBody\\('obstacles', 5, 6\\);", msgs)))
 })
 
+test_that("StaticSprite destroy sends expected JS", {
+  session <- make_mock_session()
+  static_sprite <- StaticSprite$new("rock", "rock.png", 10, 20, session = session)
+  static_sprite$destroy()
+
+  msgs <- vapply(session$get_messages(), function(m) m$message$js, character(1))
+  expect_true(any(grepl("addStaticSprite\\('rock','rock.png', 10, 20\\);", msgs)))
+  expect_true(any(grepl("destroySprite\\('rock'\\);", msgs)))
+})
+
 test_that("Sprite utility methods send expected JS", {
   session <- make_mock_session()
   s <- Sprite$new("hero", "hero.png", 0, 0, 32, 32, frame_count = 4, frame_rate = 12, session = session)
