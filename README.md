@@ -45,6 +45,12 @@ You can run the built-in sample app:
 shinyphaser::run_sample_app()
 ```
 
+Or launch the small spin-and-win marketing game:
+
+``` r
+shinyphaser::run_spin_and_win()
+```
+
 ## Learn by example
 
 For a full walkthrough (from static background to movement, animation,
