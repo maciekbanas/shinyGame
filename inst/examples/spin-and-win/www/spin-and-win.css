@@ -1,0 +1,359 @@
+:root {
+  --ink: #1e2430;
+  --cream: #f7f1e7;
+  --coral: #f26b4e;
+  --yellow: #f6c951;
+  --blue: #5578d5;
+  --mint: #79b99d;
+}
+
+* {
+  box-sizing: border-box;
+}
+
+html,
+body {
+  min-height: 100%;
+}
+
+body {
+  margin: 0;
+  color: var(--ink);
+  background:
+    radial-gradient(circle at 8% 15%, rgba(242, 107, 78, 0.12) 0 3px, transparent 4px),
+    radial-gradient(circle at 88% 78%, rgba(85, 120, 213, 0.12) 0 3px, transparent 4px),
+    var(--cream);
+  background-size: 42px 42px, 56px 56px, auto;
+  font-family: "DM Sans", sans-serif;
+}
+
+.container-fluid {
+  padding: 0;
+}
+
+.campaign-shell {
+  width: min(1180px, calc(100% - 48px));
+  min-height: 100vh;
+  margin: 0 auto;
+  padding: 56px 0 40px;
+  display: grid;
+  grid-template-columns: minmax(0, 0.9fr) minmax(480px, 1.1fr);
+  gap: clamp(48px, 8vw, 112px);
+  align-items: center;
+}
+
+.campaign-copy {
+  padding-bottom: 24px;
+}
+
+.brand-mark {
+  display: flex;
+  align-items: center;
+  gap: 11px;
+  margin-bottom: 76px;
+  font-family: "Manrope", sans-serif;
+  font-size: 15px;
+  font-weight: 800;
+  letter-spacing: 0.16em;
+}
+
+.brand-mark span {
+  width: 34px;
+  height: 34px;
+  display: grid;
+  place-items: center;
+  border: 2px solid var(--ink);
+  border-radius: 50% 50% 48% 52%;
+  color: var(--cream);
+  background: var(--ink);
+  letter-spacing: 0;
+}
+
+.eyebrow,
+.wheel-kicker {
+  font-size: 12px;
+  font-weight: 700;
+  letter-spacing: 0.18em;
+}
+
+.eyebrow {
+  margin-bottom: 20px;
+  color: var(--coral);
+}
+
+h1 {
+  max-width: 620px;
+  margin: 0;
+  font-family: "Manrope", sans-serif;
+  font-size: clamp(56px, 7vw, 92px);
+  font-weight: 800;
+  line-height: 0.96;
+  letter-spacing: -0.065em;
+}
+
+h1 span {
+  color: var(--coral);
+}
+
+.campaign-lead {
+  max-width: 500px;
+  margin: 28px 0 34px;
+  font-size: 18px;
+  line-height: 1.6;
+}
+
+.campaign-perks {
+  display: grid;
+  gap: 14px;
+}
+
+.campaign-perks > div {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  font-size: 14px;
+  font-weight: 600;
+}
+
+.perk-icon {
+  width: 28px;
+  height: 28px;
+  display: grid;
+  place-items: center;
+  border: 1px solid rgba(30, 36, 48, 0.22);
+  border-radius: 50%;
+  font-size: 9px;
+}
+
+.fine-print {
+  margin-top: 58px;
+  color: rgba(30, 36, 48, 0.58);
+  font-size: 11px;
+}
+
+.game-column {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+}
+
+.wheel-card {
+  width: min(100%, 610px);
+  padding: 24px 28px 26px;
+  border: 1px solid rgba(30, 36, 48, 0.15);
+  border-radius: 32px;
+  background: rgba(255, 255, 255, 0.62);
+  box-shadow: 0 30px 80px rgba(45, 41, 34, 0.12);
+  backdrop-filter: blur(12px);
+}
+
+.wheel-kicker {
+  margin-bottom: 8px;
+  text-align: center;
+}
+
+.wheel-wrap {
+  width: 100%;
+  aspect-ratio: 1;
+  display: grid;
+  place-items: center;
+}
+
+#spin_wheel {
+  width: 100% !important;
+  height: auto !important;
+}
+
+#spin_wheel canvas {
+  width: 100% !important;
+  height: auto !important;
+  display: block;
+}
+
+.spin-button {
+  width: 100%;
+  height: 60px;
+  margin-top: 4px;
+  padding: 0 24px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  border: 0;
+  border-radius: 16px;
+  color: white;
+  background: var(--ink);
+  font-size: 13px;
+  font-weight: 700;
+  letter-spacing: 0.12em;
+  transition: transform 160ms ease, background 160ms ease;
+}
+
+.spin-button:hover,
+.spin-button:focus {
+  color: white;
+  background: var(--coral);
+  transform: translateY(-2px);
+}
+
+.spin-button:disabled {
+  color: rgba(255, 255, 255, 0.72);
+  background: #777b82;
+  transform: none;
+}
+
+.button-arrow {
+  font-size: 24px;
+  font-weight: 400;
+}
+
+.spin-status {
+  min-height: 20px;
+  margin-top: 14px;
+  text-align: center;
+  color: rgba(30, 36, 48, 0.62);
+  font-size: 12px;
+}
+
+.trust-note {
+  margin-top: 18px;
+  color: rgba(30, 36, 48, 0.62);
+  font-size: 11px;
+}
+
+.trust-note span {
+  margin-right: 6px;
+  color: var(--mint);
+  font-weight: 800;
+}
+
+.modal-content {
+  overflow: hidden;
+  border: 0;
+  border-radius: 24px;
+  box-shadow: 0 30px 100px rgba(30, 36, 48, 0.24);
+}
+
+.modal-body {
+  padding: 42px 38px 28px;
+}
+
+.reward-modal-content {
+  text-align: center;
+}
+
+.reward-badge {
+  display: inline-block;
+  margin-bottom: 14px;
+  padding: 7px 12px;
+  border-radius: 999px;
+  color: #9c412f;
+  background: #fde1d7;
+  font-size: 10px;
+  font-weight: 800;
+  letter-spacing: 0.16em;
+}
+
+.reward-modal-content h2 {
+  margin: 0;
+  font-family: "Manrope", sans-serif;
+  font-size: 30px;
+  font-weight: 800;
+  letter-spacing: -0.04em;
+}
+
+.reward-modal-content p {
+  margin: 12px 0 24px;
+  color: rgba(30, 36, 48, 0.65);
+}
+
+.coupon-row {
+  display: flex;
+  gap: 8px;
+  padding: 7px;
+  border: 1px dashed rgba(30, 36, 48, 0.28);
+  border-radius: 13px;
+  background: var(--cream);
+}
+
+.coupon-row code {
+  flex: 1;
+  display: grid;
+  place-items: center;
+  color: var(--ink);
+  background: transparent;
+  font-size: 17px;
+  font-weight: 800;
+  letter-spacing: 0.08em;
+}
+
+.copy-button {
+  border: 0;
+  border-radius: 9px;
+  color: white;
+  background: var(--ink);
+  font-size: 10px;
+  font-weight: 700;
+  letter-spacing: 0.08em;
+}
+
+.modal-footer {
+  padding: 0 38px 30px;
+  text-align: center;
+  border: 0;
+}
+
+.modal-footer .btn {
+  color: rgba(30, 36, 48, 0.6);
+  background: transparent;
+  font-size: 12px;
+}
+
+@media (max-width: 900px) {
+  .campaign-shell {
+    grid-template-columns: 1fr;
+    gap: 42px;
+    padding-top: 32px;
+  }
+
+  .brand-mark {
+    margin-bottom: 48px;
+  }
+
+  .campaign-copy {
+    text-align: center;
+  }
+
+  .campaign-lead {
+    margin-right: auto;
+    margin-left: auto;
+  }
+
+  .campaign-perks {
+    width: max-content;
+    margin: 0 auto;
+    text-align: left;
+  }
+
+  .fine-print {
+    margin-top: 38px;
+  }
+}
+
+@media (max-width: 560px) {
+  .campaign-shell {
+    width: min(100% - 24px, 1180px);
+  }
+
+  h1 {
+    font-size: 50px;
+  }
+
+  .campaign-lead {
+    font-size: 16px;
+  }
+
+  .wheel-card {
+    padding: 18px 14px 20px;
+    border-radius: 24px;
+  }
+}
