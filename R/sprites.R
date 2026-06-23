@@ -173,6 +173,13 @@ StaticSprite <- R6::R6Class(
       js <- sprintf("addStaticSprite('%s','%s', %s, %s);",
                     name, url, x, y)
       send_js(private, js)
+    },
+
+    #' @description Remove static sprite from the scene.
+    destroy = function() {
+      js <- sprintf("destroySprite('%s');",
+                    private$name)
+      send_js(private, js)
     }
   ),
   private = list(

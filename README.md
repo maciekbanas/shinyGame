@@ -6,7 +6,10 @@
 <!-- badges: start -->
 
 [![R-CMD-check](https://github.com/maciekbanas/shinyphaser/actions/workflows/R-CMD-check.yaml/badge.svg)](https://github.com/maciekbanas/shinyphaser/actions/workflows/R-CMD-check.yaml)
-[![CRAN downloads](https://cranlogs.r-pkg.org/badges/shinyphaser)](https://cran.r-project.org/package=shinyphaser)
+[![CRAN
+downloads](https://cranlogs.r-pkg.org/badges/grand-total/shinyphaser)](https://CRAN.R-project.org/package=shinyphaser)
+[![CRAN
+downloads](https://cranlogs.r-pkg.org/badges/shinyphaser)](https://cran.r-project.org/package=shinyphaser)
 <!-- badges: end -->
 
 This package provides an R Shiny interface to selected features of the

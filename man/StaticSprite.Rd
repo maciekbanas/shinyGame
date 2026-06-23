@@ -11,6 +11,7 @@ with PhaserGame$add_static_sprite() method.
 \subsection{Public methods}{
 \itemize{
 \item \href{#method-StaticSprite-new}{\code{StaticSprite$new()}}
+\item \href{#method-StaticSprite-destroy}{\code{StaticSprite$destroy()}}
 \item \href{#method-StaticSprite-clone}{\code{StaticSprite$clone()}}
 }
 }
@@ -37,6 +38,15 @@ Add a non-animated static sprite to the scene.
 \item{\code{session}}{Shiny session object.}
 }
 \if{html}{\out{</div>}}
+}
+}
+\if{html}{\out{<hr>}}
+\if{html}{\out{<a id="method-StaticSprite-destroy"></a>}}
+\if{latex}{\out{\hypertarget{method-StaticSprite-destroy}{}}}
+\subsection{Method \code{destroy()}}{
+Remove static sprite from the scene.
+\subsection{Usage}{
+\if{html}{\out{<div class="r">}}\preformatted{StaticSprite$destroy()}\if{html}{\out{</div>}}
 }
 }
 \if{html}{\out{<hr>}}

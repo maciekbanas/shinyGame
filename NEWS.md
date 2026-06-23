@@ -1,4 +1,6 @@
-# shinyphaser (development vesion)
+# shinyphaser (development version)
+
+* Added `StaticSprite$destroy()` for removing static sprites from the Phaser scene.
 
 * Added initial visibility control for text objects via `PhaserGame$add_text(..., visible = FALSE)` and `Text$new(..., visible = FALSE)`.
 * Added `Text$show()` and `Text$hide()` helpers for toggling text objects after creation.
