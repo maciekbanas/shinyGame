@@ -1,7 +1,9 @@
-# shinyphaser 0.1.0.9000
+# shinyphaser (development vesion)
 
 * Added initial visibility control for text objects via `PhaserGame$add_text(..., visible = FALSE)` and `Text$new(..., visible = FALSE)`.
 * Added `Text$show()` and `Text$hide()` helpers for toggling text objects after creation.
+
+* Added CRAN downloads badge to README.
 
 # shinyphaser 0.1.0
 
