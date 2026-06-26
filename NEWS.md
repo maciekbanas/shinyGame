@@ -6,6 +6,7 @@
 * Added `Text$show()` and `Text$hide()` helpers for toggling text objects after creation.
 
 * Added CRAN downloads badge to README.
+* Added animated gif example to README.
 
 # shinyphaser 0.1.0
 
