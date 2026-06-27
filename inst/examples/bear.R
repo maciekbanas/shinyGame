@@ -53,7 +53,7 @@ server <- function(input, output, session) {
     directions = c("left", "right"),
     speed = 300
   )
-  bear$follow_camera(lerp_x = 0.1, lerp_y = 0.1)
+  bear$follow_camera()
 
   game$add_control(
     "Space",

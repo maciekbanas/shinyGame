@@ -46,14 +46,8 @@ function addSprite(name, url, x, y, frameWidth, frameHeight, frameCount, frameRa
 
     scene[name] = sprite;
 
-    const followOpts = GameBridge.pendingCameraFollow[name];
-    if (followOpts) {
-      scene.cameras.main.startFollow(
-        sprite,
-        followOpts.roundPixels,
-        followOpts.lerpX,
-        followOpts.lerpY
-      );
+    if (typeof applyPendingCameraFollows === "function") {
+      applyPendingCameraFollows();
     }
   });
 

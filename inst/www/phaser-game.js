@@ -53,6 +53,7 @@ function initPhaserGame(containerId, config) {
   }
 
   function update(time, delta) {
+      applyPendingCameraFollows();
 
       Object.entries(GameBridge.playerControls).forEach(([name, opts]) => {
           const sprite = this.children.getByName(name);
@@ -147,13 +148,26 @@ function setWorldBounds(width, height) {
   applyWorldBounds(GameBridge.pendingWorldBounds);
 }
 
+function applyPendingCameraFollows() {
+  if (!scene || !scene.cameras) return;
+
+  Object.entries(GameBridge.pendingCameraFollow).forEach(([name, followOpts]) => {
+    const sprite = scene.children.getByName(name);
+    if (!sprite || followOpts.applied) return;
+
+    scene.cameras.main.startFollow(
+      sprite,
+      followOpts.roundPixels,
+      followOpts.lerpX,
+      followOpts.lerpY
+    );
+    followOpts.applied = true;
+  });
+}
+
 function followSpriteWithCamera(name, lerpX = 1, lerpY = 1, roundPixels = true) {
-  GameBridge.pendingCameraFollow[name] = { lerpX, lerpY, roundPixels };
-
-  const sprite = scene && scene.children.getByName(name);
-  if (!sprite) return;
-
-  scene.cameras.main.startFollow(sprite, roundPixels, lerpX, lerpY);
+  GameBridge.pendingCameraFollow[name] = { lerpX, lerpY, roundPixels, applied: false };
+  applyPendingCameraFollows();
 }
 
 function stopCameraFollow(name) {
