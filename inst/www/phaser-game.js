@@ -127,6 +127,23 @@ function addPlayerControls(name, directions, speed) {
   };
 };
 
+function followSpriteWithCamera(name, lerpX = 1, lerpY = 1, roundPixels = true) {
+  const sprite = scene && scene.children.getByName(name);
+  if (!sprite) {
+    console.warn(`followSpriteWithCamera(): sprite "${name}" not found`);
+    return;
+  }
+
+  scene.cameras.main.startFollow(sprite, roundPixels, lerpX, lerpY);
+}
+
+function stopCameraFollow(name) {
+  const camera = scene && scene.cameras && scene.cameras.main;
+  if (!camera) return;
+
+  camera.stopFollow();
+}
+
 function addMap(mapKey, mapUrl, tilesetUrls, tilesetNames, layerName) {
   scene.load.tilemapTiledJSON(mapKey, mapUrl);
   for (let i = 0; i < tilesetNames.length; i++) {

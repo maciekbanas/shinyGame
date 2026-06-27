@@ -1,5 +1,7 @@
 # shinyphaser (development version)
 
+* Added camera follow helpers for sprites so the Phaser camera can move with a player sprite.
+
 * Added `StaticSprite$destroy()` for removing static sprites from the Phaser scene.
 
 * Added initial visibility control for text objects via `PhaserGame$add_text(..., visible = FALSE)` and `Text$new(..., visible = FALSE)`.
