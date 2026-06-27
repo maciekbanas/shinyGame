@@ -6,6 +6,7 @@ GameBridge.playerControls = {};
 GameBridge.overlapEndWatchers = {};
 GameBridge.forcedAnimations = GameBridge.forcedAnimations || {};
 GameBridge.pendingCameraFollow = GameBridge.pendingCameraFollow || {};
+GameBridge.pendingWorldBounds = GameBridge.pendingWorldBounds || null;
 
 function playIfChanged(sprite, animKey) {
   if (!sprite || !animKey) return;
@@ -48,6 +49,7 @@ function initPhaserGame(containerId, config) {
 
   function create() {
     cursors = this.input.keyboard.createCursorKeys();
+    applyWorldBounds(GameBridge.pendingWorldBounds);
   }
 
   function update(time, delta) {
@@ -133,11 +135,16 @@ function addPlayerControls(name, directions, speed) {
   };
 };
 
-function setWorldBounds(width, height) {
-  if (!scene || !scene.physics || !scene.cameras) return;
+function applyWorldBounds(bounds) {
+  if (!bounds || !scene || !scene.physics || !scene.cameras) return;
 
-  scene.physics.world.setBounds(0, 0, width, height);
-  scene.cameras.main.setBounds(0, 0, width, height);
+  scene.physics.world.setBounds(0, 0, bounds.width, bounds.height);
+  scene.cameras.main.setBounds(0, 0, bounds.width, bounds.height);
+}
+
+function setWorldBounds(width, height) {
+  GameBridge.pendingWorldBounds = { width, height };
+  applyWorldBounds(GameBridge.pendingWorldBounds);
 }
 
 function followSpriteWithCamera(name, lerpX = 1, lerpY = 1, roundPixels = true) {
