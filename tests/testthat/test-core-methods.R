@@ -61,6 +61,8 @@ test_that("Sprite utility methods send expected JS", {
   s$play_animation("idle")
   s$play_animation("run", duration = 300)
   s$add_player_controls(c("left", "right"), speed = 180)
+  s$follow_camera(lerp_x = 0.5, lerp_y = 0.75, round_pixels = FALSE)
+  s$stop_camera_follow()
   s$set_velocity_x(120)
   s$set_velocity_y(140)
   s$set_gravity(1, 2)
@@ -72,6 +74,8 @@ test_that("Sprite utility methods send expected JS", {
   expect_true(any(grepl("playAnimation\\('hero','idle'\\);", msgs)))
   expect_true(any(grepl("playAnimationForDuration\\('hero','run', 300\\);", msgs)))
   expect_true(any(grepl("addPlayerControls\\('hero',", msgs)))
+  expect_true(any(grepl("followSpriteWithCamera\\('hero', 0.500000, 0.750000, false\\);", msgs)))
+  expect_true(any(grepl("stopCameraFollow\\('hero'\\);", msgs)))
   expect_true(any(grepl("setVelocityX\\('hero', 120\\);", msgs)))
   expect_true(any(grepl("setVelocityY\\('hero', 140\\);", msgs)))
   expect_true(any(grepl("setGravity\\('hero', 1, 2\\);", msgs)))
@@ -100,6 +104,16 @@ test_that("sample app and hedgehog assets are available", {
   sample_app <- system.file("sample_app", "app.R", package = "shinyphaser")
   expect_true(file.exists(sample_app))
   expect_true(file.exists(system.file("assets", "hedgehog", "terrain", "grass.png", package = "shinyphaser")))
+})
+
+test_that("PhaserGame set_world_bounds sends expected JS", {
+  session <- make_mock_session()
+  game <- PhaserGame$new()
+  game$set_shiny_session(session)
+  game$set_world_bounds(width = 1600, height = 800)
+
+  msgs <- vapply(session$get_messages(), function(m) m$message$js, character(1))
+  expect_true(any(grepl("setWorldBounds\\(1600, 800\\);", msgs)))
 })
 
 test_that("PhaserGame exposes use_phaser UI initializer", {

@@ -14,6 +14,8 @@ with PhaserGame$add_sprite() method.
 \item \href{#method-Sprite-add_animation}{\code{Sprite$add_animation()}}
 \item \href{#method-Sprite-play_animation}{\code{Sprite$play_animation()}}
 \item \href{#method-Sprite-add_player_controls}{\code{Sprite$add_player_controls()}}
+\item \href{#method-Sprite-follow_camera}{\code{Sprite$follow_camera()}}
+\item \href{#method-Sprite-stop_camera_follow}{\code{Sprite$stop_camera_follow()}}
 \item \href{#method-Sprite-set_velocity_x}{\code{Sprite$set_velocity_x()}}
 \item \href{#method-Sprite-set_velocity_y}{\code{Sprite$set_velocity_y()}}
 \item \href{#method-Sprite-set_gravity}{\code{Sprite$set_gravity()}}
@@ -143,6 +145,37 @@ Enable movement controls (arrow keys) for a player sprite.
 \item{\code{speed}}{Numeric. Movement speed in pixels/second (default: 200).}
 }
 \if{html}{\out{</div>}}
+}
+}
+
+\if{html}{\out{<hr>}}
+\if{html}{\out{<a id="method-Sprite-follow_camera"></a>}}
+\if{latex}{\out{\hypertarget{method-Sprite-follow_camera}{}}}
+\subsection{Method \code{follow_camera()}}{
+Make the camera follow this sprite as it moves through the world.
+\subsection{Usage}{
+\if{html}{\out{<div class="r">}}\preformatted{Sprite$follow_camera(lerp_x = 1, lerp_y = 1, round_pixels = TRUE)}\if{html}{\out{</div>}}
+}
+
+\subsection{Arguments}{
+\if{html}{\out{<div class="arguments">}}
+\describe{
+\item{\code{lerp_x}}{Numeric. Horizontal interpolation factor from 0 to 1 (default: 1).}
+
+\item{\code{lerp_y}}{Numeric. Vertical interpolation factor from 0 to 1 (default: 1).}
+
+\item{\code{round_pixels}}{Logical. Whether to round camera pixels to avoid sub-pixel rendering (default: TRUE).}
+}
+\if{html}{\out{</div>}}
+}
+}
+\if{html}{\out{<hr>}}
+\if{html}{\out{<a id="method-Sprite-stop_camera_follow"></a>}}
+\if{latex}{\out{\hypertarget{method-Sprite-stop_camera_follow}{}}}
+\subsection{Method \code{stop_camera_follow()}}{
+Stop the camera from following this sprite.
+\subsection{Usage}{
+\if{html}{\out{<div class="r">}}\preformatted{Sprite$stop_camera_follow()}\if{html}{\out{</div>}}
 }
 }
 \if{html}{\out{<hr>}}

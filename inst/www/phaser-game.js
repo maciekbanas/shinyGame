@@ -5,6 +5,8 @@ window.GameBridge = window.GameBridge || {};
 GameBridge.playerControls = {};
 GameBridge.overlapEndWatchers = {};
 GameBridge.forcedAnimations = GameBridge.forcedAnimations || {};
+GameBridge.pendingCameraFollow = GameBridge.pendingCameraFollow || {};
+GameBridge.pendingWorldBounds = GameBridge.pendingWorldBounds || null;
 
 function playIfChanged(sprite, animKey) {
   if (!sprite || !animKey) return;
@@ -47,17 +49,24 @@ function initPhaserGame(containerId, config) {
 
   function create() {
     cursors = this.input.keyboard.createCursorKeys();
+    applyWorldBounds(GameBridge.pendingWorldBounds);
   }
 
   function update(time, delta) {
+      applyPendingCameraFollows();
 
       Object.entries(GameBridge.playerControls).forEach(([name, opts]) => {
           const sprite = this.children.getByName(name);
           if (!sprite) return;
 
-          sprite.body.setVelocity(0);
-
           const { speed, directionMap } = opts;
+
+          if (directionMap.left || directionMap.right) {
+            sprite.body.setVelocityX(0);
+          }
+          if (directionMap.up || directionMap.down) {
+            sprite.body.setVelocityY(0);
+          }
 
           let targetAnim = name + '_idle';
 
@@ -126,6 +135,48 @@ function addPlayerControls(name, directions, speed) {
     }
   };
 };
+
+function applyWorldBounds(bounds) {
+  if (!bounds || !scene || !scene.physics || !scene.cameras) return;
+
+  scene.physics.world.setBounds(0, 0, bounds.width, bounds.height);
+  scene.cameras.main.setBounds(0, 0, bounds.width, bounds.height);
+}
+
+function setWorldBounds(width, height) {
+  GameBridge.pendingWorldBounds = { width, height };
+  applyWorldBounds(GameBridge.pendingWorldBounds);
+}
+
+function applyPendingCameraFollows() {
+  if (!scene || !scene.cameras) return;
+
+  Object.entries(GameBridge.pendingCameraFollow).forEach(([name, followOpts]) => {
+    const sprite = scene.children.getByName(name);
+    if (!sprite || followOpts.applied) return;
+
+    scene.cameras.main.startFollow(
+      sprite,
+      followOpts.roundPixels,
+      followOpts.lerpX,
+      followOpts.lerpY
+    );
+    followOpts.applied = true;
+  });
+}
+
+function followSpriteWithCamera(name, lerpX = 1, lerpY = 1, roundPixels = true) {
+  GameBridge.pendingCameraFollow[name] = { lerpX, lerpY, roundPixels, applied: false };
+  applyPendingCameraFollows();
+}
+
+function stopCameraFollow(name) {
+  const camera = scene && scene.cameras && scene.cameras.main;
+  if (!camera) return;
+
+  delete GameBridge.pendingCameraFollow[name];
+  camera.stopFollow();
+}
 
 function addMap(mapKey, mapUrl, tilesetUrls, tilesetNames, layerName) {
   scene.load.tilemapTiledJSON(mapKey, mapUrl);
