@@ -120,6 +120,7 @@ PhaserGame <- R6::R6Class(
     #' @description Set the Phaser physics world and camera bounds.
     #' @param width Numeric. World width in pixels.
     #' @param height Numeric. World height in pixels.
+    #' @return Invisible; sends a custom message to the client.
     set_world_bounds = function(width, height) {
       js <- sprintf("setWorldBounds(%d, %d);", width, height)
       send_js(private, js)
