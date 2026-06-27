@@ -55,9 +55,14 @@ function initPhaserGame(containerId, config) {
           const sprite = this.children.getByName(name);
           if (!sprite) return;
 
-          sprite.body.setVelocity(0);
-
           const { speed, directionMap } = opts;
+
+          if (directionMap.left || directionMap.right) {
+            sprite.body.setVelocityX(0);
+          }
+          if (directionMap.up || directionMap.down) {
+            sprite.body.setVelocityY(0);
+          }
 
           let targetAnim = name + '_idle';
 

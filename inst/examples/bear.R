@@ -2,7 +2,9 @@ devtools::load_all()
 
 game <- PhaserGame$new(width = 1600, height = 800)
 
-ui <- game$ui()
+ui <- shiny::tagList(
+  game$use_phaser()
+)
 
 server <- function(input, output, session) {
   points <- 0
@@ -11,53 +13,50 @@ server <- function(input, output, session) {
 
   game$add_image(
     name = "sky",
-    url = "assets/bear_game/terrain/sky.png",
+    url = "assets/bear/terrain/sky.png",
     x = 800,
-    y = 300
+    y = 400
   )
 
   bear <- game$add_sprite(
     name = "bear",
-    url = "assets/bear_game/player_sprites/bear_idle.png",
+    url = "assets/bear/player_sprites/bear_idle.png",
     x = 100,
     y = 550,
-    frameWidth = 100,
-    frameHeight = 100,
-    frameCount = 10,
-    frameRate = 4
+    frame_width = 100,
+    frame_height = 100,
+    frame_rate = 4
   )
   bear$add_animation(
     suffix = "move_right",
-    url = "assets/bear_game/player_sprites/bear_move_right.png",
-    frameWidth = 100, frameHeight = 100,
-    frameCount = 2, frameRate = 6
+    url = "assets/bear/player_sprites/bear_move_right.png",
+    frame_width = 100,
+    frame_height = 100,
+    frame_rate = 6
   )
   bear$add_animation(
     suffix = "move_left",
-    url = "assets/bear_game/player_sprites/bear_move_left.png",
-    frameWidth = 100, frameHeight = 100,
-    frameCount = 2, frameRate = 6
+    url = "assets/bear/player_sprites/bear_move_left.png",
+    frame_width = 100,
+    frame_height = 100,
+    frame_rate = 6
   )
   bear$add_animation(
     suffix = "jump",
-    url = "assets/bear_game/player_sprites/bear_jump.png",
-    frameWidth = 100, frameHeight = 100,
-    frameCount = 2, frameRate = 6
+    url = "assets/bear/player_sprites/bear_jump.png",
+    frame_width = 100,
+    frame_height = 100,
+    frame_rate = 6
   )
   bear$add_player_controls(
     directions = c("left", "right"),
     speed = 300
   )
-  Sys.sleep(0.1)
+
   game$add_control(
     "Space",
     action = function() {
-      bear$set_in_motion(
-        dirX = 0,
-        dirY = -1,
-        speed = 300,
-        distance = 100
-      )
+      bear$set_velocity_y(-600)
       bear$play_animation(
         anim_name = "bear_jump",
         duration = 250
@@ -67,12 +66,12 @@ server <- function(input, output, session) {
   )
   bear$set_gravity(
     x = 0,
-    y = 8e3
+    y = 1200
   )
 
   apples <- game$add_static_group(
     name = "apples",
-    url = "assets/bear_game/perks/apple.png"
+    url = "assets/bear/perks/apple.png"
   )
   apples$create(
     x = 600,
@@ -86,55 +85,61 @@ server <- function(input, output, session) {
     x = 1200,
     y = 600
   )
+
   grass <- game$add_static_sprite(
     name = "grass",
-    url = "assets/bear_game/terrain/grass.png",
+    url = "assets/bear/terrain/grass.png",
     x = 800,
-    y = 700
+    y = 755
   )
+
   wooden_box <- game$add_sprite(
     name = "wooden_box",
-    url = "assets/bear_game/obstacles/wooden_box.png",
+    url = "assets/bear/obstacles/wooden_box.png",
     x = 300,
     y = 600,
-    frameWidth = 80,
-    frameHeight = 80,
+    frame_width = 80,
+    frame_height = 80
   )
   wooden_box$set_gravity(
     x = 0,
     y = 500
   )
+
   points_text <- game$add_text(
     text = "points: 0",
     id = "points_text",
     x = 100,
     y = 100
   )
-  Sys.sleep(0.1)
+
   game$add_collider(
-    object_one_name = "bear",
-    object_two_name = "grass"
+    object_one = "bear",
+    object_two = "grass",
+    input = input
   )
   game$add_collider(
-    object_one_name = "wooden_box",
-    object_two_name = "grass"
+    object_one = "wooden_box",
+    object_two = "grass",
+    input = input
   )
   game$add_overlap(
-    object_one_name = "bear",
-    object_two_name = "wooden_box",
+    object_one = "bear",
+    object_two = "wooden_box",
     callback_fun = function(evt) {
       wooden_box$set_in_motion(
-        dirX = 1,
-        dirY = 0,
+        dir_x = 1,
+        dir_y = 0,
         speed = 350,
-        distance = 50
+        distance = 50,
+        lag = 0
       )
     },
     input = input
   )
   game$add_overlap(
-    object_one_name = "bear",
-    group_name = "apples",
+    object_one = "bear",
+    group = "apples",
     callback_fun = function(evt) {
       points <<- points + 1
       points_text$set(paste0("points: ", points))
