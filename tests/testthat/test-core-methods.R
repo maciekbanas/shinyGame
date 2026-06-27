@@ -106,6 +106,16 @@ test_that("sample app and hedgehog assets are available", {
   expect_true(file.exists(system.file("assets", "hedgehog", "terrain", "grass.png", package = "shinyphaser")))
 })
 
+test_that("PhaserGame set_world_bounds sends expected JS", {
+  session <- make_mock_session()
+  game <- PhaserGame$new()
+  game$set_shiny_session(session)
+  game$set_world_bounds(width = 1600, height = 800)
+
+  msgs <- vapply(session$get_messages(), function(m) m$message$js, character(1))
+  expect_true(any(grepl("setWorldBounds\\(1600, 800\\);", msgs)))
+})
+
 test_that("PhaserGame exposes use_phaser UI initializer", {
   game <- PhaserGame$new()
 

@@ -1,6 +1,7 @@
 window.GameBridge = window.GameBridge || {};
 GameBridge.keyControlHandlers = GameBridge.keyControlHandlers || {};
 GameBridge.forcedAnimations = GameBridge.forcedAnimations || {};
+GameBridge.pendingCameraFollow = GameBridge.pendingCameraFollow || {};
 
 
 function resolveFrameCount(textureKey, frameWidth, frameHeight, frameCount) {
@@ -44,6 +45,10 @@ function addSprite(name, url, x, y, frameWidth, frameHeight, frameCount, frameRa
     sprite.play(name + '_idle');
 
     scene[name] = sprite;
+
+    if (typeof applyPendingCameraFollows === "function") {
+      applyPendingCameraFollows();
+    }
   });
 
   scene.load.start();

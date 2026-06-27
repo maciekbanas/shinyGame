@@ -38,6 +38,7 @@ game <- PhaserGame$new(id = "my_game", width = 1024, height = 768)
 \item \href{#method-PhaserGame-add_rectangle}{\code{PhaserGame$add_rectangle()}}
 \item \href{#method-PhaserGame-add_image}{\code{PhaserGame$add_image()}}
 \item \href{#method-PhaserGame-add_map}{\code{PhaserGame$add_map()}}
+\item \href{#method-PhaserGame-set_world_bounds}{\code{PhaserGame$set_world_bounds()}}
 \item \href{#method-PhaserGame-enable_terrain_collision}{\code{PhaserGame$enable_terrain_collision()}}
 \item \href{#method-PhaserGame-add_sprite}{\code{PhaserGame$add_sprite()}}
 \item \href{#method-PhaserGame-add_group}{\code{PhaserGame$add_group()}}
@@ -236,6 +237,28 @@ Add a background (tilemap) layer from Tiled JSON + tileset image(s).
 \item{\code{tileset_names}}{Character vector. Names of tilesets as defined in Tiled.}
 
 \item{\code{layer_name}}{Character. Name of the layer to render from Tiled.}
+}
+\if{html}{\out{</div>}}
+}
+\subsection{Returns}{
+Invisible; sends a custom message to the client.
+}
+}
+\if{html}{\out{<hr>}}
+\if{html}{\out{<a id="method-PhaserGame-set_world_bounds"></a>}}
+\if{latex}{\out{\hypertarget{method-PhaserGame-set_world_bounds}{}}}
+\subsection{Method \code{set_world_bounds()}}{
+Set the Phaser physics world and camera bounds.
+\subsection{Usage}{
+\if{html}{\out{<div class="r">}}\preformatted{PhaserGame$set_world_bounds(width, height)}\if{html}{\out{</div>}}
+}
+
+\subsection{Arguments}{
+\if{html}{\out{<div class="arguments">}}
+\describe{
+\item{\code{width}}{Numeric. World width in pixels.}
+
+\item{\code{height}}{Numeric. World height in pixels.}
 }
 \if{html}{\out{</div>}}
 }
