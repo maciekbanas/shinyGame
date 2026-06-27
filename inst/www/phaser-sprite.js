@@ -1,6 +1,7 @@
 window.GameBridge = window.GameBridge || {};
 GameBridge.keyControlHandlers = GameBridge.keyControlHandlers || {};
 GameBridge.forcedAnimations = GameBridge.forcedAnimations || {};
+GameBridge.pendingCameraFollow = GameBridge.pendingCameraFollow || {};
 
 
 function resolveFrameCount(textureKey, frameWidth, frameHeight, frameCount) {
@@ -44,6 +45,16 @@ function addSprite(name, url, x, y, frameWidth, frameHeight, frameCount, frameRa
     sprite.play(name + '_idle');
 
     scene[name] = sprite;
+
+    const followOpts = GameBridge.pendingCameraFollow[name];
+    if (followOpts) {
+      scene.cameras.main.startFollow(
+        sprite,
+        followOpts.roundPixels,
+        followOpts.lerpX,
+        followOpts.lerpY
+      );
+    }
   });
 
   scene.load.start();

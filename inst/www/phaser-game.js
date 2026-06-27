@@ -5,6 +5,7 @@ window.GameBridge = window.GameBridge || {};
 GameBridge.playerControls = {};
 GameBridge.overlapEndWatchers = {};
 GameBridge.forcedAnimations = GameBridge.forcedAnimations || {};
+GameBridge.pendingCameraFollow = GameBridge.pendingCameraFollow || {};
 
 function playIfChanged(sprite, animKey) {
   if (!sprite || !animKey) return;
@@ -132,12 +133,18 @@ function addPlayerControls(name, directions, speed) {
   };
 };
 
+function setWorldBounds(width, height) {
+  if (!scene || !scene.physics || !scene.cameras) return;
+
+  scene.physics.world.setBounds(0, 0, width, height);
+  scene.cameras.main.setBounds(0, 0, width, height);
+}
+
 function followSpriteWithCamera(name, lerpX = 1, lerpY = 1, roundPixels = true) {
+  GameBridge.pendingCameraFollow[name] = { lerpX, lerpY, roundPixels };
+
   const sprite = scene && scene.children.getByName(name);
-  if (!sprite) {
-    console.warn(`followSpriteWithCamera(): sprite "${name}" not found`);
-    return;
-  }
+  if (!sprite) return;
 
   scene.cameras.main.startFollow(sprite, roundPixels, lerpX, lerpY);
 }
@@ -146,6 +153,7 @@ function stopCameraFollow(name) {
   const camera = scene && scene.cameras && scene.cameras.main;
   if (!camera) return;
 
+  delete GameBridge.pendingCameraFollow[name];
   camera.stopFollow();
 }
 

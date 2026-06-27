@@ -1,6 +1,6 @@
 devtools::load_all()
 
-game <- PhaserGame$new(width = 1600, height = 800)
+game <- PhaserGame$new(width = 800, height = 800)
 
 ui <- shiny::tagList(
   game$use_phaser()
@@ -10,6 +10,7 @@ server <- function(input, output, session) {
   points <- 0
 
   game$set_shiny_session()
+  game$set_world_bounds(width = 1600, height = 800)
 
   game$add_image(
     name = "sky",
@@ -52,6 +53,7 @@ server <- function(input, output, session) {
     directions = c("left", "right"),
     speed = 300
   )
+  bear$follow_camera(lerp_x = 0.1, lerp_y = 0.1)
 
   game$add_control(
     "Space",

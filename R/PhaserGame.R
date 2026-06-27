@@ -117,6 +117,14 @@ PhaserGame <- R6::R6Class(
       send_js(private, js)
     },
 
+    #' @description Set the Phaser physics world and camera bounds.
+    #' @param width Numeric. World width in pixels.
+    #' @param height Numeric. World height in pixels.
+    set_world_bounds = function(width, height) {
+      js <- sprintf("setWorldBounds(%d, %d);", width, height)
+      send_js(private, js)
+    },
+
     #' @description Enable terrain collision for a player sprite.
     #' @param name Character. Name of the player sprite (as added via add_player_sprite).
     enable_terrain_collision = function(name) {
