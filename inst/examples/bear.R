@@ -114,7 +114,6 @@ server <- function(input, output, session) {
     x = 100,
     y = 100
   )
-  points_text$follow_camera()
 
   game$add_collider(
     object_one = "bear",
