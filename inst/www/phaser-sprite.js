@@ -62,6 +62,10 @@ function addStaticSprite(name, url, x, y) {
       scene.physics.add.collider(staticSprite, scene.terrainLayer);
     }
     scene[name] = staticSprite;
+
+    if (typeof applyPendingCameraFollows === "function") {
+      applyPendingCameraFollows();
+    }
   });
   scene.load.start();
 }

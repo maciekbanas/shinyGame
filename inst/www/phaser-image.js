@@ -9,11 +9,15 @@ function addImage(imageName, imageUrl, x = null, y = null, visible = true, click
       ? y
       : scene.cameras.main.height / 2;
 
-    scene[imageName] = scene.add.image(px, py, imageName);
+    scene[imageName] = scene.add.image(px, py, imageName).setName(imageName);
     if (clickable) {
       scene[imageName].setInteractive();
     }
     scene[imageName].setVisible(visible);
+
+    if (typeof applyPendingCameraFollows === "function") {
+      applyPendingCameraFollows();
+    }
   });
 
   scene.load.start();

@@ -108,8 +108,12 @@ function initPhaserGame(containerId, config) {
 }
 
 function addText(text, id, x, y, style, visible = true) {
-  scene[id] = scene.add.text(x, y, text, style);
+  scene[id] = scene.add.text(x, y, text, style).setName(id);
   scene[id].setVisible(visible);
+
+  if (typeof applyPendingCameraFollows === "function") {
+    applyPendingCameraFollows();
+  }
 }
 
 function setText(text, id) {
@@ -344,11 +348,15 @@ function addGroupOverlap(objectName, groupName, inputId) {
 }
 
 function addRectangle(name, x, y, width, height, fillColor, visible = true, clickable = true) {
-  scene[name] = scene.add.rectangle(x, y, width, height, fillColor);
+  scene[name] = scene.add.rectangle(x, y, width, height, fillColor).setName(name);
   if (clickable) {
     scene[name].setInteractive();
   }
   scene[name].setVisible(visible);
+
+  if (typeof applyPendingCameraFollows === "function") {
+    applyPendingCameraFollows();
+  }
 }
 
 function addGraphics(name, x, y, width, height, fillColor) {
