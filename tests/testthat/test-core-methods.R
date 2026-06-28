@@ -122,3 +122,23 @@ test_that("PhaserGame exposes use_phaser UI initializer", {
   expect_true(is.function(game$use_phaser))
   expect_null(game$ui)
 })
+
+test_that("PhaserGame use_phaser refreshes without cache by default", {
+  game <- PhaserGame$new()
+  ui <- game$use_phaser()
+  ui_html <- paste(as.character(ui), collapse = "\n")
+
+  expect_match(ui_html, "refreshBrowserWithoutCache\\(true\\)")
+  expect_match(ui_html, "shinyphaser-assets")
+  expect_match(ui_html, "0\\.1-[0-9]+")
+})
+
+test_that("PhaserGame use_phaser can disable cache-busting refresh", {
+  game <- PhaserGame$new()
+  ui <- game$use_phaser(refresh_browser = FALSE)
+  ui_html <- paste(as.character(ui), collapse = "\n")
+
+  expect_match(ui_html, "refreshBrowserWithoutCache\\(false\\)")
+  expect_match(ui_html, "0\\.1")
+  expect_false(grepl("0\\.1-[0-9]+", ui_html))
+})

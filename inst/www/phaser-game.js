@@ -8,6 +8,19 @@ GameBridge.forcedAnimations = GameBridge.forcedAnimations || {};
 GameBridge.pendingCameraFollow = GameBridge.pendingCameraFollow || {};
 GameBridge.pendingWorldBounds = GameBridge.pendingWorldBounds || null;
 
+
+function refreshBrowserWithoutCache(enabled = true) {
+  if (!enabled || !window.location || !window.sessionStorage) return;
+
+  const refreshKey = 'shinyphaser_no_cache_refresh_' + window.location.pathname;
+  if (window.sessionStorage.getItem(refreshKey) === 'done') return;
+
+  window.sessionStorage.setItem(refreshKey, 'done');
+  const url = new URL(window.location.href);
+  url.searchParams.set('_shinyphaser_nocache', Date.now().toString());
+  window.location.replace(url.toString());
+}
+
 function playIfChanged(sprite, animKey) {
   if (!sprite || !animKey) return;
   if (!sprite.anims || sprite.anims.currentAnim?.key !== animKey) {

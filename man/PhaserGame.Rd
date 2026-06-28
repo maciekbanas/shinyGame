@@ -33,7 +33,7 @@ game <- PhaserGame$new(id = "my_game", width = 1024, height = 768)
 \itemize{
 \item \href{#method-PhaserGame-new}{\code{PhaserGame$new()}}
 \item \href{#method-PhaserGame-set_shiny_session}{\code{PhaserGame$set_shiny_session()}}
-\item \href{#method-PhaserGame-use_phaser}{\code{PhaserGame$use_phaser()}}
+\item \href{#method-PhaserGame-use_phaser}{\code{PhaserGame$use_phaser(refresh_browser = TRUE)}}
 \item \href{#method-PhaserGame-add_text}{\code{PhaserGame$add_text()}}
 \item \href{#method-PhaserGame-add_rectangle}{\code{PhaserGame$add_rectangle()}}
 \item \href{#method-PhaserGame-add_image}{\code{PhaserGame$add_image()}}
@@ -107,7 +107,15 @@ Set the Shiny session used to send Phaser custom messages.
 \subsection{Method \code{use_phaser()}}{
 Load dependencies and initialize the Phaser game in the UI.
 \subsection{Usage}{
-\if{html}{\out{<div class="r">}}\preformatted{PhaserGame$use_phaser()}\if{html}{\out{</div>}}
+\if{html}{\out{<div class="r">}}\preformatted{PhaserGame$use_phaser(refresh_browser = TRUE)}\if{html}{\out{</div>}}
+}
+
+\subsection{Arguments}{
+\if{html}{\out{<div class="arguments">}}
+\describe{
+\item{\code{refresh_browser}}{Logical. Whether to refresh the browser once with a cache-busting URL and load shinyphaser JavaScript dependencies with a unique dependency version (default: TRUE).}
+}
+\if{html}{\out{</div>}}
 }
 
 \subsection{Returns}{
