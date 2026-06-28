@@ -1,8 +1,8 @@
 # shinyphaser (development version)
 
-* Added new arcade example game (bear).
+* Added camera follow helpers for sprites, images, rectangles, static sprites, and text scene objects so the Phaser camera can move with scene objects.
 
-* Added camera follow helpers for sprites so the Phaser camera can move with a player sprite.
+* Added new arcade example game (bear).
 * Added `PhaserGame$set_world_bounds()` for configuring Phaser physics world and camera bounds from R.
 
 * Added `StaticSprite$destroy()` for removing static sprites from the Phaser scene.

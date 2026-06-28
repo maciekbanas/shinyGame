@@ -13,18 +13,26 @@ test_that("Image and Rectangle methods send expected JS", {
   img <- Image$new("ground", "ground.png", 10, 20, TRUE, FALSE, session = session)
   img$show()
   img$hide()
+  img$follow_camera(lerp_x = 0.2, lerp_y = 0.3, round_pixels = FALSE)
+  img$stop_camera_follow()
 
   rect <- Rectangle$new("hitbox", 1, 2, 3, 4, "0xff00ff", TRUE, TRUE, session = session)
   rect$show()
   rect$hide()
+  rect$follow_camera(lerp_x = 0.4, lerp_y = 0.5, round_pixels = TRUE)
+  rect$stop_camera_follow()
 
   msgs <- vapply(session$get_messages(), function(m) m$message$js, character(1))
   expect_true(any(grepl("addImage\\('ground', 'ground.png', 10, 20, true, false\\);", msgs)))
   expect_true(any(grepl("showImage\\('ground'\\);", msgs)))
   expect_true(any(grepl("hideImage\\('ground'\\);", msgs)))
+  expect_true(any(grepl("followSpriteWithCamera\\('ground', 0.200000, 0.300000, false\\);", msgs)))
+  expect_true(any(grepl("stopCameraFollow\\('ground'\\);", msgs)))
   expect_true(any(grepl("addRectangle\\('hitbox', 1, 2, 3, 4, 0xff00ff, true, true\\);", msgs)))
   expect_true(any(grepl("showImage\\('hitbox'\\);", msgs)))
   expect_true(any(grepl("hideImage\\('hitbox'\\);", msgs)))
+  expect_true(any(grepl("followSpriteWithCamera\\('hitbox', 0.400000, 0.500000, true\\);", msgs)))
+  expect_true(any(grepl("stopCameraFollow\\('hitbox'\\);", msgs)))
 })
 
 test_that("Group and StaticGroup methods send expected JS", {
@@ -48,10 +56,14 @@ test_that("Group and StaticGroup methods send expected JS", {
 test_that("StaticSprite destroy sends expected JS", {
   session <- make_mock_session()
   static_sprite <- StaticSprite$new("rock", "rock.png", 10, 20, session = session)
+  static_sprite$follow_camera(lerp_x = 0.6, lerp_y = 0.7, round_pixels = FALSE)
+  static_sprite$stop_camera_follow()
   static_sprite$destroy()
 
   msgs <- vapply(session$get_messages(), function(m) m$message$js, character(1))
   expect_true(any(grepl("addStaticSprite\\('rock','rock.png', 10, 20\\);", msgs)))
+  expect_true(any(grepl("followSpriteWithCamera\\('rock', 0.600000, 0.700000, false\\);", msgs)))
+  expect_true(any(grepl("stopCameraFollow\\('rock'\\);", msgs)))
   expect_true(any(grepl("destroySprite\\('rock'\\);", msgs)))
 })
 
@@ -92,12 +104,16 @@ test_that("Text methods send expected JS", {
   txt$set("Score: 1")
   txt$show()
   txt$hide()
+  txt$follow_camera(lerp_x = 0.8, lerp_y = 0.9, round_pixels = TRUE)
+  txt$stop_camera_follow()
 
   msgs <- vapply(session$get_messages(), function(m) m$message$js, character(1))
   expect_true(any(grepl("addText\\('Score', 'score_text', 15, 25, .*false\\);", msgs)))
   expect_true(any(grepl("setText\\('Score: 1', 'score_text'\\);", msgs)))
   expect_true(any(grepl("showText\\('score_text'\\);", msgs)))
   expect_true(any(grepl("hideText\\('score_text'\\);", msgs)))
+  expect_true(any(grepl("followSpriteWithCamera\\('score_text', 0.800000, 0.900000, true\\);", msgs)))
+  expect_true(any(grepl("stopCameraFollow\\('score_text'\\);", msgs)))
 })
 
 test_that("sample app and hedgehog assets are available", {
