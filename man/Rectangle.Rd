@@ -13,6 +13,9 @@ PhaserGame$add_rectangle() method.
 \item \href{#method-Rectangle-new}{\code{Rectangle$new()}}
 \item \href{#method-Rectangle-show}{\code{Rectangle$show()}}
 \item \href{#method-Rectangle-hide}{\code{Rectangle$hide()}}
+\item \href{#method-Rectangle-follow_camera}{\code{Rectangle$follow_camera()}}
+\item \href{#method-Rectangle-stop_camera_follow}{\code{Rectangle$stop_camera_follow()}}
+\item \href{#method-Rectangle-set_scroll_factor}{\code{Rectangle$set_scroll_factor()}}
 \item \href{#method-Rectangle-click}{\code{Rectangle$click()}}
 \item \href{#method-Rectangle-clone}{\code{Rectangle$clone()}}
 }
@@ -79,6 +82,56 @@ Hide a previously added rectangle.
 \if{html}{\out{<div class="r">}}\preformatted{Rectangle$hide()}\if{html}{\out{</div>}}
 }
 
+}
+\if{html}{\out{<hr>}}
+\if{html}{\out{<a id="method-Rectangle-follow_camera"></a>}}
+\if{latex}{\out{\hypertarget{method-Rectangle-follow_camera}{}}}
+\subsection{Method \code{follow_camera()}}{
+Make the camera follow this rectangle as it moves through the world.
+\subsection{Usage}{
+\if{html}{\out{<div class="r">}}\preformatted{Rectangle$follow_camera(lerp_x = 1, lerp_y = 1, round_pixels = TRUE)}\if{html}{\out{</div>}}
+}
+
+\subsection{Arguments}{
+\if{html}{\out{<div class="arguments">}}
+\describe{
+\item{\code{lerp_x}}{Numeric. Horizontal interpolation factor from 0 to 1 (default: 1).}
+
+\item{\code{lerp_y}}{Numeric. Vertical interpolation factor from 0 to 1 (default: 1).}
+
+\item{\code{round_pixels}}{Logical. Whether to round camera pixels to avoid sub-pixel rendering (default: TRUE).}
+}
+\if{html}{\out{</div>}}
+}
+}
+\if{html}{\out{<hr>}}
+\if{html}{\out{<a id="method-Rectangle-stop_camera_follow"></a>}}
+\if{latex}{\out{\hypertarget{method-Rectangle-stop_camera_follow}{}}}
+\subsection{Method \code{stop_camera_follow()}}{
+Stop the camera from following this rectangle.
+\subsection{Usage}{
+\if{html}{\out{<div class="r">}}\preformatted{Rectangle$stop_camera_follow()}\if{html}{\out{</div>}}
+}
+
+}
+\if{html}{\out{<hr>}}
+\if{html}{\out{<a id="method-Rectangle-set_scroll_factor"></a>}}
+\if{latex}{\out{\hypertarget{method-Rectangle-set_scroll_factor}{}}}
+\subsection{Method \code{set_scroll_factor()}}{
+Set how much this rectangle scrolls with the camera.
+\subsection{Usage}{
+\if{html}{\out{<div class="r">}}\preformatted{Rectangle$set_scroll_factor(x, y = x)}\if{html}{\out{</div>}}
+}
+
+\subsection{Arguments}{
+\if{html}{\out{<div class="arguments">}}
+\describe{
+\item{\code{x}}{Numeric. Horizontal scroll factor (0 = fixed to viewport, 1 = scrolls with world).}
+
+\item{\code{y}}{Numeric. Vertical scroll factor. Defaults to \code{x}.}
+}
+\if{html}{\out{</div>}}
+}
 }
 \if{html}{\out{<hr>}}
 \if{html}{\out{<a id="method-Rectangle-click"></a>}}

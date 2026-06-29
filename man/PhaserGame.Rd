@@ -128,7 +128,14 @@ HTML tag list containing dependencies and initialization script.
 \subsection{Method \code{add_text()}}{
 Add a text object to the Phaser scene.
 \subsection{Usage}{
-\if{html}{\out{<div class="r">}}\preformatted{PhaserGame$add_text(text, id, x, y, style = list(font_size = "22px"), visible = TRUE)}\if{html}{\out{</div>}}
+\if{html}{\out{<div class="r">}}\preformatted{PhaserGame$add_text(
+  text,
+  id,
+  x,
+  y,
+  style = list(font_size = "22px"),
+  visible = TRUE
+)}\if{html}{\out{</div>}}
 }
 
 \subsection{Arguments}{
