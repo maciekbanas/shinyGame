@@ -2,7 +2,7 @@
 #'
 #' @title PhaserGame
 #' @description R6 class to create and manage a Phaser game within a Shiny application.
-#' Provides methods for adding sprites, animations, images, backgrounds, controls, and collision handling.
+#' Provides methods for adding sprites, animations, images, sounds, backgrounds, controls, and collision handling.
 #'
 #' @export
 PhaserGame <- R6::R6Class(
@@ -92,6 +92,18 @@ PhaserGame <- R6::R6Class(
     #' @param clickable Logical. Whether the image should emit click events (default: FALSE).
     add_image = function(name, url, x, y, visible = TRUE, clickable = FALSE) {
       return(Image$new(name, url, x, y, visible, clickable))
+    },
+
+    #' @description Adds a sound to the Phaser scene.
+    #' @param name Character. Unique key to reference this sound.
+    #' @param url Character. URL or path to the audio file.
+    #' @param volume Numeric. Initial playback volume from 0 to 1 (default: 1).
+    #' @param loop Logical. Whether the sound should loop by default (default: FALSE).
+    add_sound = function(name, url, volume = 1, loop = FALSE) {
+      return(Sound$new(
+        name, url, volume, loop,
+        session = private$session %||% shiny::getDefaultReactiveDomain()
+      ))
     },
 
     #' @description Add a background (tilemap) layer from Tiled JSON + tileset image(s).

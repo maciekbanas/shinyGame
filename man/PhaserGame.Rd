@@ -5,7 +5,7 @@
 \title{PhaserGame}
 \description{
 R6 class to create and manage a Phaser game within a Shiny application.
-Provides methods for adding sprites, animations, images, backgrounds, controls, and collision handling.
+Provides methods for adding sprites, animations, images, sounds, backgrounds, controls, and collision handling.
 }
 \examples{
 
@@ -37,6 +37,7 @@ game <- PhaserGame$new(id = "my_game", width = 1024, height = 768)
 \item \href{#method-PhaserGame-add_text}{\code{PhaserGame$add_text()}}
 \item \href{#method-PhaserGame-add_rectangle}{\code{PhaserGame$add_rectangle()}}
 \item \href{#method-PhaserGame-add_image}{\code{PhaserGame$add_image()}}
+\item \href{#method-PhaserGame-add_sound}{\code{PhaserGame$add_sound()}}
 \item \href{#method-PhaserGame-add_map}{\code{PhaserGame$add_map()}}
 \item \href{#method-PhaserGame-set_world_bounds}{\code{PhaserGame$set_world_bounds()}}
 \item \href{#method-PhaserGame-enable_terrain_collision}{\code{PhaserGame$enable_terrain_collision()}}
@@ -219,6 +220,26 @@ Adds a static image to the Phaser scene.
 \item{\code{visible}}{Logical. Whether the image is initially visible (default: TRUE).}
 
 \item{\code{clickable}}{Logical. Whether the image should emit click events (default: FALSE).}
+}
+\if{html}{\out{</div>}}
+}
+}
+\if{html}{\out{<hr>}}
+\if{html}{\out{<a id="method-PhaserGame-add_sound"></a>}}
+\if{latex}{\out{\hypertarget{method-PhaserGame-add_sound}{}}}
+\subsection{Method \code{add_sound()}}{
+Adds a sound to the Phaser scene.
+\subsection{Usage}{
+\if{html}{\out{<div class="r">}}\preformatted{PhaserGame$add_sound(name, url, volume = 1, loop = FALSE)}\if{html}{\out{</div>}}
+}
+
+\subsection{Arguments}{
+\if{html}{\out{<div class="arguments">}}
+\describe{
+\item{\code{name}}{Character. Unique key to reference this sound.}
+\item{\code{url}}{Character. URL or path to the audio file.}
+\item{\code{volume}}{Numeric. Initial playback volume from 0 to 1 (default: 1).}
+\item{\code{loop}}{Logical. Whether the sound should loop by default (default: FALSE).}
 }
 \if{html}{\out{</div>}}
 }
