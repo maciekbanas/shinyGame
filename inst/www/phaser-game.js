@@ -6,6 +6,7 @@ GameBridge.playerControls = {};
 GameBridge.overlapEndWatchers = {};
 GameBridge.forcedAnimations = GameBridge.forcedAnimations || {};
 GameBridge.pendingCameraFollow = GameBridge.pendingCameraFollow || {};
+GameBridge.pendingScrollFactor = GameBridge.pendingScrollFactor || {};
 GameBridge.pendingWorldBounds = GameBridge.pendingWorldBounds || null;
 
 function playIfChanged(sprite, animKey) {
@@ -54,6 +55,7 @@ function initPhaserGame(containerId, config) {
 
   function update(time, delta) {
       applyPendingCameraFollows();
+      applyPendingScrollFactors();
 
       Object.entries(GameBridge.playerControls).forEach(([name, opts]) => {
           const sprite = this.children.getByName(name);
@@ -108,8 +110,15 @@ function initPhaserGame(containerId, config) {
 }
 
 function addText(text, id, x, y, style, visible = true) {
-  scene[id] = scene.add.text(x, y, text, style);
+  scene[id] = scene.add.text(x, y, text, style).setName(id);
   scene[id].setVisible(visible);
+
+  if (typeof applyPendingCameraFollows === "function") {
+    applyPendingCameraFollows();
+  }
+  if (typeof applyPendingScrollFactors === "function") {
+    applyPendingScrollFactors();
+  }
 }
 
 function setText(text, id) {
@@ -146,6 +155,23 @@ function applyWorldBounds(bounds) {
 function setWorldBounds(width, height) {
   GameBridge.pendingWorldBounds = { width, height };
   applyWorldBounds(GameBridge.pendingWorldBounds);
+}
+
+function applyPendingScrollFactors() {
+  if (!scene) return;
+
+  Object.entries(GameBridge.pendingScrollFactor).forEach(([name, scrollOpts]) => {
+    const target = scene.children.getByName(name);
+    if (!target || scrollOpts.applied || typeof target.setScrollFactor !== "function") return;
+
+    target.setScrollFactor(scrollOpts.x, scrollOpts.y);
+    scrollOpts.applied = true;
+  });
+}
+
+function setScrollFactor(name, x = 1, y = x) {
+  GameBridge.pendingScrollFactor[name] = { x, y, applied: false };
+  applyPendingScrollFactors();
 }
 
 function applyPendingCameraFollows() {
@@ -344,11 +370,18 @@ function addGroupOverlap(objectName, groupName, inputId) {
 }
 
 function addRectangle(name, x, y, width, height, fillColor, visible = true, clickable = true) {
-  scene[name] = scene.add.rectangle(x, y, width, height, fillColor);
+  scene[name] = scene.add.rectangle(x, y, width, height, fillColor).setName(name);
   if (clickable) {
     scene[name].setInteractive();
   }
   scene[name].setVisible(visible);
+
+  if (typeof applyPendingCameraFollows === "function") {
+    applyPendingCameraFollows();
+  }
+  if (typeof applyPendingScrollFactors === "function") {
+    applyPendingScrollFactors();
+  }
 }
 
 function addGraphics(name, x, y, width, height, fillColor) {

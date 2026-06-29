@@ -109,11 +109,12 @@ server <- function(input, output, session) {
   )
 
   points_text <- game$add_text(
-    text = "points: 0",
+    text = "apples gathered: 0",
     id = "points_text",
     x = 100,
     y = 100
   )
+  points_text$set_scroll_factor(0)
 
   game$add_collider(
     object_one = "bear",
@@ -144,7 +145,7 @@ server <- function(input, output, session) {
     group = "apples",
     callback_fun = function(evt) {
       points <<- points + 1
-      points_text$set(paste0("points: ", points))
+      points_text$set(paste0("apples gathered: ", points))
       apples$disable(evt)
     },
     input = input
