@@ -2,6 +2,7 @@ window.GameBridge = window.GameBridge || {};
 GameBridge.keyControlHandlers = GameBridge.keyControlHandlers || {};
 GameBridge.forcedAnimations = GameBridge.forcedAnimations || {};
 GameBridge.pendingCameraFollow = GameBridge.pendingCameraFollow || {};
+GameBridge.pendingScrollFactor = GameBridge.pendingScrollFactor || {};
 
 
 function resolveFrameCount(textureKey, frameWidth, frameHeight, frameCount) {
@@ -49,6 +50,9 @@ function addSprite(name, url, x, y, frameWidth, frameHeight, frameCount, frameRa
     if (typeof applyPendingCameraFollows === "function") {
       applyPendingCameraFollows();
     }
+    if (typeof applyPendingScrollFactors === "function") {
+      applyPendingScrollFactors();
+    }
   });
 
   scene.load.start();
@@ -65,6 +69,9 @@ function addStaticSprite(name, url, x, y) {
 
     if (typeof applyPendingCameraFollows === "function") {
       applyPendingCameraFollows();
+    }
+    if (typeof applyPendingScrollFactors === "function") {
+      applyPendingScrollFactors();
     }
   });
   scene.load.start();

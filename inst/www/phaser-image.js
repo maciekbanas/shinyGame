@@ -18,6 +18,9 @@ function addImage(imageName, imageUrl, x = null, y = null, visible = true, click
     if (typeof applyPendingCameraFollows === "function") {
       applyPendingCameraFollows();
     }
+    if (typeof applyPendingScrollFactors === "function") {
+      applyPendingScrollFactors();
+    }
   });
 
   scene.load.start();

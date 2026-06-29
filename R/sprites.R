@@ -103,6 +103,14 @@ Sprite <- R6::R6Class(
       send_js(private, js)
     },
 
+    #' @description Set how much this sprite scrolls with the camera.
+    #' @param x Numeric. Horizontal scroll factor (0 = fixed to viewport, 1 = scrolls with world).
+    #' @param y Numeric. Vertical scroll factor. Defaults to `x`.
+    set_scroll_factor = function(x, y = x) {
+      js <- sprintf("setScrollFactor('%s', %f, %f);", private$name, x, y)
+      send_js(private, js)
+    },
+
     #' @description Set the sprite's velocity in the x direction.
     #' @param x Numeric. Velocity in pixels/second (positive = right, negative =
     #' left).
@@ -217,6 +225,13 @@ StaticSprite <- R6::R6Class(
     #' @description Stop the camera from following this static sprite.
     stop_camera_follow = function() {
       js <- sprintf("stopCameraFollow('%s');", private$name)
+      send_js(private, js)
+    },
+    #' @description Set how much this static sprite scrolls with the camera.
+    #' @param x Numeric. Horizontal scroll factor (0 = fixed to viewport, 1 = scrolls with world).
+    #' @param y Numeric. Vertical scroll factor. Defaults to `x`.
+    set_scroll_factor = function(x, y = x) {
+      js <- sprintf("setScrollFactor('%s', %f, %f);", private$name, x, y)
       send_js(private, js)
     }
   ),

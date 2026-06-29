@@ -114,6 +114,7 @@ server <- function(input, output, session) {
     x = 100,
     y = 100
   )
+  points_text$set_scroll_factor(0)
 
   game$add_collider(
     object_one = "bear",

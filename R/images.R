@@ -49,6 +49,13 @@ Image <- R6::R6Class(
       js <- sprintf("stopCameraFollow('%s');", private$name)
       send_js(private, js)
     },
+    #' @description Set how much this image scrolls with the camera.
+    #' @param x Numeric. Horizontal scroll factor (0 = fixed to viewport, 1 = scrolls with world).
+    #' @param y Numeric. Vertical scroll factor. Defaults to `x`.
+    set_scroll_factor = function(x, y = x) {
+      js <- sprintf("setScrollFactor('%s', %f, %f);", private$name, x, y)
+      send_js(private, js)
+    },
     #' @description Add a click event listener to the image that triggers an R
     #'   function when clicked.
     #' @param event_fun A function.
