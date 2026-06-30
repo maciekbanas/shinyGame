@@ -104,16 +104,18 @@ server <- function(input, output, session) {
     input = input
   )
 
-  shiny::observe({
-    shiny::invalidateLater(700, session)
-    dir <- sample(list(c(-1, 0), c(1, 0), c(0, -1), c(0, 1)), 1)[[1]]
-    enemy$set_in_motion(
-      dir_x = dir[1],
-      dir_y = dir[2],
-      speed = 70,
-      distance = 150,
-      lag = 0
-    )
-  })
+  if (!isTRUE(getOption("shiny.testmode"))) {
+    shiny::observe({
+      shiny::invalidateLater(700, session)
+      dir <- sample(list(c(-1, 0), c(1, 0), c(0, -1), c(0, 1)), 1)[[1]]
+      enemy$set_in_motion(
+        dir_x = dir[1],
+        dir_y = dir[2],
+        speed = 70,
+        distance = 150,
+        lag = 0
+      )
+    })
+  }
 }
 shinyApp(ui, server)
