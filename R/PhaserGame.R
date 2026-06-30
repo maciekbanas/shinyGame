@@ -53,7 +53,11 @@ PhaserGame <- R6::R6Class(
 
       htmltools::tagList(
         phaser_dependency(),
-        htmltools::tags$div(id = self$id, style = "width:100vw; height:100vh;"),
+        htmltools::tags$div(
+          id = self$id,
+          style = "width:100vw; height:100vh;",
+          `data-shinyphaser-assets` = dependency_version
+        ),
         htmltools::htmlDependency(
           name = "shinyphaser-assets",
           version = dependency_version,
