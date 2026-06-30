@@ -148,3 +148,36 @@ test_that("PhaserGame exposes use_phaser UI initializer", {
   expect_true(is.function(game$use_phaser))
   expect_null(game$ui)
 })
+
+test_that("Sound methods send expected JS", {
+  session <- make_mock_session()
+  sound <- Sound$new("coin", "coin.mp3", volume = 0.5, loop = FALSE, session = session)
+  sound$play()
+  sound$play(volume = 0.8, loop = TRUE)
+  sound$pause()
+  sound$resume()
+  sound$set_volume(0.25)
+  sound$set_loop(TRUE)
+  sound$stop()
+
+  msgs <- vapply(session$get_messages(), function(m) m$message$js, character(1))
+  expect_true(any(grepl("addSound\\(\\\"coin\\\", \\\"coin.mp3\\\", 0.500000, false\\);", msgs)))
+  expect_true(any(grepl("playSound\\(\\\"coin\\\", null, null\\);", msgs)))
+  expect_true(any(grepl("playSound\\(\\\"coin\\\", 0.800000, true\\);", msgs)))
+  expect_true(any(grepl("pauseSound\\(\\\"coin\\\"\\);", msgs)))
+  expect_true(any(grepl("resumeSound\\(\\\"coin\\\"\\);", msgs)))
+  expect_true(any(grepl("setSoundVolume\\(\\\"coin\\\", 0.250000\\);", msgs)))
+  expect_true(any(grepl("setSoundLoop\\(\\\"coin\\\", true\\);", msgs)))
+  expect_true(any(grepl("stopSound\\(\\\"coin\\\"\\);", msgs)))
+})
+
+test_that("PhaserGame can create Sound objects", {
+  session <- make_mock_session()
+  game <- PhaserGame$new()
+  game$set_shiny_session(session)
+  sound <- game$add_sound("jump", "jump.wav", volume = 0.4, loop = TRUE)
+
+  expect_s3_class(sound, "Sound")
+  msgs <- vapply(session$get_messages(), function(m) m$message$js, character(1))
+  expect_true(any(grepl("addSound\\(\\\"jump\\\", \\\"jump.wav\\\", 0.400000, true\\);", msgs)))
+})
