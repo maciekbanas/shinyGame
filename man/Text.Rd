@@ -14,6 +14,9 @@ dynamic updates to its content. Created with PhaserGame$add_text() method.
 \item \href{#method-Text-set}{\code{Text$set()}}
 \item \href{#method-Text-show}{\code{Text$show()}}
 \item \href{#method-Text-hide}{\code{Text$hide()}}
+\item \href{#method-Text-follow_camera}{\code{Text$follow_camera()}}
+\item \href{#method-Text-stop_camera_follow}{\code{Text$stop_camera_follow()}}
+\item \href{#method-Text-set_scroll_factor}{\code{Text$set_scroll_factor()}}
 \item \href{#method-Text-clone}{\code{Text$clone()}}
 }
 }
@@ -79,6 +82,7 @@ Show a previously added text object.
 \subsection{Usage}{
 \if{html}{\out{<div class="r">}}\preformatted{Text$show()}\if{html}{\out{</div>}}
 }
+
 }
 \if{html}{\out{<hr>}}
 \if{html}{\out{<a id="method-Text-hide"></a>}}
@@ -88,8 +92,58 @@ Hide a previously added text object.
 \subsection{Usage}{
 \if{html}{\out{<div class="r">}}\preformatted{Text$hide()}\if{html}{\out{</div>}}
 }
+
+}
+\if{html}{\out{<hr>}}
+\if{html}{\out{<a id="method-Text-follow_camera"></a>}}
+\if{latex}{\out{\hypertarget{method-Text-follow_camera}{}}}
+\subsection{Method \code{follow_camera()}}{
+Make the camera follow this text object as it moves through the world.
+\subsection{Usage}{
+\if{html}{\out{<div class="r">}}\preformatted{Text$follow_camera(lerp_x = 1, lerp_y = 1, round_pixels = TRUE)}\if{html}{\out{</div>}}
 }
 
+\subsection{Arguments}{
+\if{html}{\out{<div class="arguments">}}
+\describe{
+\item{\code{lerp_x}}{Numeric. Horizontal interpolation factor from 0 to 1 (default: 1).}
+
+\item{\code{lerp_y}}{Numeric. Vertical interpolation factor from 0 to 1 (default: 1).}
+
+\item{\code{round_pixels}}{Logical. Whether to round camera pixels to avoid sub-pixel rendering (default: TRUE).}
+}
+\if{html}{\out{</div>}}
+}
+}
+\if{html}{\out{<hr>}}
+\if{html}{\out{<a id="method-Text-stop_camera_follow"></a>}}
+\if{latex}{\out{\hypertarget{method-Text-stop_camera_follow}{}}}
+\subsection{Method \code{stop_camera_follow()}}{
+Stop the camera from following this text object.
+\subsection{Usage}{
+\if{html}{\out{<div class="r">}}\preformatted{Text$stop_camera_follow()}\if{html}{\out{</div>}}
+}
+
+}
+\if{html}{\out{<hr>}}
+\if{html}{\out{<a id="method-Text-set_scroll_factor"></a>}}
+\if{latex}{\out{\hypertarget{method-Text-set_scroll_factor}{}}}
+\subsection{Method \code{set_scroll_factor()}}{
+Set how much this text object scrolls with the camera.
+\subsection{Usage}{
+\if{html}{\out{<div class="r">}}\preformatted{Text$set_scroll_factor(x, y = x)}\if{html}{\out{</div>}}
+}
+
+\subsection{Arguments}{
+\if{html}{\out{<div class="arguments">}}
+\describe{
+\item{\code{x}}{Numeric. Horizontal scroll factor (0 = fixed to viewport, 1 = scrolls with world).}
+
+\item{\code{y}}{Numeric. Vertical scroll factor. Defaults to \code{x}.}
+}
+\if{html}{\out{</div>}}
+}
+}
 \if{html}{\out{<hr>}}
 \if{html}{\out{<a id="method-Text-clone"></a>}}
 \if{latex}{\out{\hypertarget{method-Text-clone}{}}}

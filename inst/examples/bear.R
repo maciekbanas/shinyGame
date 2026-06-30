@@ -10,6 +10,13 @@ server <- function(input, output, session) {
   points <- 0
 
   game$set_shiny_session()
+
+  jump_sound <- game$add_sound(
+    name = "jump_sound",
+    url = "assets/bear/sounds/jump.wav",
+    volume = 0.35
+  )
+
   game$set_world_bounds(width = 1600, height = 800)
 
   game$add_image(
@@ -58,6 +65,7 @@ server <- function(input, output, session) {
   game$add_control(
     "Space",
     action = function() {
+      jump_sound$play()
       bear$set_velocity_y(-600)
       bear$play_animation(
         anim_name = "bear_jump",
@@ -109,11 +117,12 @@ server <- function(input, output, session) {
   )
 
   points_text <- game$add_text(
-    text = "points: 0",
+    text = "apples gathered: 0",
     id = "points_text",
     x = 100,
     y = 100
   )
+  points_text$set_scroll_factor(0)
 
   game$add_collider(
     object_one = "bear",
@@ -144,7 +153,7 @@ server <- function(input, output, session) {
     group = "apples",
     callback_fun = function(evt) {
       points <<- points + 1
-      points_text$set(paste0("points: ", points))
+      points_text$set(paste0("apples gathered: ", points))
       apples$disable(evt)
     },
     input = input

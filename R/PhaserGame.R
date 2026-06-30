@@ -2,7 +2,7 @@
 #'
 #' @title PhaserGame
 #' @description R6 class to create and manage a Phaser game within a Shiny application.
-#' Provides methods for adding sprites, animations, images, backgrounds, controls, and collision handling.
+#' Provides methods for adding sprites, animations, images, sounds, backgrounds, controls, and collision handling.
 #'
 #' @export
 PhaserGame <- R6::R6Class(
@@ -106,6 +106,18 @@ PhaserGame <- R6::R6Class(
     #' @param clickable Logical. Whether the image should emit click events (default: FALSE).
     add_image = function(name, url, x, y, visible = TRUE, clickable = FALSE) {
       return(Image$new(name, url, x, y, visible, clickable))
+    },
+
+    #' @description Adds a sound to the Phaser scene.
+    #' @param name Character. Unique key to reference this sound.
+    #' @param url Character. URL or path to the audio file.
+    #' @param volume Numeric. Initial playback volume from 0 to 1 (default: 1).
+    #' @param loop Logical. Whether the sound should loop by default (default: FALSE).
+    add_sound = function(name, url, volume = 1, loop = FALSE) {
+      return(Sound$new(
+        name, url, volume, loop,
+        session = private$session %||% shiny::getDefaultReactiveDomain()
+      ))
     },
 
     #' @description Add a background (tilemap) layer from Tiled JSON + tileset image(s).
@@ -362,6 +374,31 @@ Text <- R6::R6Class(
     #' @description Hide a previously added text object.
     hide = function() {
       js <- sprintf("hideText('%s');", private$id)
+      send_js(private, js)
+    },
+    #' @description Make the camera follow this text object as it moves through the world.
+    #' @param lerp_x Numeric. Horizontal interpolation factor from 0 to 1 (default: 1).
+    #' @param lerp_y Numeric. Vertical interpolation factor from 0 to 1 (default: 1).
+    #' @param round_pixels Logical. Whether to round camera pixels to avoid sub-pixel rendering (default: TRUE).
+    follow_camera = function(lerp_x = 1,
+                             lerp_y = 1,
+                             round_pixels = TRUE) {
+      js <- sprintf(
+        "followSpriteWithCamera('%s', %f, %f, %s);",
+        private$id, lerp_x, lerp_y, tolower(round_pixels)
+      )
+      send_js(private, js)
+    },
+    #' @description Stop the camera from following this text object.
+    stop_camera_follow = function() {
+      js <- sprintf("stopCameraFollow('%s');", private$id)
+      send_js(private, js)
+    },
+    #' @description Set how much this text object scrolls with the camera.
+    #' @param x Numeric. Horizontal scroll factor (0 = fixed to viewport, 1 = scrolls with world).
+    #' @param y Numeric. Vertical scroll factor. Defaults to `x`.
+    set_scroll_factor = function(x, y = x) {
+      js <- sprintf("setScrollFactor('%s', %f, %f);", private$id, x, y)
       send_js(private, js)
     }
   ),

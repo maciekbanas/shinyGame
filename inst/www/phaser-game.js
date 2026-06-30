@@ -6,7 +6,10 @@ GameBridge.playerControls = {};
 GameBridge.overlapEndWatchers = {};
 GameBridge.forcedAnimations = GameBridge.forcedAnimations || {};
 GameBridge.pendingCameraFollow = GameBridge.pendingCameraFollow || {};
+GameBridge.pendingScrollFactor = GameBridge.pendingScrollFactor || {};
 GameBridge.pendingWorldBounds = GameBridge.pendingWorldBounds || null;
+GameBridge.sounds = GameBridge.sounds || {};
+GameBridge.pendingSoundActions = GameBridge.pendingSoundActions || {};
 
 
 function refreshBrowserWithoutCache(enabled = true) {
@@ -67,6 +70,7 @@ function initPhaserGame(containerId, config) {
 
   function update(time, delta) {
       applyPendingCameraFollows();
+      applyPendingScrollFactors();
 
       Object.entries(GameBridge.playerControls).forEach(([name, opts]) => {
           const sprite = this.children.getByName(name);
@@ -120,9 +124,83 @@ function initPhaserGame(containerId, config) {
   }
 }
 
+
+function applyPendingSoundActions(name) {
+  const sound = GameBridge.sounds[name];
+  const actions = GameBridge.pendingSoundActions[name];
+  if (!sound || !actions) return;
+
+  actions.forEach((action) => action(sound));
+  delete GameBridge.pendingSoundActions[name];
+}
+
+function withSound(name, action) {
+  const sound = GameBridge.sounds[name];
+  if (sound) {
+    action(sound);
+    return;
+  }
+
+  GameBridge.pendingSoundActions[name] = GameBridge.pendingSoundActions[name] || [];
+  GameBridge.pendingSoundActions[name].push(action);
+}
+
+function addSound(name, url, volume = 1, loop = false) {
+  if (GameBridge.sounds[name]) {
+    GameBridge.sounds[name].setVolume(volume);
+    GameBridge.sounds[name].setLoop(loop);
+    return;
+  }
+
+  scene.load.audio(name, url);
+  scene.load.once('complete', () => {
+    if (GameBridge.sounds[name]) return;
+
+    GameBridge.sounds[name] = scene.sound.add(name, { volume, loop });
+    applyPendingSoundActions(name);
+  });
+  scene.load.start();
+}
+
+function playSound(name, volume = null, loop = null) {
+  withSound(name, (sound) => {
+    const config = {};
+    if (volume !== null) config.volume = volume;
+    if (loop !== null) config.loop = loop;
+    sound.play(config);
+  });
+}
+
+function pauseSound(name) {
+  withSound(name, (sound) => sound.pause());
+}
+
+function resumeSound(name) {
+  withSound(name, (sound) => sound.resume());
+}
+
+function stopSound(name) {
+  withSound(name, (sound) => sound.stop());
+}
+
+function setSoundVolume(name, volume) {
+  withSound(name, (sound) => sound.setVolume(volume));
+}
+
+function setSoundLoop(name, loop) {
+  withSound(name, (sound) => sound.setLoop(loop));
+}
+
 function addText(text, id, x, y, style, visible = true) {
-  scene[id] = scene.add.text(x, y, text, style);
+  scene[id] = scene.add.text(x, y, text, style).setName(id);
   scene[id].setVisible(visible);
+
+  if (typeof applyPendingCameraFollows === "function") {
+    applyPendingCameraFollows();
+  }
+  if (typeof applyPendingScrollFactors === "function") {
+    applyPendingScrollFactors();
+  }
 }
 
 function setText(text, id) {
@@ -159,6 +237,23 @@ function applyWorldBounds(bounds) {
 function setWorldBounds(width, height) {
   GameBridge.pendingWorldBounds = { width, height };
   applyWorldBounds(GameBridge.pendingWorldBounds);
+}
+
+function applyPendingScrollFactors() {
+  if (!scene) return;
+
+  Object.entries(GameBridge.pendingScrollFactor).forEach(([name, scrollOpts]) => {
+    const target = scene.children.getByName(name);
+    if (!target || scrollOpts.applied || typeof target.setScrollFactor !== "function") return;
+
+    target.setScrollFactor(scrollOpts.x, scrollOpts.y);
+    scrollOpts.applied = true;
+  });
+}
+
+function setScrollFactor(name, x = 1, y = x) {
+  GameBridge.pendingScrollFactor[name] = { x, y, applied: false };
+  applyPendingScrollFactors();
 }
 
 function applyPendingCameraFollows() {
@@ -357,11 +452,18 @@ function addGroupOverlap(objectName, groupName, inputId) {
 }
 
 function addRectangle(name, x, y, width, height, fillColor, visible = true, clickable = true) {
-  scene[name] = scene.add.rectangle(x, y, width, height, fillColor);
+  scene[name] = scene.add.rectangle(x, y, width, height, fillColor).setName(name);
   if (clickable) {
     scene[name].setInteractive();
   }
   scene[name].setVisible(visible);
+
+  if (typeof applyPendingCameraFollows === "function") {
+    applyPendingCameraFollows();
+  }
+  if (typeof applyPendingScrollFactors === "function") {
+    applyPendingScrollFactors();
+  }
 }
 
 function addGraphics(name, x, y, width, height, fillColor) {

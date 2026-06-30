@@ -13,6 +13,9 @@ PhaserGame$add_image() method.
 \item \href{#method-Image-new}{\code{Image$new()}}
 \item \href{#method-Image-show}{\code{Image$show()}}
 \item \href{#method-Image-hide}{\code{Image$hide()}}
+\item \href{#method-Image-follow_camera}{\code{Image$follow_camera()}}
+\item \href{#method-Image-stop_camera_follow}{\code{Image$stop_camera_follow()}}
+\item \href{#method-Image-set_scroll_factor}{\code{Image$set_scroll_factor()}}
 \item \href{#method-Image-click}{\code{Image$click()}}
 \item \href{#method-Image-clone}{\code{Image$clone()}}
 }
@@ -73,6 +76,56 @@ Hide a previously added image.
 \if{html}{\out{<div class="r">}}\preformatted{Image$hide()}\if{html}{\out{</div>}}
 }
 
+}
+\if{html}{\out{<hr>}}
+\if{html}{\out{<a id="method-Image-follow_camera"></a>}}
+\if{latex}{\out{\hypertarget{method-Image-follow_camera}{}}}
+\subsection{Method \code{follow_camera()}}{
+Make the camera follow this image as it moves through the world.
+\subsection{Usage}{
+\if{html}{\out{<div class="r">}}\preformatted{Image$follow_camera(lerp_x = 1, lerp_y = 1, round_pixels = TRUE)}\if{html}{\out{</div>}}
+}
+
+\subsection{Arguments}{
+\if{html}{\out{<div class="arguments">}}
+\describe{
+\item{\code{lerp_x}}{Numeric. Horizontal interpolation factor from 0 to 1 (default: 1).}
+
+\item{\code{lerp_y}}{Numeric. Vertical interpolation factor from 0 to 1 (default: 1).}
+
+\item{\code{round_pixels}}{Logical. Whether to round camera pixels to avoid sub-pixel rendering (default: TRUE).}
+}
+\if{html}{\out{</div>}}
+}
+}
+\if{html}{\out{<hr>}}
+\if{html}{\out{<a id="method-Image-stop_camera_follow"></a>}}
+\if{latex}{\out{\hypertarget{method-Image-stop_camera_follow}{}}}
+\subsection{Method \code{stop_camera_follow()}}{
+Stop the camera from following this image.
+\subsection{Usage}{
+\if{html}{\out{<div class="r">}}\preformatted{Image$stop_camera_follow()}\if{html}{\out{</div>}}
+}
+
+}
+\if{html}{\out{<hr>}}
+\if{html}{\out{<a id="method-Image-set_scroll_factor"></a>}}
+\if{latex}{\out{\hypertarget{method-Image-set_scroll_factor}{}}}
+\subsection{Method \code{set_scroll_factor()}}{
+Set how much this image scrolls with the camera.
+\subsection{Usage}{
+\if{html}{\out{<div class="r">}}\preformatted{Image$set_scroll_factor(x, y = x)}\if{html}{\out{</div>}}
+}
+
+\subsection{Arguments}{
+\if{html}{\out{<div class="arguments">}}
+\describe{
+\item{\code{x}}{Numeric. Horizontal scroll factor (0 = fixed to viewport, 1 = scrolls with world).}
+
+\item{\code{y}}{Numeric. Vertical scroll factor. Defaults to \code{x}.}
+}
+\if{html}{\out{</div>}}
+}
 }
 \if{html}{\out{<hr>}}
 \if{html}{\out{<a id="method-Image-click"></a>}}

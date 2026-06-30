@@ -103,6 +103,14 @@ Sprite <- R6::R6Class(
       send_js(private, js)
     },
 
+    #' @description Set how much this sprite scrolls with the camera.
+    #' @param x Numeric. Horizontal scroll factor (0 = fixed to viewport, 1 = scrolls with world).
+    #' @param y Numeric. Vertical scroll factor. Defaults to `x`.
+    set_scroll_factor = function(x, y = x) {
+      js <- sprintf("setScrollFactor('%s', %f, %f);", private$name, x, y)
+      send_js(private, js)
+    },
+
     #' @description Set the sprite's velocity in the x direction.
     #' @param x Numeric. Velocity in pixels/second (positive = right, negative =
     #' left).
@@ -199,6 +207,31 @@ StaticSprite <- R6::R6Class(
     destroy = function() {
       js <- sprintf("destroySprite('%s');",
                     private$name)
+      send_js(private, js)
+    },
+    #' @description Make the camera follow this static sprite as it moves through the world.
+    #' @param lerp_x Numeric. Horizontal interpolation factor from 0 to 1 (default: 1).
+    #' @param lerp_y Numeric. Vertical interpolation factor from 0 to 1 (default: 1).
+    #' @param round_pixels Logical. Whether to round camera pixels to avoid sub-pixel rendering (default: TRUE).
+    follow_camera = function(lerp_x = 1,
+                             lerp_y = 1,
+                             round_pixels = TRUE) {
+      js <- sprintf(
+        "followSpriteWithCamera('%s', %f, %f, %s);",
+        private$name, lerp_x, lerp_y, tolower(round_pixels)
+      )
+      send_js(private, js)
+    },
+    #' @description Stop the camera from following this static sprite.
+    stop_camera_follow = function() {
+      js <- sprintf("stopCameraFollow('%s');", private$name)
+      send_js(private, js)
+    },
+    #' @description Set how much this static sprite scrolls with the camera.
+    #' @param x Numeric. Horizontal scroll factor (0 = fixed to viewport, 1 = scrolls with world).
+    #' @param y Numeric. Vertical scroll factor. Defaults to `x`.
+    set_scroll_factor = function(x, y = x) {
+      js <- sprintf("setScrollFactor('%s', %f, %f);", private$name, x, y)
       send_js(private, js)
     }
   ),

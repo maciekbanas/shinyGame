@@ -12,6 +12,9 @@ with PhaserGame$add_static_sprite() method.
 \itemize{
 \item \href{#method-StaticSprite-new}{\code{StaticSprite$new()}}
 \item \href{#method-StaticSprite-destroy}{\code{StaticSprite$destroy()}}
+\item \href{#method-StaticSprite-follow_camera}{\code{StaticSprite$follow_camera()}}
+\item \href{#method-StaticSprite-stop_camera_follow}{\code{StaticSprite$stop_camera_follow()}}
+\item \href{#method-StaticSprite-set_scroll_factor}{\code{StaticSprite$set_scroll_factor()}}
 \item \href{#method-StaticSprite-clone}{\code{StaticSprite$clone()}}
 }
 }
@@ -47,6 +50,57 @@ Add a non-animated static sprite to the scene.
 Remove static sprite from the scene.
 \subsection{Usage}{
 \if{html}{\out{<div class="r">}}\preformatted{StaticSprite$destroy()}\if{html}{\out{</div>}}
+}
+
+}
+\if{html}{\out{<hr>}}
+\if{html}{\out{<a id="method-StaticSprite-follow_camera"></a>}}
+\if{latex}{\out{\hypertarget{method-StaticSprite-follow_camera}{}}}
+\subsection{Method \code{follow_camera()}}{
+Make the camera follow this static sprite as it moves through the world.
+\subsection{Usage}{
+\if{html}{\out{<div class="r">}}\preformatted{StaticSprite$follow_camera(lerp_x = 1, lerp_y = 1, round_pixels = TRUE)}\if{html}{\out{</div>}}
+}
+
+\subsection{Arguments}{
+\if{html}{\out{<div class="arguments">}}
+\describe{
+\item{\code{lerp_x}}{Numeric. Horizontal interpolation factor from 0 to 1 (default: 1).}
+
+\item{\code{lerp_y}}{Numeric. Vertical interpolation factor from 0 to 1 (default: 1).}
+
+\item{\code{round_pixels}}{Logical. Whether to round camera pixels to avoid sub-pixel rendering (default: TRUE).}
+}
+\if{html}{\out{</div>}}
+}
+}
+\if{html}{\out{<hr>}}
+\if{html}{\out{<a id="method-StaticSprite-stop_camera_follow"></a>}}
+\if{latex}{\out{\hypertarget{method-StaticSprite-stop_camera_follow}{}}}
+\subsection{Method \code{stop_camera_follow()}}{
+Stop the camera from following this static sprite.
+\subsection{Usage}{
+\if{html}{\out{<div class="r">}}\preformatted{StaticSprite$stop_camera_follow()}\if{html}{\out{</div>}}
+}
+
+}
+\if{html}{\out{<hr>}}
+\if{html}{\out{<a id="method-StaticSprite-set_scroll_factor"></a>}}
+\if{latex}{\out{\hypertarget{method-StaticSprite-set_scroll_factor}{}}}
+\subsection{Method \code{set_scroll_factor()}}{
+Set how much this static sprite scrolls with the camera.
+\subsection{Usage}{
+\if{html}{\out{<div class="r">}}\preformatted{StaticSprite$set_scroll_factor(x, y = x)}\if{html}{\out{</div>}}
+}
+
+\subsection{Arguments}{
+\if{html}{\out{<div class="arguments">}}
+\describe{
+\item{\code{x}}{Numeric. Horizontal scroll factor (0 = fixed to viewport, 1 = scrolls with world).}
+
+\item{\code{y}}{Numeric. Vertical scroll factor. Defaults to \code{x}.}
+}
+\if{html}{\out{</div>}}
 }
 }
 \if{html}{\out{<hr>}}
