@@ -255,7 +255,29 @@ function runClientAction(key, action) {
     setText(action.set_text.text || "", action.set_text.id);
   }
 
+  if (action.show_alert) {
+    showClientAlert(action.show_alert);
+  }
+
   return true;
+}
+
+function showClientAlert(alertOptions) {
+  const options = typeof alertOptions === "string"
+    ? { title: alertOptions }
+    : alertOptions || {};
+
+  if (typeof swal === "function") {
+    swal(options);
+    return;
+  }
+
+  if (typeof sweetAlert === "function") {
+    sweetAlert(options);
+    return;
+  }
+
+  window.alert(options.title || options.text || "");
 }
 
 function runClientActions(key) {

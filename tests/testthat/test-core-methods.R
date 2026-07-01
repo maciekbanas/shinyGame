@@ -198,7 +198,8 @@ test_that("PhaserGame add_control supports immediate client actions", {
       sprite = "hero",
       play_animation = "hero_attack",
       duration = 500,
-      cooldown = 750
+      cooldown = 750,
+      show_alert = list(title = "Hello", type = "info")
     )
   )
 
@@ -207,4 +208,5 @@ test_that("PhaserGame add_control supports immediate client actions", {
   expect_true(any(grepl('"play_sound":"hero_attack"', msgs, fixed = TRUE)))
   expect_true(any(grepl('"play_animation":"hero_attack"', msgs, fixed = TRUE)))
   expect_true(any(grepl('"cooldown":750', msgs, fixed = TRUE)))
+  expect_true(any(grepl('"show_alert":{"title":"Hello","type":"info"}', msgs, fixed = TRUE)))
 })

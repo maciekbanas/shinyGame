@@ -457,12 +457,11 @@ server <- function(input, output, session) {
         }
       }
       if (wizard_in_range) {
-        wizard_laugh_sound$play()
-        show_wizard_window(game, input, has_sword)
+        # Wizard feedback is handled immediately in the browser; server state remains available here.
       }
     },
     input,
-    client_action = dungeonheroes_space_client_actions(hero_attack_cooldown)
+    client_action = dungeonheroes_space_client_actions(hero_attack_cooldown, enemy_names)
   )
 
   inventory_text <- game$add_text(
@@ -653,42 +652,63 @@ server <- function(input, output, session) {
 }
 
 
-dungeonheroes_space_client_actions <- function(hero_attack_cooldown) {
-  list(
+dungeonheroes_space_client_actions <- function(hero_attack_cooldown, enemy_names) {
+  enemy_hit_feedback <- lapply(enemy_names, function(enemy_name) {
     list(
-      destroy_sprite = "sword",
-      set_text = list(id = "inventory_weapon", text = "weapon: sword"),
-      sprite = "hero",
-      play_animation = "hero_sword_idle",
-      when_overlap = c("hero", "sword"),
-      when_exists = "sword",
-      stop_after_match = TRUE
+      set_text = list(
+        id = "combat_status",
+        text = sprintf("You strike %s.", gsub("_", " ", enemy_name))
+      ),
+      when_overlap = c("hero", enemy_name),
+      when_exists = enemy_name
+    )
+  })
+
+  c(
+    list(
+      list(
+        destroy_sprite = "sword",
+        set_text = list(id = "inventory_weapon", text = "weapon: sword"),
+        sprite = "hero",
+        play_animation = "hero_sword_idle",
+        when_overlap = c("hero", "sword"),
+        when_exists = "sword",
+        stop_after_match = TRUE
+      ),
+      list(
+        play_sound = "wizard_laugh",
+        show_alert = list(
+          title = "Dear, oh dear. What are you doing here in these dark forests, lad?",
+          text = "",
+          type = "info"
+        ),
+        when_overlap = c("hero", "wizard"),
+        cooldown = 1000,
+        stop_after_match = TRUE
+      )
     ),
+    enemy_hit_feedback,
     list(
-      play_sound = "hero_attack",
-      sprite = "hero",
-      play_animation = "hero_attack",
-      duration = 500,
-      cooldown = hero_attack_cooldown * 1000,
-      when_exists = list(name = "sword", exists = TRUE)
-    ),
-    list(
-      play_sound = "hero_attack",
-      sprite = "hero",
-      play_animation = "hero_sword_attack",
-      duration = 500,
-      cooldown = hero_attack_cooldown * 1000,
-      when_exists = list(name = "sword", exists = FALSE)
+      list(
+        play_sound = "hero_attack",
+        sprite = "hero",
+        play_animation = "hero_attack",
+        duration = 500,
+        cooldown = hero_attack_cooldown * 1000,
+        when_exists = list(name = "sword", exists = TRUE)
+      ),
+      list(
+        play_sound = "hero_attack",
+        sprite = "hero",
+        play_animation = "hero_sword_attack",
+        duration = 500,
+        cooldown = hero_attack_cooldown * 1000,
+        when_exists = list(name = "sword", exists = FALSE)
+      )
     )
   )
 }
 
-show_wizard_window <- function(game, input, has_sword = FALSE) {
-  shinyalert::shinyalert(
-    title = "Dear, oh dear. What are you doing here in these dark forests, lad?",
-    text = "",
-    type = "info"
-  )
-}
+
 
 shiny::shinyApp(ui, server)
