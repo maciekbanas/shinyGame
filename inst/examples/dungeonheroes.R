@@ -11,22 +11,22 @@ dungeonheroes_version <- read.dcf("DESCRIPTION", fields = "Version")[[1]]
 
 ui <- shiny::tagList(
   shinyalert::useShinyalert(),
+  htmltools::tags$div(
+    id = "dungeonheroes_loader",
+    style = paste(
+      "position:fixed; inset:0; z-index:9999;",
+      "display:flex; align-items:center; justify-content:center;",
+      "background:#111827; color:#f9fafb; font:24px sans-serif;"
+    ),
+    "Loading dungeon heroes..."
+  ),
   game$use_phaser(),
   htmltools::tags$script(htmltools::HTML("
     window.addEventListener('load', function() {
       setTimeout(function() {
-        if (typeof swal === 'function') {
-          var firstAlert = swal({ title: 'Welcome to the game, dungeon hero!', type: 'success' });
-          var showControls = function() {
-            swal({ title: 'Use arrows to move and space to attack or interact', type: 'info' });
-          };
-          if (firstAlert && typeof firstAlert.then === 'function') {
-            firstAlert.then(showControls);
-          } else {
-            setTimeout(showControls, 1200);
-          }
-        }
-      }, 250);
+        var loader = document.getElementById('dungeonheroes_loader');
+        if (loader) loader.style.display = 'none';
+      }, 1200);
     });
   "))
 )
@@ -90,6 +90,13 @@ server <- function(input, output, session) {
   health_bar_segment_gap <- 3
   game_over_shown <- FALSE
   defeated_enemy_count <- 0
+
+  session$onFlushed(function() {
+    shinyalert::shinyalert(
+      title = "Use Space to attack and interact",
+      type = "info"
+    )
+  }, once = TRUE)
 
   enemy_animation_key <- function(enemy_name, suffix) {
     paste(enemy_name, suffix, sep = "_")
@@ -156,8 +163,13 @@ server <- function(input, output, session) {
     enemy_status_text$set(paste("enemies:", paste(enemy_summaries, collapse = " | ")))
   }
 
+  current_event_overlaps <- function(evt = NULL) {
+    overlaps <- evt$overlaps %||% character()
+    as.character(unlist(overlaps, use.names = FALSE))
+  }
+
   nearest_living_enemy <- function(evt = NULL) {
-    current_overlaps <- evt$overlaps %||% character()
+    current_overlaps <- current_event_overlaps(evt)
     overlapped_enemy <- intersect(current_overlaps, enemy_names)
     living_overlapped_enemy <- overlapped_enemy[enemy_is_alive[overlapped_enemy]]
     if (length(living_overlapped_enemy) > 0) {
@@ -416,7 +428,7 @@ server <- function(input, output, session) {
         return()
       }
 
-      if ("sword" %in% (evt$overlaps %||% character()) && !has_sword) {
+      if ("sword" %in% current_event_overlaps(evt) && !has_sword) {
         has_sword <<- TRUE
         sword$destroy()
         inventory_text$set("weapon: sword")
