@@ -347,12 +347,13 @@ function addGroupCollider(objectName, groupName, inputId) {
   );
 }
 
-function addOverlap(objectOneName, objectTwoName, inputId) {
+function addOverlap(objectOneName, objectTwoName, inputId, clientActions = []) {
   const objectOne = scene.children.getByName(objectOneName);
   const objectTwo = scene.children.getByName(objectTwoName);
   scene.physics.add.overlap(
     objectOne, objectTwo,
     function(obj1, obj2) {
+      runClientActionList(inputId, clientActions);
       Shiny.setInputValue(
         inputId,
         {
@@ -387,7 +388,7 @@ function areOverlap(objectOneName, objectTwoName, inputId) {
   }
 };
 
-function addOverlapEnd(objectOneName, objectTwoName, inputId) {
+function addOverlapEnd(objectOneName, objectTwoName, inputId, clientActions = []) {
   const obj1 = scene.children.getByName(objectOneName);
   const obj2 = scene.children.getByName(objectTwoName);
   if (!obj1 || !obj2) return;
@@ -404,6 +405,7 @@ function addOverlapEnd(objectOneName, objectTwoName, inputId) {
     );
 
     if (wasOverlapping && !currentlyOverlapping) {
+      runClientActionList(inputId, clientActions);
       Shiny.setInputValue(
         inputId,
         {
@@ -419,12 +421,13 @@ function addOverlapEnd(objectOneName, objectTwoName, inputId) {
   });
 }
 
-function addGroupOverlap(objectName, groupName, inputId) {
+function addGroupOverlap(objectName, groupName, inputId, clientActions = []) {
   const objectOne = scene.children.getByName(objectName);
   const objectTwo = scene[groupName];
   scene.physics.add.overlap(
     objectOne, objectTwo,
     function(obj1, obj2) {
+      runClientActionList(inputId, clientActions);
       Shiny.setInputValue(
         inputId,
         {

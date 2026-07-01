@@ -255,6 +255,14 @@ function runClientAction(key, action) {
     setText(action.set_text.text || "", action.set_text.id);
   }
 
+  if (action.show_text) {
+    showText(action.show_text);
+  }
+
+  if (action.hide_text) {
+    hideText(action.hide_text);
+  }
+
   if (action.show_alert) {
     showClientAlert(action.show_alert);
   }
@@ -281,10 +289,24 @@ function showClientAlert(alertOptions) {
 }
 
 function runClientActions(key) {
-  for (const action of normalizeClientActions(GameBridge.keyControlActions[key])) {
+  runClientActionList(key, GameBridge.keyControlActions[key]);
+}
+
+function runClientActionList(key, actions) {
+  for (const action of normalizeClientActions(actions)) {
     const didRun = runClientAction(key, action);
     if (didRun && action.stop_after_match) break;
   }
+}
+
+function currentHeroOverlaps() {
+  const hero = getClientObject("hero");
+  if (!hero || !hero.getBounds || !scene || !scene.children) return [];
+
+  return scene.children.getChildren()
+    .filter((object) => object && object.name && object.name !== "hero" && object.getBounds)
+    .filter((object) => Phaser.Geom.Intersects.RectangleToRectangle(hero.getBounds(), object.getBounds()))
+    .map((object) => object.name);
 }
 
 function addKeyControl(key, clientActions = []) {
@@ -300,7 +322,7 @@ function addKeyControl(key, clientActions = []) {
       runClientActions(key);
       Shiny.setInputValue(
         inputId,
-        { code: e.code, evt_nonce: Date.now() + Math.random() },
+        { code: e.code, overlaps: currentHeroOverlaps(), evt_nonce: Date.now() + Math.random() },
         { priority: "event" }
       );
     }

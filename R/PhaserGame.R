@@ -225,11 +225,14 @@ PhaserGame <- R6::R6Class(
     #' @param group Character. Name of the group.
     #' @param callback_fun A function to be run when overlap occurs.
     #' @param input Shiny input list.
+    #' @param client_action Optional list or list of lists describing immediate
+    #'   browser-side Phaser feedback to run when overlap occurs.
     add_overlap = function(object_one,
                            object_two = NULL,
                            group = NULL,
                            callback_fun,
-                           input) {
+                           input,
+                           client_action = NULL) {
       Sys.sleep(0.1)
       input_id <- paste(
         c("overlap", object_one,
@@ -238,11 +241,17 @@ PhaserGame <- R6::R6Class(
       )
 
       js <- if (!is.null(object_two)) {
-        sprintf("addOverlap('%s','%s','%s')",
-                object_one, object_two, input_id)
+        sprintf("addOverlap(%s, %s, %s, %s)",
+                jsonlite::toJSON(object_one, auto_unbox = TRUE),
+                jsonlite::toJSON(object_two, auto_unbox = TRUE),
+                jsonlite::toJSON(input_id, auto_unbox = TRUE),
+                jsonlite::toJSON(client_action %||% list(), auto_unbox = TRUE, null = "null"))
       } else {
-        sprintf("addGroupOverlap('%s','%s','%s')",
-                object_one, group, input_id)
+        sprintf("addGroupOverlap(%s, %s, %s, %s)",
+                jsonlite::toJSON(object_one, auto_unbox = TRUE),
+                jsonlite::toJSON(group, auto_unbox = TRUE),
+                jsonlite::toJSON(input_id, auto_unbox = TRUE),
+                jsonlite::toJSON(client_action %||% list(), auto_unbox = TRUE, null = "null"))
       }
       send_js(private, js)
 
@@ -279,19 +288,25 @@ PhaserGame <- R6::R6Class(
    #' @param callback_fun Function. Callback executed when overlap ends.
    #' @param input Shiny input list.
    #' @param session Shiny session object.
+   #' @param client_action Optional list or list of lists describing immediate
+   #'   browser-side Phaser feedback to run when overlap ends.
    add_overlap_end = function(object_one,
                               object_two = NULL,
                               group = NULL,
                               callback_fun,
                               input,
-                              session = shiny::getDefaultReactiveDomain()) {
+                              session = shiny::getDefaultReactiveDomain(),
+                              client_action = NULL) {
      input_id <- paste(
        c("overlap_end", object_one,
          object_two %||% group),
        collapse = "_"
      )
-     js <- sprintf("addOverlapEnd('%s','%s','%s');",
-                   object_one, object_two, input_id)
+     js <- sprintf("addOverlapEnd(%s, %s, %s, %s);",
+                   jsonlite::toJSON(object_one, auto_unbox = TRUE),
+                   jsonlite::toJSON(object_two, auto_unbox = TRUE),
+                   jsonlite::toJSON(input_id, auto_unbox = TRUE),
+                   jsonlite::toJSON(client_action %||% list(), auto_unbox = TRUE, null = "null"))
      session$sendCustomMessage("phaser", list(js = js))
 
      shiny::observeEvent(input[[input_id]], {

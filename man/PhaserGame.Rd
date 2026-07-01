@@ -452,7 +452,8 @@ Adds a collider between two game objects.
   object_two = NULL,
   group = NULL,
   callback_fun,
-  input
+  input,
+  client_action = NULL
 )}\if{html}{\out{</div>}}
 }
 
@@ -468,6 +469,9 @@ Adds a collider between two game objects.
 \item{\code{callback_fun}}{A function to be run when overlap occurs.}
 
 \item{\code{input}}{Shiny input list.}
+
+\item{\code{client_action}}{Optional list or list of lists describing immediate
+browser-side Phaser feedback to run when overlap occurs.}
 }
 \if{html}{\out{</div>}}
 }
@@ -505,7 +509,8 @@ Register a callback fired when overlap between objects ends.
   group = NULL,
   callback_fun,
   input,
-  session = shiny::getDefaultReactiveDomain()
+  session = shiny::getDefaultReactiveDomain(),
+  client_action = NULL
 )}\if{html}{\out{</div>}}
 }
 
@@ -523,6 +528,9 @@ Register a callback fired when overlap between objects ends.
 \item{\code{input}}{Shiny input list.}
 
 \item{\code{session}}{Shiny session object.}
+
+\item{\code{client_action}}{Optional list or list of lists describing immediate
+browser-side Phaser feedback to run when overlap ends.}
 }
 \if{html}{\out{</div>}}
 }

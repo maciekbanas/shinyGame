@@ -10,7 +10,25 @@ shinyphaser_version <- as.character(utils::packageVersion("shinyphaser"))
 dungeonheroes_version <- read.dcf("DESCRIPTION", fields = "Version")[[1]]
 
 ui <- shiny::tagList(
-  game$use_phaser()
+  shinyalert::useShinyalert(),
+  game$use_phaser(),
+  htmltools::tags$script(htmltools::HTML("
+    window.addEventListener('load', function() {
+      setTimeout(function() {
+        if (typeof swal === 'function') {
+          var firstAlert = swal({ title: 'Welcome to the game, dungeon hero!', type: 'success' });
+          var showControls = function() {
+            swal({ title: 'Use arrows to move and space to attack or interact', type: 'info' });
+          };
+          if (firstAlert && typeof firstAlert.then === 'function') {
+            firstAlert.then(showControls);
+          } else {
+            setTimeout(showControls, 1200);
+          }
+        }
+      }, 250);
+    });
+  "))
 )
 
 server <- function(input, output, session) {
@@ -75,21 +93,6 @@ server <- function(input, output, session) {
   game_over_shown <- FALSE
   wizard_is_talking <- FALSE
   defeated_enemy_count <- 0
-
-  show_intro_alerts <- function() {
-    shinyalert::shinyalert(
-      title = "Welcome to the game, dungeon hero!",
-      type = "success",
-      callbackR = function(value) {
-        shinyalert::shinyalert(
-          title = "Use arrows to move and space to attack or interact",
-          type = "info"
-        )
-      }
-    )
-  }
-
-  session$onFlushed(show_intro_alerts, once = TRUE)
 
   enemy_animation_key <- function(enemy_name, suffix) {
     paste(enemy_name, suffix, sep = "_")
@@ -156,7 +159,14 @@ server <- function(input, output, session) {
     enemy_status_text$set(paste("enemies:", paste(enemy_summaries, collapse = " | ")))
   }
 
-  nearest_living_enemy <- function() {
+  nearest_living_enemy <- function(evt = NULL) {
+    current_overlaps <- evt$overlaps %||% character()
+    overlapped_enemy <- intersect(current_overlaps, enemy_names)
+    living_overlapped_enemy <- overlapped_enemy[enemy_is_alive[overlapped_enemy]]
+    if (length(living_overlapped_enemy) > 0) {
+      return(living_overlapped_enemy[[1]])
+    }
+
     if (!is.null(enemy_in_range) && isTRUE(enemy_is_alive[[enemy_in_range]])) {
       return(enemy_in_range)
     }
@@ -403,7 +413,7 @@ server <- function(input, output, session) {
 
   game$add_control(
     "Space",
-    action = function() {
+    action = function(evt = input[["Space_action"]]) {
       if (life_points <= 0) {
         set_combat_status("You are defeated and cannot fight.")
         return()
@@ -425,7 +435,7 @@ server <- function(input, output, session) {
 
         hero_last_attack_time <<- current_time
 
-        target_name <- nearest_living_enemy()
+        target_name <- nearest_living_enemy(evt)
         if (!is.null(target_name)) {
           attack_damage <- if (has_sword) hero_sword_damage else hero_fist_damage
           enemy_hit_points[target_name] <<- max(
@@ -579,7 +589,13 @@ server <- function(input, output, session) {
         wizard$play_animation("wizard_talk", 2e3)
       }
     },
-    input = input
+    input = input,
+    client_action = list(
+      show_text = "talk_bubble_text",
+      sprite = "wizard",
+      play_animation = "wizard_talk",
+      duration = 2000
+    )
   )
   game$add_overlap_end(
     object_one = "hero",
@@ -590,7 +606,12 @@ server <- function(input, output, session) {
       wizard_is_talking <<- FALSE
       wizard$play_animation("wizard_idle")
     },
-    input = input
+    input = input,
+    client_action = list(
+      hide_text = "talk_bubble_text",
+      sprite = "wizard",
+      play_animation = "wizard_idle"
+    )
   )
 
   add_enemy_handlers <- function(skeleton_name) {
@@ -630,7 +651,17 @@ server <- function(input, output, session) {
           }
         }
       },
-      input = input
+      input = input,
+      client_action = list(
+        set_text = list(
+          id = "combat_status",
+          text = sprintf("%s attacks!", format_enemy_label(skeleton_name))
+        ),
+        sprite = skeleton_name,
+        play_animation = enemy_animation_key(skeleton_name, "attack"),
+        duration = 350,
+        cooldown = enemy_attack_cooldown * 1000
+      )
     )
 
     game$add_overlap_end(
@@ -670,7 +701,7 @@ dungeonheroes_space_client_actions <- function(hero_attack_cooldown, enemy_names
         destroy_sprite = "sword",
         set_text = list(id = "inventory_weapon", text = "weapon: sword"),
         sprite = "hero",
-        play_animation = "hero_sword_idle",
+        play_animation = "hero_sword",
         when_overlap = c("hero", "sword"),
         when_exists = "sword",
         stop_after_match = TRUE
