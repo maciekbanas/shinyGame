@@ -9,6 +9,8 @@ GameBridge.pendingCameraFollow = GameBridge.pendingCameraFollow || {};
 GameBridge.pendingScrollFactor = GameBridge.pendingScrollFactor || {};
 GameBridge.pendingWorldBounds = GameBridge.pendingWorldBounds || null;
 GameBridge.pendingTerrainColliders = GameBridge.pendingTerrainColliders || [];
+GameBridge.lastHeroOverlapState = GameBridge.lastHeroOverlapState || "";
+GameBridge.nextHeroOverlapSendAt = GameBridge.nextHeroOverlapSendAt || 0;
 GameBridge.sounds = GameBridge.sounds || {};
 GameBridge.pendingSoundActions = GameBridge.pendingSoundActions || {};
 
@@ -59,6 +61,7 @@ function initPhaserGame(containerId, config) {
   function update(time, delta) {
       applyPendingCameraFollows();
       applyPendingScrollFactors();
+      sendHeroOverlapState(time);
 
       Object.entries(GameBridge.playerControls).forEach(([name, opts]) => {
           const sprite = this.children.getByName(name);
@@ -492,6 +495,23 @@ function addRectangle(name, x, y, width, height, fillColor, visible = true, clic
 
 function addGraphics(name, x, y, width, height, fillColor) {
   scene[name] = scene.add.rectangle(x, y, width, height, fillColor);
+}
+
+function sendHeroOverlapState(time) {
+  if (typeof currentHeroOverlaps !== "function" || typeof Shiny === "undefined") return;
+  if (time < GameBridge.nextHeroOverlapSendAt) return;
+
+  const overlaps = currentHeroOverlaps();
+  const state = JSON.stringify(overlaps);
+  if (state === GameBridge.lastHeroOverlapState) return;
+
+  GameBridge.lastHeroOverlapState = state;
+  GameBridge.nextHeroOverlapSendAt = time + 250;
+  Shiny.setInputValue(
+    "hero_overlaps",
+    { overlaps, evt_nonce: Date.now() + Math.random() },
+    { priority: "event" }
+  );
 }
 
 Shiny.addCustomMessageHandler("phaser", function (message) {
