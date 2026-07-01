@@ -1,5 +1,11 @@
 # shinyphaser (development version)
 
+* Optimized Phaser collision and overlap callbacks by routing high-frequency events through Shiny data endpoints backed by `promises`, with a client-side fallback to `Shiny.setInputValue()`.
+
+* Queued sprite physics actions until sprites finish loading so setup calls such as `set_gravity()` are not lost during asynchronous asset initialization.
+
+* Updated the hedgehog examples so acknowledging a game-over dialog reloads the Shiny session and starts a fresh game instead of stopping the app.
+
 * Added sound support with `PhaserGame$add_sound()` and a new `Sound` API for loading, playing, pausing, resuming, stopping, and configuring audio.
 
 * Added `set_scroll_factor()` helpers for scene objects so HUD-style elements can stay fixed while the camera follows another target.
