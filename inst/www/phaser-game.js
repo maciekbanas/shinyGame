@@ -11,6 +11,33 @@ GameBridge.pendingWorldBounds = GameBridge.pendingWorldBounds || null;
 GameBridge.sounds = GameBridge.sounds || {};
 GameBridge.pendingSoundActions = GameBridge.pendingSoundActions || {};
 
+
+function sendPhaserEvent(target, payload) {
+  if (typeof target === "string" && /^https?:|^\//.test(target) && window.fetch) {
+    window.fetch(target, {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify(payload),
+      keepalive: true
+    }).catch((error) => {
+      console.error("Failed to send Phaser event", error);
+    });
+    return;
+  }
+
+  if (window.Shiny && typeof Shiny.setInputValue === "function") {
+    Shiny.setInputValue(target, payload, { priority: "event" });
+  }
+}
+
+function phaserCollisionPayload(obj1, obj2) {
+  return {
+    name1: obj1.name, x1: obj1.x, y1: obj1.y,
+    name2: obj2.name, x2: obj2.x, y2: obj2.y,
+    evt_nonce: Date.now() + Math.random()
+  };
+}
+
 function playIfChanged(sprite, animKey) {
   if (!sprite || !animKey) return;
   if (!sprite.anims || sprite.anims.currentAnim?.key !== animKey) {
@@ -315,15 +342,7 @@ function addCollider(objectOneName, objectTwoName, inputId) {
   scene.physics.add.collider(
     objectOne, objectTwo,
     function(obj1, obj2) {
-      Shiny.setInputValue(
-        inputId,
-        {
-          name1: obj1.name, x1: obj1.x, y1: obj1.y,
-          name2: obj2.name, x2: obj2.x, y2: obj2.y,
-          evt_nonce: Date.now() + Math.random()
-        },
-        { priority: "event" }
-      );
+      sendPhaserEvent(inputId, phaserCollisionPayload(obj1, obj2));
     }
   );
 }
@@ -334,15 +353,7 @@ function addGroupCollider(objectName, groupName, inputId) {
   scene.physics.add.collider(
     objectOne, objectTwo,
     function(obj1, obj2) {
-      Shiny.setInputValue(
-        inputId,
-        {
-          name1: obj1.name, x1: obj1.x, y1: obj1.y,
-          name2: obj2.name, x2: obj2.x, y2: obj2.y,
-          evt_nonce: Date.now() + Math.random()
-        },
-        { priority: "event" }
-      );
+      sendPhaserEvent(inputId, phaserCollisionPayload(obj1, obj2));
     }
   );
 }
@@ -353,15 +364,7 @@ function addOverlap(objectOneName, objectTwoName, inputId) {
   scene.physics.add.overlap(
     objectOne, objectTwo,
     function(obj1, obj2) {
-      Shiny.setInputValue(
-        inputId,
-        {
-          name1: obj1.name, x1: obj1.x, y1: obj1.y,
-          name2: obj2.name, x2: obj2.x, y2: obj2.y,
-          evt_nonce: Date.now() + Math.random()
-        },
-        { priority: "event" }
-      );
+      sendPhaserEvent(inputId, phaserCollisionPayload(obj1, obj2));
     }
   );
 }
@@ -404,15 +407,7 @@ function addOverlapEnd(objectOneName, objectTwoName, inputId) {
     );
 
     if (wasOverlapping && !currentlyOverlapping) {
-      Shiny.setInputValue(
-        inputId,
-        {
-          name1: obj1.name, x1: obj1.x, y1: obj1.y,
-          name2: obj2.name, x2: obj2.x, y2: obj2.y,
-          evt_nonce: Date.now() + Math.random()
-        },
-        { priority: "event" }
-      );
+      sendPhaserEvent(inputId, phaserCollisionPayload(obj1, obj2));
     }
 
     wasOverlapping = currentlyOverlapping;
@@ -425,15 +420,7 @@ function addGroupOverlap(objectName, groupName, inputId) {
   scene.physics.add.overlap(
     objectOne, objectTwo,
     function(obj1, obj2) {
-      Shiny.setInputValue(
-        inputId,
-        {
-          name1: obj1.name, x1: obj1.x, y1: obj1.y,
-          name2: obj2.name, x2: obj2.x, y2: obj2.y,
-          evt_nonce: Date.now() + Math.random()
-        },
-        { priority: "event" }
-      );
+      sendPhaserEvent(inputId, phaserCollisionPayload(obj1, obj2));
     }
   );
 }

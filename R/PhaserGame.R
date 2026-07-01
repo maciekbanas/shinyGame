@@ -203,20 +203,23 @@ PhaserGame <- R6::R6Class(
         collapse = "_"
       )
 
+      event_target <- input_id
+      if (!is.null(callback_fun)) {
+        event_target <- register_phaser_event_endpoint(
+          private$session, input_id, callback_fun
+        )
+      }
+
       js <- if (!is.null(object_two)) {
-        sprintf("addCollider('%s','%s','%s')",
-                object_one, object_two, input_id)
+        sprintf("addCollider('%s','%s',%s)",
+                object_one, object_two,
+                jsonlite::toJSON(event_target, auto_unbox = TRUE))
       } else {
-        sprintf("addGroupCollider('%s','%s','%s')",
-                object_one, group, input_id)
+        sprintf("addGroupCollider('%s','%s',%s)",
+                object_one, group,
+                jsonlite::toJSON(event_target, auto_unbox = TRUE))
       }
       send_js(private, js)
-      if (!is.null(callback_fun)) {
-        shiny::observeEvent(input[[input_id]], {
-          evt <- input[[input_id]]
-          callback_fun(evt)
-        }, ignoreNULL = TRUE)
-      }
     },
 
     #' @description Adds a collider between two game objects.
@@ -237,19 +240,20 @@ PhaserGame <- R6::R6Class(
         collapse = "_"
       )
 
+      event_endpoint <- register_phaser_event_endpoint(
+        private$session, input_id, callback_fun
+      )
+
       js <- if (!is.null(object_two)) {
-        sprintf("addOverlap('%s','%s','%s')",
-                object_one, object_two, input_id)
+        sprintf("addOverlap('%s','%s',%s)",
+                object_one, object_two,
+                jsonlite::toJSON(event_endpoint, auto_unbox = TRUE))
       } else {
-        sprintf("addGroupOverlap('%s','%s','%s')",
-                object_one, group, input_id)
+        sprintf("addGroupOverlap('%s','%s',%s)",
+                object_one, group,
+                jsonlite::toJSON(event_endpoint, auto_unbox = TRUE))
       }
       send_js(private, js)
-
-      shiny::observeEvent(input[[input_id]], {
-        evt <- input[[input_id]]
-        callback_fun(evt)
-      }, ignoreNULL = TRUE)
     },
 
    #' @description Create a reactive expression for overlap state between two objects.
@@ -290,14 +294,13 @@ PhaserGame <- R6::R6Class(
          object_two %||% group),
        collapse = "_"
      )
-     js <- sprintf("addOverlapEnd('%s','%s','%s');",
-                   object_one, object_two, input_id)
+     event_endpoint <- register_phaser_event_endpoint(
+       session, input_id, callback_fun
+     )
+     js <- sprintf("addOverlapEnd('%s','%s',%s);",
+                   object_one, object_two,
+                   jsonlite::toJSON(event_endpoint, auto_unbox = TRUE))
      session$sendCustomMessage("phaser", list(js = js))
-
-     shiny::observeEvent(input[[input_id]], {
-       evt <- input[[input_id]]
-       callback_fun(evt)
-     })
    },
 
    #' @description Register a callback fired when a specific key is pressed.
