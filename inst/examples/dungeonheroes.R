@@ -164,8 +164,9 @@ server <- function(input, output, session) {
   }
 
   current_event_overlaps <- function(evt = NULL) {
-    overlaps <- evt$overlaps %||% input$hero_overlaps$overlaps %||% character()
-    as.character(unlist(overlaps, use.names = FALSE))
+    event_overlaps <- as.character(unlist(evt$overlaps %||% character(), use.names = FALSE))
+    tracked_overlaps <- as.character(unlist(input$hero_overlaps$overlaps %||% character(), use.names = FALSE))
+    unique(c(event_overlaps, tracked_overlaps))
   }
 
   nearest_living_enemy <- function(evt = NULL) {
