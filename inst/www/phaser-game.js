@@ -13,7 +13,7 @@ GameBridge.pendingSoundActions = GameBridge.pendingSoundActions || {};
 
 
 function sendPhaserEvent(target, payload) {
-  if (typeof target === "string" && /^https?:|^\//.test(target) && window.fetch) {
+  if (typeof target === "string" && (/^https?:/.test(target) || target.includes("/")) && window.fetch) {
     window.fetch(target, {
       method: "POST",
       headers: { "Content-Type": "application/json" },

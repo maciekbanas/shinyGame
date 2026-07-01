@@ -3,7 +3,32 @@ GameBridge.keyControlHandlers = GameBridge.keyControlHandlers || {};
 GameBridge.forcedAnimations = GameBridge.forcedAnimations || {};
 GameBridge.pendingCameraFollow = GameBridge.pendingCameraFollow || {};
 GameBridge.pendingScrollFactor = GameBridge.pendingScrollFactor || {};
+GameBridge.pendingSpriteActions = GameBridge.pendingSpriteActions || {};
 
+
+
+function applyPendingSpriteActions(name) {
+  const sprite = scene && scene[name];
+  const actions = GameBridge.pendingSpriteActions[name];
+  if (!sprite || !actions) return;
+
+  actions.forEach((action) => action(sprite));
+  delete GameBridge.pendingSpriteActions[name];
+}
+
+function withSprite(name, action, caller) {
+  const sprite = scene && scene[name];
+  if (sprite) {
+    action(sprite);
+    return;
+  }
+
+  GameBridge.pendingSpriteActions[name] = GameBridge.pendingSpriteActions[name] || [];
+  GameBridge.pendingSpriteActions[name].push(action);
+  if (caller) {
+    console.debug(`${caller}: queued until sprite "${name}" is ready`);
+  }
+}
 
 function resolveFrameCount(textureKey, frameWidth, frameHeight, frameCount) {
   if (Number.isFinite(frameCount) && frameCount > 0) {
@@ -46,6 +71,7 @@ function addSprite(name, url, x, y, frameWidth, frameHeight, frameCount, frameRa
     sprite.play(name + '_idle');
 
     scene[name] = sprite;
+    applyPendingSpriteActions(name);
 
     if (typeof applyPendingCameraFollows === "function") {
       applyPendingCameraFollows();
@@ -137,8 +163,9 @@ function playAnimationForDuration(name, animName, duration) {
 }
 
 function setGravity(name, x, y) {
-  const sprite = scene[name];
-  sprite.body.setGravity(x, y);
+  withSprite(name, (sprite) => {
+    if (sprite.body) sprite.body.setGravity(x, y);
+  }, "setGravity()");
 }
 
 function setVelocityX(name, x) {
