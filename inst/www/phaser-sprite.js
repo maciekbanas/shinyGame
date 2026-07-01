@@ -2,8 +2,6 @@ window.GameBridge = window.GameBridge || {};
 GameBridge.keyControlHandlers = GameBridge.keyControlHandlers || {};
 GameBridge.keyControlActions = GameBridge.keyControlActions || {};
 GameBridge.keyControlLastRun = GameBridge.keyControlLastRun || {};
-GameBridge.keyControlReplay = GameBridge.keyControlReplay || {};
-GameBridge.replayedCommands = GameBridge.replayedCommands || {};
 GameBridge.forcedAnimations = GameBridge.forcedAnimations || {};
 GameBridge.pendingCameraFollow = GameBridge.pendingCameraFollow || {};
 GameBridge.pendingScrollFactor = GameBridge.pendingScrollFactor || {};
@@ -230,7 +228,7 @@ function runClientAction(key, action) {
     const cooldownKey = key + "::" + JSON.stringify(action);
     const now = performance.now();
     const lastRun = GameBridge.keyControlLastRun[cooldownKey];
-    if (lastRun !== undefined && (now - lastRun) < cooldown) return;
+    if (lastRun !== undefined && (now - lastRun) < cooldown) return false;
     GameBridge.keyControlLastRun[cooldownKey] = now;
   }
 
@@ -267,18 +265,6 @@ function runClientActions(key) {
   }
 }
 
-function setKeyControlReplay(key, commands = []) {
-  GameBridge.keyControlReplay[key] = Array.isArray(commands) ? commands : [];
-}
-
-function runKeyControlReplay(key) {
-  const commands = GameBridge.keyControlReplay[key] || [];
-  commands.forEach((command) => {
-    GameBridge.replayedCommands[command] = performance.now();
-    eval(command);
-  });
-}
-
 function addKeyControl(key, clientActions = []) {
   GameBridge.keyControlActions[key] = clientActions;
 
@@ -289,7 +275,6 @@ function addKeyControl(key, clientActions = []) {
   const handler = function(e) {
     const inputId = key + "_action";
     if (key == e.code) {
-      runKeyControlReplay(key);
       runClientActions(key);
       Shiny.setInputValue(
         inputId,

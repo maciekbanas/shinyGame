@@ -305,11 +305,9 @@ PhaserGame <- R6::R6Class(
    #'   event.code).
    #' @param action A function to be run after key is pressed.
    #' @param input Shiny input list.
-   #' @param client_action Optional list or list of lists describing browser-side
-   #'   Phaser feedback to run immediately on keydown before Shiny receives the
-   #'   event. Most apps can omit this: shinyphaser automatically records Phaser
-   #'   commands emitted by the control callback and replays the latest command
-   #'   bundle immediately on the next matching keydown.
+   #' @param client_action Optional list or list of lists describing immediate
+   #'   browser-side Phaser feedback to run on keydown before Shiny receives the
+   #'   event.
    add_control = function(key, action, input, client_action = NULL) {
      event <- paste0(key, "_action")
      js <- sprintf(
@@ -319,24 +317,7 @@ PhaserGame <- R6::R6Class(
      )
      send_js(private, js)
      shiny::observeEvent(input[[event]], {
-       recorded_commands <- character()
-       old_recorder <- getOption("shinyphaser.control_recorder")
-       options(shinyphaser.control_recorder = function(js_command) {
-         recorded_commands <<- c(recorded_commands, js_command)
-       })
-       on.exit(options(shinyphaser.control_recorder = old_recorder), add = TRUE)
-
        action()
-       options(shinyphaser.control_recorder = old_recorder)
-
-       if (length(recorded_commands) > 0) {
-         replay_js <- sprintf(
-           "setKeyControlReplay(%s, %s);",
-           jsonlite::toJSON(key, auto_unbox = TRUE),
-           jsonlite::toJSON(recorded_commands, auto_unbox = TRUE)
-         )
-         send_js(private, replay_js)
-       }
      })
    }
   ),

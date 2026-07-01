@@ -546,11 +546,9 @@ event.code).}
 
 \item{\code{input}}{Shiny input list.}
 
-\item{\code{client_action}}{Optional list or list of lists describing browser-side
-Phaser feedback to run immediately on keydown before Shiny receives the
-event. Most apps can omit this: shinyphaser automatically records Phaser
-commands emitted by the control callback and replays the latest command
-bundle immediately on the next matching keydown.}
+\item{\code{client_action}}{Optional list or list of lists describing immediate
+browser-side Phaser feedback to run on keydown before Shiny receives the
+event.}
 }
 \if{html}{\out{</div>}}
 }

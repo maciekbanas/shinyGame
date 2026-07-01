@@ -424,12 +424,6 @@ server <- function(input, output, session) {
         }
 
         hero_last_attack_time <<- current_time
-        hero_attack_sound$play()
-        if (has_sword) {
-          play_hero_timed_animation("hero_sword_attack", duration = 500)
-        } else {
-          play_hero_timed_animation("hero_attack", duration = 500)
-        }
 
         target_name <- nearest_living_enemy()
         if (!is.null(target_name)) {
@@ -467,7 +461,8 @@ server <- function(input, output, session) {
         show_wizard_window(game, input, has_sword)
       }
     },
-    input
+    input,
+    client_action = dungeonheroes_space_client_actions(hero_attack_cooldown)
   )
 
   inventory_text <- game$add_text(
@@ -655,6 +650,37 @@ server <- function(input, output, session) {
   }
 
   lapply(enemy_names, add_enemy_handlers)
+}
+
+
+dungeonheroes_space_client_actions <- function(hero_attack_cooldown) {
+  list(
+    list(
+      destroy_sprite = "sword",
+      set_text = list(id = "inventory_weapon", text = "weapon: sword"),
+      sprite = "hero",
+      play_animation = "hero_sword_idle",
+      when_overlap = c("hero", "sword"),
+      when_exists = "sword",
+      stop_after_match = TRUE
+    ),
+    list(
+      play_sound = "hero_attack",
+      sprite = "hero",
+      play_animation = "hero_attack",
+      duration = 500,
+      cooldown = hero_attack_cooldown * 1000,
+      when_exists = list(name = "sword", exists = TRUE)
+    ),
+    list(
+      play_sound = "hero_attack",
+      sprite = "hero",
+      play_animation = "hero_sword_attack",
+      duration = 500,
+      cooldown = hero_attack_cooldown * 1000,
+      when_exists = list(name = "sword", exists = FALSE)
+    )
+  )
 }
 
 show_wizard_window <- function(game, input, has_sword = FALSE) {
