@@ -55,6 +55,9 @@ function addSprite(name, url, x, y, frameWidth, frameHeight, frameCount, frameRa
     if (typeof applyPendingScrollFactors === "function") {
       applyPendingScrollFactors();
     }
+    if (typeof applyPendingTerrainColliders === "function") {
+      applyPendingTerrainColliders();
+    }
   });
 
   scene.load.start();
@@ -74,6 +77,9 @@ function addStaticSprite(name, url, x, y) {
     }
     if (typeof applyPendingScrollFactors === "function") {
       applyPendingScrollFactors();
+    }
+    if (typeof applyPendingTerrainColliders === "function") {
+      applyPendingTerrainColliders();
     }
   });
   scene.load.start();
