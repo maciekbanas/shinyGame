@@ -308,7 +308,8 @@ PhaserGame <- R6::R6Class(
    #' @param client_action Optional list or list of lists describing browser-side
    #'   Phaser feedback to run immediately on keydown before Shiny receives the
    #'   event. Supported fields include `play_sound`, `play_animation`,
-   #'   `sprite`, `duration`, `cooldown`, and `when_state`.
+   #'   `destroy_sprite`, `set_text`, `sprite`, `duration`, `cooldown`,
+   #'   `when_overlap`, `when_exists`, and `stop_after_match`.
    add_control = function(key, action, input, client_action = NULL) {
      event <- paste0(key, "_action")
      js <- sprintf(
@@ -320,18 +321,6 @@ PhaserGame <- R6::R6Class(
      shiny::observeEvent(input[[event]], {
        action()
      })
-   },
-
-   #' @description Set a browser-side state flag for client-side control actions.
-   #' @param key Character. State key.
-   #' @param value Value to store in the browser.
-   set_client_state = function(key, value) {
-     js <- sprintf(
-       "setClientState(%s, %s);",
-       jsonlite::toJSON(key, auto_unbox = TRUE),
-       jsonlite::toJSON(value, auto_unbox = TRUE, null = "null")
-     )
-     send_js(private, js)
    }
   ),
   private = list(

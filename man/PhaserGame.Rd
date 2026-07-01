@@ -50,7 +50,6 @@ game <- PhaserGame$new(id = "my_game", width = 1024, height = 768)
 \item \href{#method-PhaserGame-are_overlap}{\code{PhaserGame$are_overlap()}}
 \item \href{#method-PhaserGame-add_overlap_end}{\code{PhaserGame$add_overlap_end()}}
 \item \href{#method-PhaserGame-add_control}{\code{PhaserGame$add_control()}}
-\item \href{#method-PhaserGame-set_client_state}{\code{PhaserGame$set_client_state()}}
 \item \href{#method-PhaserGame-clone}{\code{PhaserGame$clone()}}
 }
 }
@@ -550,26 +549,9 @@ event.code).}
 \item{\code{client_action}}{Optional list or list of lists describing browser-side
 Phaser feedback to run immediately on keydown before Shiny receives the
 event. Supported fields include \code{play_sound}, \code{play_animation},
-\code{sprite}, \code{duration}, \code{cooldown}, and \code{when_state}.}
-}
-\if{html}{\out{</div>}}
-}
-}
-\if{html}{\out{<hr>}}
-\if{html}{\out{<a id="method-PhaserGame-set_client_state"></a>}}
-\if{latex}{\out{\hypertarget{method-PhaserGame-set_client_state}{}}}
-\subsection{Method \code{set_client_state()}}{
-Set a browser-side state flag for client-side control actions.
-\subsection{Usage}{
-\if{html}{\out{<div class="r">}}\preformatted{PhaserGame$set_client_state(key, value)}\if{html}{\out{</div>}}
-}
-
-\subsection{Arguments}{
-\if{html}{\out{<div class="arguments">}}
-\describe{
-\item{\code{key}}{Character. State key.}
-
-\item{\code{value}}{Value to store in the browser.}
+\code{destroy_sprite}, \code{set_text}, \code{sprite}, \code{duration},
+\code{cooldown}, \code{when_overlap}, \code{when_exists}, and
+\code{stop_after_match}.}
 }
 \if{html}{\out{</div>}}
 }

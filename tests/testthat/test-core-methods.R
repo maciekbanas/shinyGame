@@ -194,20 +194,30 @@ test_that("PhaserGame add_control supports immediate client actions", {
     action = function() NULL,
     input = input,
     client_action = list(
-      play_sound = "hero_attack",
-      sprite = "hero",
-      play_animation = "hero_attack",
-      duration = 500,
-      cooldown = 750,
-      when_state = list(hero_has_sword = FALSE)
+      list(
+        destroy_sprite = "sword",
+        set_text = list(id = "inventory_weapon", text = "weapon: sword"),
+        when_overlap = c("hero", "sword"),
+        when_exists = "sword",
+        stop_after_match = TRUE
+      ),
+      list(
+        play_sound = "hero_attack",
+        sprite = "hero",
+        play_animation = "hero_attack",
+        duration = 500,
+        cooldown = 750,
+        when_exists = list(name = "sword", exists = TRUE)
+      )
     )
   )
-  game$set_client_state("hero_has_sword", TRUE)
 
   msgs <- vapply(session$get_messages(), function(m) m$message$js, character(1))
   expect_true(any(grepl("addKeyControl\\(\"Space\",", msgs)))
+  expect_true(any(grepl('"destroy_sprite":"sword"', msgs, fixed = TRUE)))
+  expect_true(any(grepl('"when_overlap":["hero","sword"]', msgs, fixed = TRUE)))
+  expect_true(any(grepl('"stop_after_match":true', msgs, fixed = TRUE)))
   expect_true(any(grepl('"play_sound":"hero_attack"', msgs, fixed = TRUE)))
   expect_true(any(grepl('"play_animation":"hero_attack"', msgs, fixed = TRUE)))
   expect_true(any(grepl('"cooldown":750', msgs, fixed = TRUE)))
-  expect_true(any(grepl("setClientState\\(\"hero_has_sword\", true\\);", msgs)))
 })

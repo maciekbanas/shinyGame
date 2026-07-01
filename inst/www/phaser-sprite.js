@@ -2,7 +2,6 @@ window.GameBridge = window.GameBridge || {};
 GameBridge.keyControlHandlers = GameBridge.keyControlHandlers || {};
 GameBridge.keyControlActions = GameBridge.keyControlActions || {};
 GameBridge.keyControlLastRun = GameBridge.keyControlLastRun || {};
-GameBridge.clientState = GameBridge.clientState || {};
 GameBridge.forcedAnimations = GameBridge.forcedAnimations || {};
 GameBridge.pendingCameraFollow = GameBridge.pendingCameraFollow || {};
 GameBridge.pendingScrollFactor = GameBridge.pendingScrollFactor || {};
@@ -163,18 +162,55 @@ function destroySprite(name) {
   const sprite = getSpriteByName(name, "destroySprite()");
   if (!sprite) return;
   sprite.destroy();
+  if (scene && scene[name] === sprite) {
+    delete scene[name];
+  }
 }
 
-function setClientState(key, value) {
-  GameBridge.clientState[key] = value;
+function getClientObject(name) {
+  return scene && scene.children && scene.children.getByName(name);
 }
 
-function clientActionMatchesState(action) {
-  if (!action.when_state) return true;
+function objectExists(name) {
+  const object = getClientObject(name);
+  return Boolean(object && object.active !== false);
+}
 
-  return Object.entries(action.when_state).every(([key, expected]) => {
-    return GameBridge.clientState[key] === expected;
-  });
+function objectsOverlap(objectNames) {
+  if (!Array.isArray(objectNames) || objectNames.length !== 2) return false;
+
+  const objectOne = getClientObject(objectNames[0]);
+  const objectTwo = getClientObject(objectNames[1]);
+  if (!objectOne || !objectTwo || !objectOne.getBounds || !objectTwo.getBounds) {
+    return false;
+  }
+
+  return Phaser.Geom.Intersects.RectangleToRectangle(
+    objectOne.getBounds(),
+    objectTwo.getBounds()
+  );
+}
+
+function actionConditionPasses(action) {
+  if (action.when_overlap && !objectsOverlap(action.when_overlap)) return false;
+
+  if (action.when_exists) {
+    const existsConditions = Array.isArray(action.when_exists)
+      ? action.when_exists
+      : [action.when_exists];
+
+    const allExist = existsConditions.every((condition) => {
+      if (typeof condition === "string") return objectExists(condition);
+      if (condition && typeof condition === "object") {
+        return objectExists(condition.name) === Boolean(condition.exists);
+      }
+      return false;
+    });
+
+    if (!allExist) return false;
+  }
+
+  return true;
 }
 
 function normalizeClientActions(clientActions) {
@@ -185,7 +221,7 @@ function normalizeClientActions(clientActions) {
 }
 
 function runClientAction(key, action) {
-  if (!clientActionMatchesState(action)) return;
+  if (!actionConditionPasses(action)) return false;
 
   const cooldown = Number(action.cooldown || 0);
   if (cooldown > 0) {
@@ -210,12 +246,23 @@ function runClientAction(key, action) {
       playAnimation(spriteName, action.play_animation);
     }
   }
+
+  if (action.destroy_sprite) {
+    destroySprite(action.destroy_sprite);
+  }
+
+  if (action.set_text && action.set_text.id !== undefined) {
+    setText(action.set_text.text || "", action.set_text.id);
+  }
+
+  return true;
 }
 
 function runClientActions(key) {
-  normalizeClientActions(GameBridge.keyControlActions[key]).forEach((action) => {
-    runClientAction(key, action);
-  });
+  for (const action of normalizeClientActions(GameBridge.keyControlActions[key])) {
+    const didRun = runClientAction(key, action);
+    if (didRun && action.stop_after_match) break;
+  }
 }
 
 function addKeyControl(key, clientActions = []) {

@@ -191,7 +191,6 @@ server <- function(input, output, session) {
   game$set_shiny_session()
 
   game$set_world_bounds(world_width, world_height)
-  game$set_client_state("hero_has_sword", FALSE)
 
   game$add_map(
     map_key = "mushroom_swamps",
@@ -415,7 +414,6 @@ server <- function(input, output, session) {
         sword_in_range <<- FALSE
         sword$destroy()
         inventory_text$set("weapon: sword")
-        game$set_client_state("hero_has_sword", TRUE)
         set_combat_status("You equipped the sword. Your attacks are stronger.")
         play_hero_idle_animation()
       } else {
@@ -466,12 +464,21 @@ server <- function(input, output, session) {
     input,
     client_action = list(
       list(
+        destroy_sprite = "sword",
+        set_text = list(id = "inventory_weapon", text = "weapon: sword"),
+        sprite = "hero",
+        play_animation = "hero_sword_idle",
+        when_overlap = c("hero", "sword"),
+        when_exists = "sword",
+        stop_after_match = TRUE
+      ),
+      list(
         play_sound = "hero_attack",
         sprite = "hero",
         play_animation = "hero_attack",
         duration = 500,
         cooldown = hero_attack_cooldown * 1000,
-        when_state = list(hero_has_sword = FALSE)
+        when_exists = list(name = "sword", exists = TRUE)
       ),
       list(
         play_sound = "hero_attack",
@@ -479,7 +486,7 @@ server <- function(input, output, session) {
         play_animation = "hero_sword_attack",
         duration = 500,
         cooldown = hero_attack_cooldown * 1000,
-        when_state = list(hero_has_sword = TRUE)
+        when_exists = list(name = "sword", exists = FALSE)
       )
     )
   )
