@@ -497,8 +497,12 @@ function addGraphics(name, x, y, width, height, fillColor) {
   scene[name] = scene.add.rectangle(x, y, width, height, fillColor);
 }
 
+function shinyInputReady() {
+  return typeof Shiny !== "undefined" && typeof Shiny.setInputValue === "function";
+}
+
 function sendHeroOverlapState(time) {
-  if (typeof currentHeroOverlaps !== "function" || typeof Shiny === "undefined") return;
+  if (typeof currentHeroOverlaps !== "function" || !shinyInputReady()) return;
   if (time < GameBridge.nextHeroOverlapSendAt) return;
 
   const overlaps = currentHeroOverlaps();
