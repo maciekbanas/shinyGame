@@ -79,8 +79,6 @@ server <- function(input, output, session) {
   )
   enemy_attack_cooldown <- 2
   enemy_in_range <- NULL
-  wizard_in_range <- FALSE
-  sword_in_range <- FALSE
   has_sword <- FALSE
   hero_last_attack_time <- as.numeric(Sys.time()) - 1
   hero_attack_cooldown <- 0.75
@@ -91,7 +89,6 @@ server <- function(input, output, session) {
   health_bar_segment_height <- 14
   health_bar_segment_gap <- 3
   game_over_shown <- FALSE
-  wizard_is_talking <- FALSE
   defeated_enemy_count <- 0
 
   enemy_animation_key <- function(enemy_name, suffix) {
@@ -419,9 +416,8 @@ server <- function(input, output, session) {
         return()
       }
 
-      if (sword_in_range && !has_sword) {
+      if ("sword" %in% (evt$overlaps %||% character()) && !has_sword) {
         has_sword <<- TRUE
-        sword_in_range <<- FALSE
         sword$destroy()
         inventory_text$set("weapon: sword")
         set_combat_status("You equipped the sword. Your attacks are stronger.")
@@ -465,9 +461,6 @@ server <- function(input, output, session) {
         } else {
           set_combat_status("Your attack hits only air.")
         }
-      }
-      if (wizard_in_range) {
-        # Wizard feedback is handled immediately in the browser; server state remains available here.
       }
     },
     input,
@@ -535,24 +528,7 @@ server <- function(input, output, session) {
     x = 300,
     y = 300
   )
-  game$add_overlap(
-    object_one = "hero",
-    object_two = "sword",
-    callback_fun = function(evt) {
-      if (!has_sword) {
-        sword_in_range <<- TRUE
-      }
-    },
-    input = input
-  )
-  game$add_overlap_end(
-    object_one = "hero",
-    object_two = "sword",
-    callback_fun = function(evt) {
-      sword_in_range <<- FALSE
-    },
-    input = input
-  )
+
 
   wizard <- game$add_sprite(
     name = "wizard",
@@ -581,14 +557,6 @@ server <- function(input, output, session) {
   game$add_overlap(
     object_one = "hero",
     object_two = "wizard",
-    callback_fun = function(evt) {
-      talk_bubble_text$show()
-      wizard_in_range <<- TRUE
-      if (!wizard_is_talking) {
-        wizard_is_talking <<- TRUE
-        wizard$play_animation("wizard_talk", 2e3)
-      }
-    },
     input = input,
     client_action = list(
       show_text = "talk_bubble_text",
@@ -600,12 +568,6 @@ server <- function(input, output, session) {
   game$add_overlap_end(
     object_one = "hero",
     object_two = "wizard",
-    callback_fun = function(evt) {
-      talk_bubble_text$hide()
-      wizard_in_range <<- FALSE
-      wizard_is_talking <<- FALSE
-      wizard$play_animation("wizard_idle")
-    },
     input = input,
     client_action = list(
       hide_text = "talk_bubble_text",

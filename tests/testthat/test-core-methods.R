@@ -210,3 +210,32 @@ test_that("PhaserGame add_control supports immediate client actions", {
   expect_true(any(grepl('"cooldown":750', msgs, fixed = TRUE)))
   expect_true(any(grepl('"show_alert":{"title":"Hello","type":"info"}', msgs, fixed = TRUE)))
 })
+
+test_that("PhaserGame client actions do not require server callbacks", {
+  session <- make_mock_session()
+  game <- PhaserGame$new()
+  game$set_shiny_session(session)
+  input <- list()
+
+  game$add_control("KeyE", input = input, client_action = list(show_text = "prompt"))
+  game$add_overlap(
+    object_one = "hero",
+    object_two = "wizard",
+    input = input,
+    client_action = list(show_text = "talk_bubble_text")
+  )
+  game$add_overlap_end(
+    object_one = "hero",
+    object_two = "wizard",
+    input = input,
+    session = session,
+    client_action = list(hide_text = "talk_bubble_text")
+  )
+
+  msgs <- vapply(session$get_messages(), function(m) m$message$js, character(1))
+  expect_true(any(grepl('"show_text":"prompt"', msgs, fixed = TRUE)))
+  expect_true(any(grepl('addOverlap("hero", "wizard"', msgs, fixed = TRUE)))
+  expect_true(any(grepl('"show_text":"talk_bubble_text"', msgs, fixed = TRUE)))
+  expect_true(any(grepl('addOverlapEnd("hero", "wizard"', msgs, fixed = TRUE)))
+  expect_true(any(grepl('"hide_text":"talk_bubble_text"', msgs, fixed = TRUE)))
+})

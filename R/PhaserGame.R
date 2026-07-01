@@ -230,7 +230,7 @@ PhaserGame <- R6::R6Class(
     add_overlap = function(object_one,
                            object_two = NULL,
                            group = NULL,
-                           callback_fun,
+                           callback_fun = NULL,
                            input,
                            client_action = NULL) {
       Sys.sleep(0.1)
@@ -255,10 +255,12 @@ PhaserGame <- R6::R6Class(
       }
       send_js(private, js)
 
-      shiny::observeEvent(input[[input_id]], {
-        evt <- input[[input_id]]
-        callback_fun(evt)
-      }, ignoreNULL = TRUE)
+      if (!is.null(callback_fun)) {
+        shiny::observeEvent(input[[input_id]], {
+          evt <- input[[input_id]]
+          callback_fun(evt)
+        }, ignoreNULL = TRUE)
+      }
     },
 
    #' @description Create a reactive expression for overlap state between two objects.
@@ -293,7 +295,7 @@ PhaserGame <- R6::R6Class(
    add_overlap_end = function(object_one,
                               object_two = NULL,
                               group = NULL,
-                              callback_fun,
+                              callback_fun = NULL,
                               input,
                               session = shiny::getDefaultReactiveDomain(),
                               client_action = NULL) {
@@ -309,10 +311,12 @@ PhaserGame <- R6::R6Class(
                    jsonlite::toJSON(client_action %||% list(), auto_unbox = TRUE, null = "null"))
      session$sendCustomMessage("phaser", list(js = js))
 
-     shiny::observeEvent(input[[input_id]], {
-       evt <- input[[input_id]]
-       callback_fun(evt)
-     })
+     if (!is.null(callback_fun)) {
+       shiny::observeEvent(input[[input_id]], {
+         evt <- input[[input_id]]
+         callback_fun(evt)
+       })
+     }
    },
 
    #' @description Register a callback fired when a specific key is pressed.
@@ -323,7 +327,7 @@ PhaserGame <- R6::R6Class(
    #' @param client_action Optional list or list of lists describing immediate
    #'   browser-side Phaser feedback to run on keydown before Shiny receives the
    #'   event.
-   add_control = function(key, action, input, client_action = NULL) {
+   add_control = function(key, action = NULL, input, client_action = NULL) {
      event <- paste0(key, "_action")
      js <- sprintf(
        "addKeyControl(%s, %s);",
@@ -331,9 +335,11 @@ PhaserGame <- R6::R6Class(
        jsonlite::toJSON(client_action %||% list(), auto_unbox = TRUE, null = "null")
      )
      send_js(private, js)
-     shiny::observeEvent(input[[event]], {
-       action()
-     })
+     if (!is.null(action)) {
+       shiny::observeEvent(input[[event]], {
+         action()
+       })
+     }
    }
   ),
   private = list(
