@@ -548,10 +548,9 @@ event.code).}
 
 \item{\code{client_action}}{Optional list or list of lists describing browser-side
 Phaser feedback to run immediately on keydown before Shiny receives the
-event. Supported fields include \code{play_sound}, \code{play_animation},
-\code{destroy_sprite}, \code{set_text}, \code{sprite}, \code{duration},
-\code{cooldown}, \code{when_overlap}, \code{when_exists}, and
-\code{stop_after_match}.}
+event. Most apps can omit this: shinyphaser automatically records Phaser
+commands emitted by the control callback and replays the latest command
+bundle immediately on the next matching keydown.}
 }
 \if{html}{\out{</div>}}
 }

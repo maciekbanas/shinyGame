@@ -458,5 +458,10 @@ function addGraphics(name, x, y, width, height, fillColor) {
 }
 
 Shiny.addCustomMessageHandler("phaser", function (message) {
+  const replayedAt = GameBridge.replayedCommands && GameBridge.replayedCommands[message.js];
+  if (replayedAt !== undefined && performance.now() - replayedAt < 1000) {
+    delete GameBridge.replayedCommands[message.js];
+    return;
+  }
   eval(message.js);
 });
