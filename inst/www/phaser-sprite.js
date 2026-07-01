@@ -1,5 +1,8 @@
 window.GameBridge = window.GameBridge || {};
 GameBridge.keyControlHandlers = GameBridge.keyControlHandlers || {};
+GameBridge.keyControlActions = GameBridge.keyControlActions || {};
+GameBridge.keyControlLastRun = GameBridge.keyControlLastRun || {};
+GameBridge.clientState = GameBridge.clientState || {};
 GameBridge.forcedAnimations = GameBridge.forcedAnimations || {};
 GameBridge.pendingCameraFollow = GameBridge.pendingCameraFollow || {};
 GameBridge.pendingScrollFactor = GameBridge.pendingScrollFactor || {};
@@ -162,7 +165,62 @@ function destroySprite(name) {
   sprite.destroy();
 }
 
-function addKeyControl(key) {
+function setClientState(key, value) {
+  GameBridge.clientState[key] = value;
+}
+
+function clientActionMatchesState(action) {
+  if (!action.when_state) return true;
+
+  return Object.entries(action.when_state).every(([key, expected]) => {
+    return GameBridge.clientState[key] === expected;
+  });
+}
+
+function normalizeClientActions(clientActions) {
+  if (!clientActions || (Array.isArray(clientActions) && clientActions.length === 0)) {
+    return [];
+  }
+  return Array.isArray(clientActions) ? clientActions : [clientActions];
+}
+
+function runClientAction(key, action) {
+  if (!clientActionMatchesState(action)) return;
+
+  const cooldown = Number(action.cooldown || 0);
+  if (cooldown > 0) {
+    const cooldownKey = key + "::" + JSON.stringify(action);
+    const now = performance.now();
+    const lastRun = GameBridge.keyControlLastRun[cooldownKey];
+    if (lastRun !== undefined && (now - lastRun) < cooldown) return;
+    GameBridge.keyControlLastRun[cooldownKey] = now;
+  }
+
+  if (action.play_sound) {
+    playSound(action.play_sound, action.volume ?? null, action.loop ?? null);
+  }
+
+  if (action.play_animation) {
+    const spriteName = action.sprite || action.name;
+    if (!spriteName) {
+      console.warn("client action play_animation requires a sprite/name field");
+    } else if (Number.isFinite(action.duration)) {
+      playAnimationForDuration(spriteName, action.play_animation, action.duration);
+    } else {
+      playAnimation(spriteName, action.play_animation);
+    }
+  }
+}
+
+function runClientActions(key) {
+  normalizeClientActions(GameBridge.keyControlActions[key]).forEach((action) => {
+    runClientAction(key, action);
+  });
+}
+
+function addKeyControl(key, clientActions = []) {
+  GameBridge.keyControlActions[key] = clientActions;
+
   if (GameBridge.keyControlHandlers[key]) {
     return;
   }
@@ -170,9 +228,10 @@ function addKeyControl(key) {
   const handler = function(e) {
     const inputId = key + "_action";
     if (key == e.code) {
+      runClientActions(key);
       Shiny.setInputValue(
         inputId,
-        e.code,
+        { code: e.code, evt_nonce: Date.now() + Math.random() },
         { priority: "event" }
       );
     }

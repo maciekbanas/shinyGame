@@ -181,3 +181,33 @@ test_that("PhaserGame can create Sound objects", {
   msgs <- vapply(session$get_messages(), function(m) m$message$js, character(1))
   expect_true(any(grepl("addSound\\(\\\"jump\\\", \\\"jump.wav\\\", 0.400000, true\\);", msgs)))
 })
+
+
+test_that("PhaserGame add_control supports immediate client actions", {
+  session <- make_mock_session()
+  game <- PhaserGame$new()
+  game$set_shiny_session(session)
+
+  input <- list(Space_action = NULL)
+  game$add_control(
+    "Space",
+    action = function() NULL,
+    input = input,
+    client_action = list(
+      play_sound = "hero_attack",
+      sprite = "hero",
+      play_animation = "hero_attack",
+      duration = 500,
+      cooldown = 750,
+      when_state = list(hero_has_sword = FALSE)
+    )
+  )
+  game$set_client_state("hero_has_sword", TRUE)
+
+  msgs <- vapply(session$get_messages(), function(m) m$message$js, character(1))
+  expect_true(any(grepl("addKeyControl\\(\"Space\",", msgs)))
+  expect_true(any(grepl('"play_sound":"hero_attack"', msgs, fixed = TRUE)))
+  expect_true(any(grepl('"play_animation":"hero_attack"', msgs, fixed = TRUE)))
+  expect_true(any(grepl('"cooldown":750', msgs, fixed = TRUE)))
+  expect_true(any(grepl("setClientState\\(\"hero_has_sword\", true\\);", msgs)))
+})

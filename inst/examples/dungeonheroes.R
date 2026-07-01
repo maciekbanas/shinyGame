@@ -191,6 +191,7 @@ server <- function(input, output, session) {
   game$set_shiny_session()
 
   game$set_world_bounds(world_width, world_height)
+  game$set_client_state("hero_has_sword", FALSE)
 
   game$add_map(
     map_key = "mushroom_swamps",
@@ -414,6 +415,7 @@ server <- function(input, output, session) {
         sword_in_range <<- FALSE
         sword$destroy()
         inventory_text$set("weapon: sword")
+        game$set_client_state("hero_has_sword", TRUE)
         set_combat_status("You equipped the sword. Your attacks are stronger.")
         play_hero_idle_animation()
       } else {
@@ -424,12 +426,6 @@ server <- function(input, output, session) {
         }
 
         hero_last_attack_time <<- current_time
-        hero_attack_sound$play()
-        if (has_sword) {
-          play_hero_timed_animation("hero_sword_attack", duration = 500)
-        } else {
-          play_hero_timed_animation("hero_attack", duration = 500)
-        }
 
         target_name <- nearest_living_enemy()
         if (!is.null(target_name)) {
@@ -467,7 +463,25 @@ server <- function(input, output, session) {
         show_wizard_window(game, input, has_sword)
       }
     },
-    input
+    input,
+    client_action = list(
+      list(
+        play_sound = "hero_attack",
+        sprite = "hero",
+        play_animation = "hero_attack",
+        duration = 500,
+        cooldown = hero_attack_cooldown * 1000,
+        when_state = list(hero_has_sword = FALSE)
+      ),
+      list(
+        play_sound = "hero_attack",
+        sprite = "hero",
+        play_animation = "hero_sword_attack",
+        duration = 500,
+        cooldown = hero_attack_cooldown * 1000,
+        when_state = list(hero_has_sword = TRUE)
+      )
+    )
   )
 
   inventory_text <- game$add_text(
