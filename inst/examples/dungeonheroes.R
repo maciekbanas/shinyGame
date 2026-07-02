@@ -567,20 +567,23 @@ server <- function(input, output, session) {
   game$add_overlap(
     object_one = "hero",
     object_two = "wizard",
-    callback_fun = function(evt) {
-      talk_bubble_text$show()
-      wizard$play_animation("wizard_talk", duration = 2000)
-    },
-    input = input
+    input = input,
+    client_action = list(
+      show_text = "talk_bubble_text",
+      sprite = "wizard",
+      play_animation = "wizard_talk",
+      duration = 2000
+    )
   )
   game$add_overlap_end(
     object_one = "hero",
     object_two = "wizard",
-    callback_fun = function(evt) {
-      talk_bubble_text$hide()
-      wizard$play_animation("wizard_idle")
-    },
-    input = input
+    input = input,
+    client_action = list(
+      hide_text = "talk_bubble_text",
+      sprite = "wizard",
+      play_animation = "wizard_idle"
+    )
   )
 
   add_enemy_handlers <- function(skeleton_name) {
