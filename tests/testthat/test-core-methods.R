@@ -239,3 +239,28 @@ test_that("PhaserGame client actions do not require server callbacks", {
   expect_true(any(grepl('addOverlapEnd("hero", "wizard"', msgs, fixed = TRUE)))
   expect_true(any(grepl('"hide_text":"talk_bubble_text"', msgs, fixed = TRUE)))
 })
+
+
+test_that("overlap callbacks with direct object actions are recorded as client actions", {
+  session <- make_mock_session()
+  game <- PhaserGame$new()
+  game$set_shiny_session(session)
+
+  input <- list()
+  prompt <- game$add_text("...", "prompt", 0, 0, visible = FALSE)
+
+  game$add_overlap(
+    object_one = "hero",
+    object_two = "wizard",
+    callback_fun = function(evt) {
+      prompt$show()
+    },
+    input = input
+  )
+
+  msgs <- vapply(session$get_messages(), function(m) m$message$js, character(1))
+  overlap_msg <- msgs[grepl('addOverlap("hero", "wizard"', msgs, fixed = TRUE)]
+  expect_length(overlap_msg, 1)
+  expect_true(grepl('"raw_js"', overlap_msg, fixed = TRUE))
+  expect_true(grepl('showText(\'prompt\');', overlap_msg, fixed = TRUE))
+})

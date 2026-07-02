@@ -238,6 +238,13 @@ function runClientAction(key, action) {
     GameBridge.keyControlLastRun[cooldownKey] = now;
   }
 
+  if (action.raw_js) {
+    const snippets = Array.isArray(action.raw_js) ? action.raw_js : [action.raw_js];
+    for (const snippet of snippets) {
+      eval(snippet);
+    }
+  }
+
   if (action.play_sound) {
     playSound(action.play_sound, action.volume ?? null, action.loop ?? null);
   }

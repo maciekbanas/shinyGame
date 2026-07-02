@@ -164,9 +164,7 @@ server <- function(input, output, session) {
   }
 
   current_event_overlaps <- function(evt = NULL) {
-    event_overlaps <- as.character(unlist(evt$overlaps %||% character(), use.names = FALSE))
-    tracked_overlaps <- as.character(unlist(input$hero_overlaps$overlaps %||% character(), use.names = FALSE))
-    unique(c(event_overlaps, tracked_overlaps))
+    as.character(unlist(evt$overlaps %||% character(), use.names = FALSE))
   }
 
   nearest_living_enemy <- function(evt = NULL) {
@@ -589,49 +587,6 @@ server <- function(input, output, session) {
     )
   )
 
-  shiny::observeEvent(input$hero_overlaps, {
-    if (life_points <= 0) {
-      return()
-    }
-
-    overlapping_enemies <- intersect(current_event_overlaps(input$hero_overlaps), enemy_names)
-    living_overlapping_enemies <- overlapping_enemies[enemy_is_alive[overlapping_enemies]]
-    if (length(living_overlapping_enemies) == 0) {
-      enemy_in_range <<- NULL
-      return()
-    }
-
-    skeleton_name <- living_overlapping_enemies[[1]]
-    enemy_in_range <<- skeleton_name
-
-    current_time <- as.numeric(Sys.time())
-    if ((current_time - enemy_last_attack_time[[skeleton_name]]) < enemy_attack_cooldown) {
-      return()
-    }
-
-    enemy_last_attack_time[skeleton_name] <<- current_time
-    enemies[[skeleton_name]]$play_animation(
-      enemy_animation_key(skeleton_name, "attack"),
-      duration = 350
-    )
-    damage <- enemy_damage[[skeleton_name]]
-    life_points <<- max(life_points - damage, 0)
-    update_life_points()
-    set_combat_status(sprintf(
-      "%s strikes you for %d damage.",
-      format_enemy_label(skeleton_name),
-      damage
-    ))
-    if (life_points <= 0 && !game_over_shown) {
-      game_over_shown <<- TRUE
-      shinyalert::shinyalert(
-        title = "Game Over",
-        text = "You have been defeated.",
-        type = "error"
-      )
-    }
-  }, ignoreNULL = TRUE)
-
   add_enemy_handlers <- function(skeleton_name) {
     force(skeleton_name)
 
@@ -699,6 +654,7 @@ server <- function(input, output, session) {
 
   lapply(enemy_names, add_enemy_handlers)
 }
+
 
 
 dungeonheroes_space_client_actions <- function(hero_attack_cooldown, enemy_names) {
