@@ -202,12 +202,18 @@ function normalizeStateKey(key) {
   return String(key || "");
 }
 
+function ensureClientState() {
+  window.GameBridge = window.GameBridge || {};
+  GameBridge.clientState = GameBridge.clientState || {};
+  return GameBridge.clientState;
+}
+
 function getClientState(key) {
-  return GameBridge.clientState[normalizeStateKey(key)];
+  return ensureClientState()[normalizeStateKey(key)];
 }
 
 function setClientState(key, value) {
-  GameBridge.clientState[normalizeStateKey(key)] = value;
+  ensureClientState()[normalizeStateKey(key)] = value;
   return value;
 }
 
