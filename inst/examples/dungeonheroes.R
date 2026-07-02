@@ -44,7 +44,7 @@ server <- function(input, output, session) {
     list(name = "mushroom_man_8", type = "mushroom_man", x = 2850, y = 4550, hit_points = 3, damage = 5, motion = "attack"),
     list(name = "mushroom_man_9", type = "mushroom_man", x = 950, y = 5250, hit_points = 2, damage = 4, motion = "walk"),
     list(name = "mushroom_man_10", type = "mushroom_man", x = 2150, y = 5550, hit_points = 3, damage = 5, motion = "attack"),
-    list(name = "skeleton", type = "skeleton", x = 2850, y = 2150, hit_points = 6, damage = 16, motion = "idle"),
+    list(name = "skeleton", type = "skeleton", x = 2850, y = 750, hit_points = 6, damage = 16, motion = "idle"),
     list(name = "skeleton_2", type = "skeleton", x = 3050, y = 2250, hit_points = 7, damage = 18, motion = "idle"),
     list(name = "skeleton_3", type = "skeleton", x = 2700, y = 2350, hit_points = 7, damage = 20, motion = "idle"),
     list(name = "skeleton_4", type = "skeleton", x = 3000, y = 2650, hit_points = 8, damage = 22, motion = "idle")
@@ -421,59 +421,7 @@ server <- function(input, output, session) {
 
   game$add_control(
     "Space",
-    action = function(evt = input[["Space_action"]]) {
-      if (life_points <= 0) {
-        set_combat_status("You are defeated and cannot fight.")
-        return()
-      }
-
-      if ("sword" %in% current_event_overlaps(evt) && !has_sword) {
-        has_sword <<- TRUE
-        sword$destroy()
-        inventory_text$set("weapon: sword")
-        set_combat_status("You equipped the sword. Your attacks are stronger.")
-        play_hero_idle_animation()
-      } else {
-        current_time <- as.numeric(Sys.time())
-        if ((current_time - hero_last_attack_time) < hero_attack_cooldown) {
-          set_combat_status("You need a moment before attacking again.")
-          return()
-        }
-
-        hero_last_attack_time <<- current_time
-
-        target_name <- nearest_living_enemy(evt)
-        if (!is.null(target_name)) {
-          attack_damage <- if (has_sword) hero_sword_damage else hero_fist_damage
-          enemy_hit_points[target_name] <<- max(
-            enemy_hit_points[[target_name]] - attack_damage,
-            0
-          )
-
-          if (enemy_hit_points[[target_name]] <= 0) {
-            enemy_is_alive[target_name] <<- FALSE
-            enemies[[target_name]]$destroy()
-            enemy_in_range <<- NULL
-            defeated_enemy_count <<- defeated_enemy_count + 1
-            set_combat_status(sprintf(
-              "You defeated %s (%d/%d defeated).",
-              format_enemy_label(target_name),
-              defeated_enemy_count,
-              length(enemy_names)
-            ))
-          } else {
-            set_combat_status(sprintf(
-              "You hit %s for %d damage.",
-              format_enemy_label(target_name),
-              attack_damage
-            ))
-          }
-          update_enemy_status()
-        } else {
-          set_combat_status("Your attack hits only air.")
-        }
-      }
-    },
+    action = NULL,
     input,
     client_action = dungeonheroes_space_client_actions(hero_attack_cooldown, enemy_names)
   )
@@ -593,37 +541,6 @@ server <- function(input, output, session) {
     game$add_overlap(
       object_one = "hero",
       object_two = skeleton_name,
-      callback_fun = function(evt) {
-        enemy_in_range <<- skeleton_name
-        if (!isTRUE(enemy_is_alive[[skeleton_name]])) {
-          return()
-        }
-
-        current_time <- as.numeric(Sys.time())
-        if ((current_time - enemy_last_attack_time[[skeleton_name]]) >= enemy_attack_cooldown) {
-          enemy_last_attack_time[skeleton_name] <<- current_time
-          enemies[[skeleton_name]]$play_animation(
-            enemy_animation_key(skeleton_name, "attack"),
-            duration = 350
-          )
-          damage <- enemy_damage[[skeleton_name]]
-          life_points <<- max(life_points - damage, 0)
-          update_life_points()
-          set_combat_status(sprintf(
-            "%s strikes you for %d damage.",
-            format_enemy_label(skeleton_name),
-            damage
-          ))
-          if (life_points <= 0 && !game_over_shown) {
-            game_over_shown <<- TRUE
-            shinyalert::shinyalert(
-              title = "Game Over",
-              text = "You have been defeated.",
-              type = "error"
-            )
-          }
-        }
-      },
       input = input,
       client_action = list(
         set_text = list(
