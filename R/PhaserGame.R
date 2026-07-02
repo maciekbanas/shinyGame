@@ -231,27 +231,36 @@ PhaserGame <- R6::R6Class(
     add_overlap = function(object_one,
                            object_two = NULL,
                            group = NULL,
-                           callback_fun,
-                           input) {
+                           callback_fun = NULL,
+                           input,
+                           client_action = NULL) {
       Sys.sleep(0.1)
+      client_action <- validate_client_action(client_action)
       input_id <- paste(
         c("overlap", object_one,
           object_two %||% group),
         collapse = "_"
       )
 
-      event_endpoint <- register_phaser_event_endpoint(
-        private$session, input_id, callback_fun
-      )
+      event_endpoint <- input_id
+      if (!is.null(callback_fun)) {
+        event_endpoint <- register_phaser_event_endpoint(
+          private$session, input_id, callback_fun
+        )
+      }
 
       js <- if (!is.null(object_two)) {
-        sprintf("addOverlap('%s','%s',%s)",
-                object_one, object_two,
-                jsonlite::toJSON(event_endpoint, auto_unbox = TRUE))
+        sprintf("addOverlap(%s, %s, %s, %s)",
+                jsonlite::toJSON(object_one, auto_unbox = TRUE),
+                jsonlite::toJSON(object_two, auto_unbox = TRUE),
+                jsonlite::toJSON(event_endpoint, auto_unbox = TRUE),
+                jsonlite::toJSON(client_action %||% list(), auto_unbox = TRUE, null = "null"))
       } else {
-        sprintf("addGroupOverlap('%s','%s',%s)",
-                object_one, group,
-                jsonlite::toJSON(event_endpoint, auto_unbox = TRUE))
+        sprintf("addGroupOverlap(%s, %s, %s, %s)",
+                jsonlite::toJSON(object_one, auto_unbox = TRUE),
+                jsonlite::toJSON(group, auto_unbox = TRUE),
+                jsonlite::toJSON(event_endpoint, auto_unbox = TRUE),
+                jsonlite::toJSON(client_action %||% list(), auto_unbox = TRUE, null = "null"))
       }
       send_js(private, js)
     },
@@ -286,20 +295,27 @@ PhaserGame <- R6::R6Class(
    add_overlap_end = function(object_one,
                               object_two = NULL,
                               group = NULL,
-                              callback_fun,
+                              callback_fun = NULL,
                               input,
-                              session = shiny::getDefaultReactiveDomain()) {
+                              session = shiny::getDefaultReactiveDomain(),
+                              client_action = NULL) {
+     client_action <- validate_client_action(client_action)
      input_id <- paste(
        c("overlap_end", object_one,
          object_two %||% group),
        collapse = "_"
      )
-     event_endpoint <- register_phaser_event_endpoint(
-       session, input_id, callback_fun
-     )
-     js <- sprintf("addOverlapEnd('%s','%s',%s);",
-                   object_one, object_two,
-                   jsonlite::toJSON(event_endpoint, auto_unbox = TRUE))
+     event_endpoint <- input_id
+     if (!is.null(callback_fun)) {
+       event_endpoint <- register_phaser_event_endpoint(
+         session, input_id, callback_fun
+       )
+     }
+     js <- sprintf("addOverlapEnd(%s, %s, %s, %s);",
+                   jsonlite::toJSON(object_one, auto_unbox = TRUE),
+                   jsonlite::toJSON(object_two, auto_unbox = TRUE),
+                   jsonlite::toJSON(event_endpoint, auto_unbox = TRUE),
+                   jsonlite::toJSON(client_action %||% list(), auto_unbox = TRUE, null = "null"))
      session$sendCustomMessage("phaser", list(js = js))
    },
 
@@ -308,13 +324,20 @@ PhaserGame <- R6::R6Class(
    #'   event.code).
    #' @param action A function to be run after key is pressed.
    #' @param input Shiny input list.
-   add_control = function(key, action, input) {
+   add_control = function(key, action = NULL, input, client_action = NULL) {
      event <- paste0(key, "_action")
-     js <- sprintf("addKeyControl('%s');", key)
+     client_action <- validate_client_action(client_action)
+     js <- sprintf(
+       "addKeyControl(%s, %s);",
+       jsonlite::toJSON(key, auto_unbox = TRUE),
+       jsonlite::toJSON(client_action %||% list(), auto_unbox = TRUE, null = "null")
+     )
      send_js(private, js)
-     shiny::observeEvent(input[[event]], {
-       action()
-     })
+     if (!is.null(action)) {
+       shiny::observeEvent(input[[event]], {
+         action()
+       })
+     }
    }
   ),
   private = list(
