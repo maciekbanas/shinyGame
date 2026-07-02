@@ -34,7 +34,7 @@ ui <- shiny::tagList(
 server <- function(input, output, session) {
 
   enemy_specs <- list(
-    list(name = "mushroom_man_1", type = "mushroom_man", x = 150, y = 1850, hit_points = 2, damage = 4, motion = "walk"),
+    list(name = "mushroom_man_1", type = "mushroom_man", x = 1250, y = 1450, hit_points = 2, damage = 4, motion = "walk"),
     list(name = "mushroom_man_2", type = "mushroom_man", x = 850, y = 2150, hit_points = 2, damage = 4, motion = "attack"),
     list(name = "mushroom_man_3", type = "mushroom_man", x = 1750, y = 2450, hit_points = 2, damage = 5, motion = "walk"),
     list(name = "mushroom_man_4", type = "mushroom_man", x = 2650, y = 2350, hit_points = 3, damage = 5, motion = "attack"),
@@ -161,25 +161,6 @@ server <- function(input, output, session) {
     }, character(1))
 
     enemy_status_text$set(paste("enemies:", paste(enemy_summaries, collapse = " | ")))
-  }
-
-  current_event_overlaps <- function(evt = NULL) {
-    as.character(unlist(evt$overlaps %||% character(), use.names = FALSE))
-  }
-
-  nearest_living_enemy <- function(evt = NULL) {
-    current_overlaps <- current_event_overlaps(evt)
-    overlapped_enemy <- intersect(current_overlaps, enemy_names)
-    living_overlapped_enemy <- overlapped_enemy[enemy_is_alive[overlapped_enemy]]
-    if (length(living_overlapped_enemy) > 0) {
-      return(living_overlapped_enemy[[1]])
-    }
-
-    if (!is.null(enemy_in_range) && isTRUE(enemy_is_alive[[enemy_in_range]])) {
-      return(enemy_in_range)
-    }
-
-    NULL
   }
 
   hero_idle_animation <- function() {
@@ -698,3 +679,4 @@ dungeonheroes_space_client_actions <- function(hero_attack_cooldown, enemy_specs
 
 
 shiny::shinyApp(ui, server)
+
