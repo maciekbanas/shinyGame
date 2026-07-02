@@ -197,8 +197,77 @@ function objectsOverlap(objectNames) {
   );
 }
 
+
+function normalizeStateKey(key) {
+  return String(key || "");
+}
+
+function getClientState(key) {
+  return GameBridge.clientState[normalizeStateKey(key)];
+}
+
+function setClientState(key, value) {
+  GameBridge.clientState[normalizeStateKey(key)] = value;
+  return value;
+}
+
+function clampNumber(value, min, max) {
+  let nextValue = Number(value);
+  if (!Number.isFinite(nextValue)) nextValue = 0;
+  if (Number.isFinite(Number(min))) nextValue = Math.max(Number(min), nextValue);
+  if (Number.isFinite(Number(max))) nextValue = Math.min(Number(max), nextValue);
+  return nextValue;
+}
+
+function applyStateAction(stateAction) {
+  if (!stateAction || stateAction.key === undefined) return;
+
+  const key = normalizeStateKey(stateAction.key);
+  const op = stateAction.op || "set";
+  const currentValue = Number(getClientState(key) ?? 0);
+  const amount = Number(stateAction.amount ?? stateAction.value ?? 0);
+  let nextValue;
+
+  if (op === "initialize" || op === "init") {
+    if (getClientState(key) !== undefined) return;
+    nextValue = amount;
+  } else if (op === "increment" || op === "add") {
+    nextValue = currentValue + amount;
+  } else if (op === "decrement" || op === "subtract") {
+    nextValue = currentValue - amount;
+  } else {
+    nextValue = amount;
+  }
+
+  setClientState(key, clampNumber(nextValue, stateAction.min, stateAction.max));
+}
+
+function interpolateClientStateText(text) {
+  return String(text || "").replace(/\{state\.([^}]+)\}/g, (_match, key) => {
+    const value = getClientState(key);
+    return value === undefined ? "" : String(value);
+  });
+}
+
+function stateConditionPasses(condition) {
+  if (!condition || condition.key === undefined) return true;
+
+  const actual = Number(getClientState(condition.key) ?? 0);
+  const value = Number(condition.value ?? 0);
+  const op = condition.op || "eq";
+
+  if (op === "lte") return actual <= value;
+  if (op === "lt") return actual < value;
+  if (op === "gte") return actual >= value;
+  if (op === "gt") return actual > value;
+  if (op === "neq") return actual !== value;
+  return actual === value;
+}
+
 function actionConditionPasses(action) {
   if (action.when_overlap && !objectsOverlap(action.when_overlap)) return false;
+
+  if (action.when_state && !stateConditionPasses(action.when_state)) return false;
 
   if (action.when_exists) {
     const existsConditions = Array.isArray(action.when_exists)
@@ -238,6 +307,11 @@ function runClientAction(key, action) {
     GameBridge.keyControlLastRun[cooldownKey] = now;
   }
 
+  if (action.set_state) {
+    const stateActions = Array.isArray(action.set_state) ? action.set_state : [action.set_state];
+    stateActions.forEach(applyStateAction);
+  }
+
   if (action.raw_js) {
     const snippets = Array.isArray(action.raw_js) ? action.raw_js : [action.raw_js];
     for (const snippet of snippets) {
@@ -265,7 +339,7 @@ function runClientAction(key, action) {
   }
 
   if (action.set_text && action.set_text.id !== undefined) {
-    setText(action.set_text.text || "", action.set_text.id);
+    setText(interpolateClientStateText(action.set_text.text || ""), action.set_text.id);
   }
 
   if (action.show_text) {
@@ -278,6 +352,27 @@ function runClientAction(key, action) {
 
   if (action.show_alert) {
     showClientAlert(action.show_alert);
+  }
+
+  if (action.hide_when_state) {
+    const checks = Array.isArray(action.hide_when_state) ? action.hide_when_state : [action.hide_when_state];
+    checks.forEach((check) => {
+      if (stateConditionPasses(check)) hideText(check.id || check.name);
+    });
+  }
+
+  if (action.show_when_state) {
+    const checks = Array.isArray(action.show_when_state) ? action.show_when_state : [action.show_when_state];
+    checks.forEach((check) => {
+      if (stateConditionPasses(check)) showText(check.id || check.name);
+    });
+  }
+
+  if (action.destroy_when_state) {
+    const checks = Array.isArray(action.destroy_when_state) ? action.destroy_when_state : [action.destroy_when_state];
+    checks.forEach((check) => {
+      if (stateConditionPasses(check)) destroySprite(check.name || check.id);
+    });
   }
 
   return true;

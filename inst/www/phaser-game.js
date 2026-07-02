@@ -13,6 +13,7 @@ GameBridge.lastHeroOverlapState = GameBridge.lastHeroOverlapState || "";
 GameBridge.nextHeroOverlapSendAt = GameBridge.nextHeroOverlapSendAt || 0;
 GameBridge.sounds = GameBridge.sounds || {};
 GameBridge.pendingSoundActions = GameBridge.pendingSoundActions || {};
+GameBridge.clientState = GameBridge.clientState || {};
 
 function playIfChanged(sprite, animKey) {
   if (!sprite || !animKey) return;
@@ -33,6 +34,7 @@ function playTypeAnim(sprite, type, suffix) {
 
 function initPhaserGame(containerId, config) {
   GameBridge.overlapEndWatchers = {};
+  GameBridge.clientState = {};
 
   window.game = new Phaser.Game({
     type: Phaser.AUTO,

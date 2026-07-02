@@ -423,7 +423,12 @@ server <- function(input, output, session) {
     "Space",
     action = NULL,
     input,
-    client_action = dungeonheroes_space_client_actions(hero_attack_cooldown, enemy_names)
+    client_action = dungeonheroes_space_client_actions(
+      hero_attack_cooldown,
+      enemy_specs,
+      hero_fist_damage,
+      hero_sword_damage
+    )
   )
 
   inventory_text <- game$add_text(
@@ -542,15 +547,24 @@ server <- function(input, output, session) {
       object_one = "hero",
       object_two = skeleton_name,
       input = input,
-      client_action = list(
-        set_text = list(
-          id = "combat_status",
-          text = sprintf("%s attacks!", format_enemy_label(skeleton_name))
+      client_action = c(
+        list(
+          list(
+            set_state = list(
+              list(key = "hero_life", op = "init", value = max_life_points, min = 0, max = max_life_points),
+              list(key = "hero_life", op = "decrement", amount = enemy_damage[[skeleton_name]], min = 0, max = max_life_points)
+            ),
+            set_text = list(
+              id = "combat_status",
+              text = sprintf("%s hits you for %d. Life: {state.hero_life}/%d", format_enemy_label(skeleton_name), enemy_damage[[skeleton_name]], max_life_points)
+            ),
+            sprite = skeleton_name,
+            play_animation = enemy_animation_key(skeleton_name, "attack"),
+            duration = 350,
+            cooldown = enemy_attack_cooldown * 1000
+          )
         ),
-        sprite = skeleton_name,
-        play_animation = enemy_animation_key(skeleton_name, "attack"),
-        duration = 350,
-        cooldown = enemy_attack_cooldown * 1000
+        dungeonheroes_life_bar_client_actions(max_life_points, health_bar_segment_count)
       )
     )
 
@@ -574,17 +588,67 @@ server <- function(input, output, session) {
 
 
 
-dungeonheroes_space_client_actions <- function(hero_attack_cooldown, enemy_names) {
-  enemy_hit_feedback <- lapply(enemy_names, function(enemy_name) {
+dungeonheroes_life_bar_client_actions <- function(max_life_points, health_bar_segment_count) {
+  lapply(seq_len(health_bar_segment_count), function(segment_index) {
+    threshold <- (segment_index - 1) * max_life_points / health_bar_segment_count
     list(
-      set_text = list(
-        id = "combat_status",
-        text = sprintf("You strike %s.", gsub("_", " ", enemy_name))
-      ),
-      when_overlap = c("hero", enemy_name),
-      when_exists = enemy_name
+      hide_when_state = list(
+        id = sprintf("life_bar_green_%02d", segment_index),
+        key = "hero_life",
+        op = "lte",
+        value = threshold
+      )
     )
   })
+}
+
+dungeonheroes_space_client_actions <- function(hero_attack_cooldown, enemy_specs, hero_fist_damage, hero_sword_damage) {
+  enemy_names <- vapply(enemy_specs, `[[`, character(1), "name")
+  enemy_max_hit_points <- stats::setNames(
+    vapply(enemy_specs, `[[`, numeric(1), "hit_points"),
+    enemy_names
+  )
+
+  enemy_hit_feedback <- unlist(lapply(enemy_names, function(enemy_name) {
+    enemy_label <- gsub("_", " ", enemy_name)
+    enemy_state_key <- paste0("enemy_life_", enemy_name)
+    enemy_max_life <- enemy_max_hit_points[[enemy_name]]
+
+    list(
+      list(
+        set_state = list(
+          list(key = enemy_state_key, op = "init", value = enemy_max_life, min = 0, max = enemy_max_life),
+          list(key = enemy_state_key, op = "decrement", amount = hero_fist_damage, min = 0, max = enemy_max_life)
+        ),
+        set_text = list(
+          id = "combat_status",
+          text = sprintf("You punch %s for %d. Enemy life: {state.%s}/%d", enemy_label, hero_fist_damage, enemy_state_key, enemy_max_life)
+        ),
+        when_overlap = c("hero", enemy_name),
+        when_exists = list(
+          enemy_name,
+          list(name = "sword", exists = TRUE)
+        ),
+        destroy_when_state = list(name = enemy_name, key = enemy_state_key, op = "lte", value = 0)
+      ),
+      list(
+        set_state = list(
+          list(key = enemy_state_key, op = "init", value = enemy_max_life, min = 0, max = enemy_max_life),
+          list(key = enemy_state_key, op = "decrement", amount = hero_sword_damage, min = 0, max = enemy_max_life)
+        ),
+        set_text = list(
+          id = "combat_status",
+          text = sprintf("You slash %s for %d. Enemy life: {state.%s}/%d", enemy_label, hero_sword_damage, enemy_state_key, enemy_max_life)
+        ),
+        when_overlap = c("hero", enemy_name),
+        when_exists = list(
+          enemy_name,
+          list(name = "sword", exists = FALSE)
+        ),
+        destroy_when_state = list(name = enemy_name, key = enemy_state_key, op = "lte", value = 0)
+      )
+    )
+  }), recursive = FALSE)
 
   c(
     list(
