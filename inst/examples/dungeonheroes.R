@@ -629,7 +629,7 @@ dungeonheroes_space_client_actions <- function(hero_attack_cooldown, enemy_specs
           enemy_name,
           list(name = "sword", exists = TRUE)
         ),
-        destroy_when_state = list(name = enemy_name, key = enemy_state_key, op = "lte", value = 0)
+        disable_when_state = list(name = enemy_name, key = enemy_state_key, op = "lte", value = 0)
       ),
       list(
         set_state = list(
@@ -645,7 +645,7 @@ dungeonheroes_space_client_actions <- function(hero_attack_cooldown, enemy_specs
           enemy_name,
           list(name = "sword", exists = FALSE)
         ),
-        destroy_when_state = list(name = enemy_name, key = enemy_state_key, op = "lte", value = 0)
+        disable_when_state = list(name = enemy_name, key = enemy_state_key, op = "lte", value = 0)
       )
     )
   }), recursive = FALSE)

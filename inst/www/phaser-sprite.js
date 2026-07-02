@@ -124,6 +124,10 @@ function getSpriteByName(name, caller) {
 function playAnimation(name, animName) {
   const sprite = getSpriteByName(name, "playAnimation()");
   if (!sprite) return;
+  if (typeof sprite.play !== "function") {
+    console.warn(`playAnimation(): sprite "${name}" cannot play animations`);
+    return;
+  }
   GameBridge.forcedAnimations[name] = { key: animName, until: null };
   sprite.play(animName, true);
 }
@@ -131,11 +135,16 @@ function playAnimation(name, animName) {
 function playAnimationForDuration(name, animName, duration) {
   const sprite = getSpriteByName(name, "playAnimationForDuration()");
   if (!sprite) return;
+  if (typeof sprite.play !== "function") {
+    console.warn(`playAnimationForDuration(): sprite "${name}" cannot play animations`);
+    return;
+  }
   const until = scene && scene.time ? scene.time.now + duration : null;
   GameBridge.forcedAnimations[name] = { key: animName, until };
   sprite.play(animName, true);
   scene.time.delayedCall(duration, () => {
     delete GameBridge.forcedAnimations[name];
+    if (!sprite || !sprite.active || !sprite.play || !sprite.anims) return;
     if (scene.anims.exists(name + "_idle")) {
       sprite.play(name + "_idle", true);
     } else {
@@ -170,6 +179,20 @@ function destroySprite(name) {
   sprite.destroy();
   if (scene && scene[name] === sprite) {
     delete scene[name];
+  }
+}
+
+function disableSprite(name) {
+  const sprite = getSpriteByName(name, "disableSprite()");
+  if (!sprite) return;
+
+  sprite.setVisible(false);
+  sprite.setActive(false);
+  if (sprite.body) {
+    sprite.body.enable = false;
+    if (typeof sprite.body.stop === "function") {
+      sprite.body.stop();
+    }
   }
 }
 
@@ -378,6 +401,13 @@ function runClientAction(key, action) {
     const checks = Array.isArray(action.destroy_when_state) ? action.destroy_when_state : [action.destroy_when_state];
     checks.forEach((check) => {
       if (stateConditionPasses(check)) destroySprite(check.name || check.id);
+    });
+  }
+
+  if (action.disable_when_state) {
+    const checks = Array.isArray(action.disable_when_state) ? action.disable_when_state : [action.disable_when_state];
+    checks.forEach((check) => {
+      if (stateConditionPasses(check)) disableSprite(check.name || check.id);
     });
   }
 

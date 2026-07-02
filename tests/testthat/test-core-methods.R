@@ -228,7 +228,7 @@ test_that("PhaserGame client actions support browser-side state changes", {
       ),
       set_text = list(id = "combat_status", text = "Life: {state.hero_life}/100"),
       hide_when_state = list(id = "life_bar_green_10", key = "hero_life", op = "lte", value = 90),
-      destroy_when_state = list(name = "mushroom_man_1", key = "enemy_life_mushroom_man_1", op = "lte", value = 0),
+      disable_when_state = list(name = "mushroom_man_1", key = "enemy_life_mushroom_man_1", op = "lte", value = 0),
       when_state = list(key = "hero_life", op = "gt", value = 0)
     )
   )
@@ -237,7 +237,7 @@ test_that("PhaserGame client actions support browser-side state changes", {
   expect_true(any(grepl('"set_state":[{"key":"hero_life","op":"init"', msgs, fixed = TRUE)))
   expect_true(any(grepl('"text":"Life: {state.hero_life}/100"', msgs, fixed = TRUE)))
   expect_true(any(grepl('"hide_when_state":{"id":"life_bar_green_10"', msgs, fixed = TRUE)))
-  expect_true(any(grepl('"destroy_when_state":{"name":"mushroom_man_1"', msgs, fixed = TRUE)))
+  expect_true(any(grepl('"disable_when_state":{"name":"mushroom_man_1"', msgs, fixed = TRUE)))
   expect_true(any(grepl('"when_state":{"key":"hero_life","op":"gt","value":0}', msgs, fixed = TRUE)))
 })
 
