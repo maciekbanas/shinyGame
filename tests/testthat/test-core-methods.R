@@ -104,7 +104,6 @@ test_that("Sprite utility methods send expected JS", {
   expect_true(any(grepl("destroySprite\\('hero'\\);", msgs)))
 })
 
-
 test_that("Text methods send expected JS", {
   session <- make_mock_session()
   txt <- Text$new("Score", "score_text", 15, 25, list(font_size = "22px"),
@@ -182,7 +181,6 @@ test_that("PhaserGame can create Sound objects", {
   expect_true(any(grepl("addSound\\(\\\"jump\\\", \\\"jump.wav\\\", 0.400000, true\\);", msgs)))
 })
 
-
 test_that("PhaserGame add_control supports immediate client actions", {
   session <- make_mock_session()
   game <- PhaserGame$new()
@@ -211,30 +209,17 @@ test_that("PhaserGame add_control supports immediate client actions", {
   expect_true(any(grepl('"show_alert":{"title":"Hello","type":"info"}', msgs, fixed = TRUE)))
 })
 
-
-
-
-test_that("PhaserGame add_control records function client actions", {
+test_that("PhaserGame client actions reject functions", {
   session <- make_mock_session()
   game <- PhaserGame$new()
   game$set_shiny_session(session)
 
   input <- list(Space_action = NULL)
-  prompt <- game$add_text("...", "prompt", 0, 0, visible = FALSE)
-
-  game$add_control(
-    "Space",
-    input = input,
-    client_action = function(evt) {
-      prompt$show()
-    }
+  expect_error(
+    game$add_control("Space", input = input, client_action = function(evt) NULL),
+    "client_action must be a list or list of lists",
+    fixed = TRUE
   )
-
-  msgs <- vapply(session$get_messages(), function(m) m$message$js, character(1))
-  control_msg <- msgs[grepl('addKeyControl("Space"', msgs, fixed = TRUE)]
-  expect_length(control_msg, 1)
-  expect_true(grepl('"raw_js"', control_msg, fixed = TRUE))
-  expect_true(grepl('showText(\'prompt\');', control_msg, fixed = TRUE))
 })
 
 test_that("PhaserGame client actions support browser-side state changes", {
@@ -293,31 +278,6 @@ test_that("PhaserGame client actions do not require server callbacks", {
   expect_true(any(grepl('"show_text":"talk_bubble_text"', msgs, fixed = TRUE)))
   expect_true(any(grepl('addOverlapEnd("hero", "wizard"', msgs, fixed = TRUE)))
   expect_true(any(grepl('"hide_text":"talk_bubble_text"', msgs, fixed = TRUE)))
-})
-
-
-test_that("overlap function client actions with direct object actions are recorded", {
-  session <- make_mock_session()
-  game <- PhaserGame$new()
-  game$set_shiny_session(session)
-
-  input <- list()
-  prompt <- game$add_text("...", "prompt", 0, 0, visible = FALSE)
-
-  game$add_overlap(
-    object_one = "hero",
-    object_two = "wizard",
-    client_action = function(evt) {
-      prompt$show()
-    },
-    input = input
-  )
-
-  msgs <- vapply(session$get_messages(), function(m) m$message$js, character(1))
-  overlap_msg <- msgs[grepl('addOverlap("hero", "wizard"', msgs, fixed = TRUE)]
-  expect_length(overlap_msg, 1)
-  expect_true(grepl('"raw_js"', overlap_msg, fixed = TRUE))
-  expect_true(grepl('showText(\'prompt\');', overlap_msg, fixed = TRUE))
 })
 
 test_that("overlap callbacks remain server-side callbacks", {

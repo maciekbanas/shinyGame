@@ -226,8 +226,7 @@ PhaserGame <- R6::R6Class(
     #' @param callback_fun A function to be run when overlap occurs.
     #' @param input Shiny input list.
     #' @param client_action Optional list or list of lists describing immediate
-    #'   browser-side Phaser feedback to run when overlap occurs, or a function
-    #'   whose browser-side Phaser calls are recorded and run immediately.
+    #'   browser-side Phaser feedback to run when overlap occurs.
     add_overlap = function(object_one,
                            object_two = NULL,
                            group = NULL,
@@ -235,7 +234,7 @@ PhaserGame <- R6::R6Class(
                            input,
                            client_action = NULL) {
       Sys.sleep(0.1)
-      client_action <- resolve_client_action(client_action)
+      client_action <- validate_client_action(client_action)
 
       input_id <- paste(
         c("overlap", object_one,
@@ -294,8 +293,7 @@ PhaserGame <- R6::R6Class(
    #' @param input Shiny input list.
    #' @param session Shiny session object.
    #' @param client_action Optional list or list of lists describing immediate
-   #'   browser-side Phaser feedback to run when overlap ends, or a function
-   #'   whose browser-side Phaser calls are recorded and run immediately.
+   #'   browser-side Phaser feedback to run when overlap ends.
    add_overlap_end = function(object_one,
                               object_two = NULL,
                               group = NULL,
@@ -303,7 +301,7 @@ PhaserGame <- R6::R6Class(
                               input,
                               session = shiny::getDefaultReactiveDomain(),
                               client_action = NULL) {
-     client_action <- resolve_client_action(client_action)
+     client_action <- validate_client_action(client_action)
 
      input_id <- paste(
        c("overlap_end", object_one,
@@ -332,14 +330,13 @@ PhaserGame <- R6::R6Class(
    #' @param input Shiny input list.
    #' @param client_action Optional list or list of lists describing immediate
    #'   browser-side Phaser feedback to run on keydown before Shiny receives the
-   #'   event, or a function whose browser-side Phaser calls are recorded and
-   #'   run immediately.
+   #'   event.
    add_control = function(key,
                           action = NULL,
                           input,
                           client_action = NULL) {
      event <- paste0(key, "_action")
-     client_action <- resolve_client_action(client_action)
+     client_action <- validate_client_action(client_action)
      js <- sprintf(
        "addKeyControl(%s, %s);",
        jsonlite::toJSON(key, auto_unbox = TRUE),

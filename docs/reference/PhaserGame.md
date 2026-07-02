@@ -486,7 +486,7 @@ Adds a collider between two game objects.
 
 - `client_action`:
 
-  Optional list or list of lists describing immediate browser-side Phaser feedback to run when overlap occurs, or a function whose browser-side Phaser calls are recorded and run immediately.
+  Optional list or list of lists describing immediate browser-side Phaser feedback to run when overlap occurs.
 
 ------------------------------------------------------------------------
 
@@ -558,7 +558,7 @@ Register a callback fired when overlap between objects ends.
 
 - `client_action`:
 
-  Optional list or list of lists describing immediate browser-side Phaser feedback to run when overlap ends, or a function whose browser-side Phaser calls are recorded and run immediately.
+  Optional list or list of lists describing immediate browser-side Phaser feedback to run when overlap ends.
 
 ------------------------------------------------------------------------
 
@@ -592,7 +592,7 @@ Register a callback fired when a specific key is pressed.
 
 - `client_action`:
 
-  Optional list or list of lists describing immediate browser-side Phaser feedback to run on keydown before Shiny receives the event, or a function whose browser-side Phaser calls are recorded and run immediately.
+  Optional list or list of lists describing immediate browser-side Phaser feedback to run on keydown before Shiny receives the event.
 
 ------------------------------------------------------------------------
 

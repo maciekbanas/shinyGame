@@ -503,19 +503,22 @@ server <- function(input, output, session) {
     object_one = "hero",
     object_two = "wizard",
     input = input,
-    client_action = function(evt) {
-      talk_bubble_text$show()
-      wizard$play_animation("wizard_talk", duration = 2000)
-    }
+    client_action = list(
+      show_text = "talk_bubble_text",
+      sprite = "wizard",
+      play_animation = "wizard_talk",
+      duration = 2000
+    )
   )
   game$add_overlap_end(
     object_one = "hero",
     object_two = "wizard",
     input = input,
-    client_action = function(evt) {
-      talk_bubble_text$hide()
-      wizard$play_animation("wizard_idle")
-    }
+    client_action = list(
+      hide_text = "talk_bubble_text",
+      sprite = "wizard",
+      play_animation = "wizard_idle"
+    )
   )
 
   add_enemy_handlers <- function(skeleton_name) {
@@ -525,30 +528,25 @@ server <- function(input, output, session) {
       object_one = "hero",
       object_two = skeleton_name,
       input = input,
-      client_action = function(evt) {
-        dungeonheroes_record_client_actions(
-          key = paste("enemy_overlap", skeleton_name, sep = "_"),
-          actions = c(
-            list(
-              list(
-                set_state = list(
-                  list(key = "hero_life", op = "init", value = max_life_points, min = 0, max = max_life_points),
-                  list(key = "hero_life", op = "decrement", amount = enemy_damage[[skeleton_name]], min = 0, max = max_life_points)
-                ),
-                set_text = list(
-                  id = "combat_status",
-                  text = sprintf("%s hits you for %d. Life: {state.hero_life}/%d", format_enemy_label(skeleton_name), enemy_damage[[skeleton_name]], max_life_points)
-                ),
-                sprite = skeleton_name,
-                play_animation = enemy_animation_key(skeleton_name, "attack"),
-                duration = 350,
-                cooldown = enemy_attack_cooldown * 1000
-              )
+      client_action = c(
+        list(
+          list(
+            set_state = list(
+              list(key = "hero_life", op = "init", value = max_life_points, min = 0, max = max_life_points),
+              list(key = "hero_life", op = "decrement", amount = enemy_damage[[skeleton_name]], min = 0, max = max_life_points)
             ),
-            dungeonheroes_life_bar_client_actions(max_life_points, health_bar_segment_count)
+            set_text = list(
+              id = "combat_status",
+              text = sprintf("%s hits you for %d. Life: {state.hero_life}/%d", format_enemy_label(skeleton_name), enemy_damage[[skeleton_name]], max_life_points)
+            ),
+            sprite = skeleton_name,
+            play_animation = enemy_animation_key(skeleton_name, "attack"),
+            duration = 350,
+            cooldown = enemy_attack_cooldown * 1000
           )
-        )
-      }
+        ),
+        dungeonheroes_life_bar_client_actions(max_life_points, health_bar_segment_count)
+      )
     )
 
     game$add_overlap_end(
@@ -567,22 +565,6 @@ server <- function(input, output, session) {
   }
 
   lapply(enemy_names, add_enemy_handlers)
-}
-
-
-
-dungeonheroes_record_client_actions <- function(key, actions) {
-  recorder <- getOption("shinyphaser.client_action_recorder", NULL)
-  if (!is.function(recorder)) {
-    stop("dungeonheroes_record_client_actions() can only be used inside function client_action recording.", call. = FALSE)
-  }
-
-  recorder(sprintf(
-    "runClientActionList(%s, %s);",
-    jsonlite::toJSON(key, auto_unbox = TRUE),
-    jsonlite::toJSON(actions, auto_unbox = TRUE, null = "null")
-  ))
-  invisible(NULL)
 }
 
 
@@ -692,7 +674,6 @@ dungeonheroes_space_client_actions <- function(hero_attack_cooldown, enemy_specs
     )
   )
 }
-
 
 
 shiny::shinyApp(ui, server)
