@@ -67,7 +67,10 @@ PhaserGame <- R6::R6Class(
     #' @param style Named list. Styling options passed to Phaser text rendering.
     #' @param visible Logical. Whether text is initially visible.
     add_text = function(text, id, x, y, style = list(font_size = '22px'), visible = TRUE) {
-      return(Text$new(text, id, x, y, style, visible))
+      return(Text$new(
+        text, id, x, y, style, visible,
+        session = private$session %||% shiny::getDefaultReactiveDomain()
+      ))
     },
 
     #' @description Add a rectangle object to the Phaser scene.
