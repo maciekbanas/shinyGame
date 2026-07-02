@@ -471,7 +471,8 @@ Adds a collider between two game objects.
 \item{\code{input}}{Shiny input list.}
 
 \item{\code{client_action}}{Optional list or list of lists describing immediate
-browser-side Phaser feedback to run when overlap occurs.}
+browser-side Phaser feedback to run when overlap occurs, or a function
+whose browser-side Phaser calls are recorded and run immediately.}
 }
 \if{html}{\out{</div>}}
 }
@@ -530,7 +531,8 @@ Register a callback fired when overlap between objects ends.
 \item{\code{session}}{Shiny session object.}
 
 \item{\code{client_action}}{Optional list or list of lists describing immediate
-browser-side Phaser feedback to run when overlap ends.}
+browser-side Phaser feedback to run when overlap ends, or a function
+whose browser-side Phaser calls are recorded and run immediately.}
 }
 \if{html}{\out{</div>}}
 }
@@ -541,7 +543,12 @@ browser-side Phaser feedback to run when overlap ends.}
 \subsection{Method \code{add_control()}}{
 Register a callback fired when a specific key is pressed.
 \subsection{Usage}{
-\if{html}{\out{<div class="r">}}\preformatted{PhaserGame$add_control(key, action = NULL, input, client_action = NULL)}\if{html}{\out{</div>}}
+\if{html}{\out{<div class="r">}}\preformatted{PhaserGame$add_control(
+  key,
+  action = NULL,
+  input,
+  client_action = NULL
+)}\if{html}{\out{</div>}}
 }
 
 \subsection{Arguments}{
@@ -556,7 +563,8 @@ event.code).}
 
 \item{\code{client_action}}{Optional list or list of lists describing immediate
 browser-side Phaser feedback to run on keydown before Shiny receives the
-event.}
+event, or a function whose browser-side Phaser calls are recorded and
+run immediately.}
 }
 \if{html}{\out{</div>}}
 }

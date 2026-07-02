@@ -226,7 +226,8 @@ PhaserGame <- R6::R6Class(
     #' @param callback_fun A function to be run when overlap occurs.
     #' @param input Shiny input list.
     #' @param client_action Optional list or list of lists describing immediate
-    #'   browser-side Phaser feedback to run when overlap occurs.
+    #'   browser-side Phaser feedback to run when overlap occurs, or a function
+    #'   whose browser-side Phaser calls are recorded and run immediately.
     add_overlap = function(object_one,
                            object_two = NULL,
                            group = NULL,
@@ -234,13 +235,7 @@ PhaserGame <- R6::R6Class(
                            input,
                            client_action = NULL) {
       Sys.sleep(0.1)
-      recorded_client_action <- NULL
-      if (is.null(client_action) && !is.null(callback_fun)) {
-        recorded_client_action <- record_client_callback(callback_fun)
-        if (!is.null(recorded_client_action)) {
-          client_action <- recorded_client_action
-        }
-      }
+      client_action <- resolve_client_action(client_action)
 
       input_id <- paste(
         c("overlap", object_one,
@@ -263,7 +258,7 @@ PhaserGame <- R6::R6Class(
       }
       send_js(private, js)
 
-      if (!is.null(callback_fun) && is.null(recorded_client_action)) {
+      if (!is.null(callback_fun)) {
         shiny::observeEvent(input[[input_id]], {
           evt <- input[[input_id]]
           callback_fun(evt)
@@ -299,7 +294,8 @@ PhaserGame <- R6::R6Class(
    #' @param input Shiny input list.
    #' @param session Shiny session object.
    #' @param client_action Optional list or list of lists describing immediate
-   #'   browser-side Phaser feedback to run when overlap ends.
+   #'   browser-side Phaser feedback to run when overlap ends, or a function
+   #'   whose browser-side Phaser calls are recorded and run immediately.
    add_overlap_end = function(object_one,
                               object_two = NULL,
                               group = NULL,
@@ -307,13 +303,7 @@ PhaserGame <- R6::R6Class(
                               input,
                               session = shiny::getDefaultReactiveDomain(),
                               client_action = NULL) {
-     recorded_client_action <- NULL
-     if (is.null(client_action) && !is.null(callback_fun)) {
-       recorded_client_action <- record_client_callback(callback_fun)
-       if (!is.null(recorded_client_action)) {
-         client_action <- recorded_client_action
-       }
-     }
+     client_action <- resolve_client_action(client_action)
 
      input_id <- paste(
        c("overlap_end", object_one,
@@ -327,7 +317,7 @@ PhaserGame <- R6::R6Class(
                    jsonlite::toJSON(client_action %||% list(), auto_unbox = TRUE, null = "null"))
      session$sendCustomMessage("phaser", list(js = js))
 
-     if (!is.null(callback_fun) && is.null(recorded_client_action)) {
+     if (!is.null(callback_fun)) {
        shiny::observeEvent(input[[input_id]], {
          evt <- input[[input_id]]
          callback_fun(evt)
@@ -342,9 +332,14 @@ PhaserGame <- R6::R6Class(
    #' @param input Shiny input list.
    #' @param client_action Optional list or list of lists describing immediate
    #'   browser-side Phaser feedback to run on keydown before Shiny receives the
-   #'   event.
-   add_control = function(key, action = NULL, input, client_action = NULL) {
+   #'   event, or a function whose browser-side Phaser calls are recorded and
+   #'   run immediately.
+   add_control = function(key,
+                          action = NULL,
+                          input,
+                          client_action = NULL) {
      event <- paste0(key, "_action")
+     client_action <- resolve_client_action(client_action)
      js <- sprintf(
        "addKeyControl(%s, %s);",
        jsonlite::toJSON(key, auto_unbox = TRUE),

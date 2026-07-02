@@ -212,6 +212,31 @@ test_that("PhaserGame add_control supports immediate client actions", {
 })
 
 
+
+
+test_that("PhaserGame add_control records function client actions", {
+  session <- make_mock_session()
+  game <- PhaserGame$new()
+  game$set_shiny_session(session)
+
+  input <- list(Space_action = NULL)
+  prompt <- game$add_text("...", "prompt", 0, 0, visible = FALSE)
+
+  game$add_control(
+    "Space",
+    input = input,
+    client_action = function(evt) {
+      prompt$show()
+    }
+  )
+
+  msgs <- vapply(session$get_messages(), function(m) m$message$js, character(1))
+  control_msg <- msgs[grepl('addKeyControl("Space"', msgs, fixed = TRUE)]
+  expect_length(control_msg, 1)
+  expect_true(grepl('"raw_js"', control_msg, fixed = TRUE))
+  expect_true(grepl('showText(\'prompt\');', control_msg, fixed = TRUE))
+})
+
 test_that("PhaserGame client actions support browser-side state changes", {
   session <- make_mock_session()
   game <- PhaserGame$new()
@@ -271,7 +296,31 @@ test_that("PhaserGame client actions do not require server callbacks", {
 })
 
 
-test_that("overlap callbacks with direct object actions are recorded as client actions", {
+test_that("overlap function client actions with direct object actions are recorded", {
+  session <- make_mock_session()
+  game <- PhaserGame$new()
+  game$set_shiny_session(session)
+
+  input <- list()
+  prompt <- game$add_text("...", "prompt", 0, 0, visible = FALSE)
+
+  game$add_overlap(
+    object_one = "hero",
+    object_two = "wizard",
+    client_action = function(evt) {
+      prompt$show()
+    },
+    input = input
+  )
+
+  msgs <- vapply(session$get_messages(), function(m) m$message$js, character(1))
+  overlap_msg <- msgs[grepl('addOverlap("hero", "wizard"', msgs, fixed = TRUE)]
+  expect_length(overlap_msg, 1)
+  expect_true(grepl('"raw_js"', overlap_msg, fixed = TRUE))
+  expect_true(grepl('showText(\'prompt\');', overlap_msg, fixed = TRUE))
+})
+
+test_that("overlap callbacks remain server-side callbacks", {
   session <- make_mock_session()
   game <- PhaserGame$new()
   game$set_shiny_session(session)
@@ -291,6 +340,6 @@ test_that("overlap callbacks with direct object actions are recorded as client a
   msgs <- vapply(session$get_messages(), function(m) m$message$js, character(1))
   overlap_msg <- msgs[grepl('addOverlap("hero", "wizard"', msgs, fixed = TRUE)]
   expect_length(overlap_msg, 1)
-  expect_true(grepl('"raw_js"', overlap_msg, fixed = TRUE))
-  expect_true(grepl('showText(\'prompt\');', overlap_msg, fixed = TRUE))
+  expect_false(grepl('"raw_js"', overlap_msg, fixed = TRUE))
+  expect_false(grepl('showText(\'prompt\');', overlap_msg, fixed = TRUE))
 })

@@ -40,3 +40,20 @@ record_client_callback <- function(callback_fun) {
 
   list(raw_js = js_calls)
 }
+
+
+resolve_client_action <- function(client_action = NULL) {
+  if (is.null(client_action) || !is.function(client_action)) {
+    return(client_action)
+  }
+
+  recorded_client_action <- record_client_callback(client_action)
+  if (is.null(recorded_client_action)) {
+    stop(
+      "client_action functions must contain recordable browser-side shinyphaser calls.",
+      call. = FALSE
+    )
+  }
+
+  recorded_client_action
+}
