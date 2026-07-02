@@ -541,7 +541,12 @@ browser-side Phaser feedback to run when overlap ends.}
 \subsection{Method \code{add_control()}}{
 Register a callback fired when a specific key is pressed.
 \subsection{Usage}{
-\if{html}{\out{<div class="r">}}\preformatted{PhaserGame$add_control(key, action = NULL, input, client_action = NULL)}\if{html}{\out{</div>}}
+\if{html}{\out{<div class="r">}}\preformatted{PhaserGame$add_control(
+  key,
+  action = NULL,
+  input,
+  client_action = NULL
+)}\if{html}{\out{</div>}}
 }
 
 \subsection{Arguments}{

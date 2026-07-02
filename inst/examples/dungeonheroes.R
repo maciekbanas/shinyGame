@@ -568,7 +568,6 @@ server <- function(input, output, session) {
 }
 
 
-
 dungeonheroes_life_bar_client_actions <- function(max_life_points, health_bar_segment_count) {
   lapply(seq_len(health_bar_segment_count), function(segment_index) {
     threshold <- (segment_index - 1) * max_life_points / health_bar_segment_count
@@ -675,7 +674,6 @@ dungeonheroes_space_client_actions <- function(hero_attack_cooldown, enemy_specs
     )
   )
 }
-
 
 
 shiny::shinyApp(ui, server)
