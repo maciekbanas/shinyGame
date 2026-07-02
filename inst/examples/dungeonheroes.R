@@ -624,7 +624,17 @@ server <- function(input, output, session) {
           }
         }
       },
-      input = input
+      input = input,
+      client_action = list(
+        set_text = list(
+          id = "combat_status",
+          text = sprintf("%s attacks!", format_enemy_label(skeleton_name))
+        ),
+        sprite = skeleton_name,
+        play_animation = enemy_animation_key(skeleton_name, "attack"),
+        duration = 350,
+        cooldown = enemy_attack_cooldown * 1000
+      )
     )
 
     game$add_overlap_end(
