@@ -1,5 +1,7 @@
 # shinyphaser (development version)
 
+* Added a `client_action` parameter to `PhaserGame$add_overlap()`, `PhaserGame$add_overlap_end()`, and `PhaserGame$add_control()` so browser-side Phaser feedback can run immediately before Shiny callbacks are processed.
+
 * Added sound support with `PhaserGame$add_sound()` and a new `Sound` API for loading, playing, pausing, resuming, stopping, and configuring audio.
 
 * Added `set_scroll_factor()` helpers for scene objects so HUD-style elements can stay fixed while the camera follows another target.

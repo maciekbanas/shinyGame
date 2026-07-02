@@ -457,8 +457,9 @@ Adds a collider between two game objects.
       object_one,
       object_two = NULL,
       group = NULL,
-      callback_fun,
-      input
+      callback_fun = NULL,
+      input,
+      client_action = NULL
     )
 
 #### Arguments
@@ -477,11 +478,15 @@ Adds a collider between two game objects.
 
 - `callback_fun`:
 
-  A function to be run when overlap occurs.
+  Optional function to be run on the Shiny server when overlap occurs.
 
 - `input`:
 
   Shiny input list.
+
+- `client_action`:
+
+  Optional list or list of lists describing immediate browser-side Phaser feedback to run when overlap occurs.
 
 ------------------------------------------------------------------------
 
@@ -519,9 +524,10 @@ Register a callback fired when overlap between objects ends.
       object_one,
       object_two = NULL,
       group = NULL,
-      callback_fun,
+      callback_fun = NULL,
       input,
-      session = shiny::getDefaultReactiveDomain()
+      session = shiny::getDefaultReactiveDomain(),
+      client_action = NULL
     )
 
 #### Arguments
@@ -550,6 +556,10 @@ Register a callback fired when overlap between objects ends.
 
   Shiny session object.
 
+- `client_action`:
+
+  Optional list or list of lists describing immediate browser-side Phaser feedback to run when overlap ends.
+
 ------------------------------------------------------------------------
 
 ### Method `add_control()`
@@ -558,7 +568,12 @@ Register a callback fired when a specific key is pressed.
 
 #### Usage
 
-    PhaserGame$add_control(key, action, input)
+    PhaserGame$add_control(
+      key,
+      action = NULL,
+      input,
+      client_action = NULL
+    )
 
 #### Arguments
 
@@ -574,6 +589,10 @@ Register a callback fired when a specific key is pressed.
 - `input`:
 
   Shiny input list.
+
+- `client_action`:
+
+  Optional list or list of lists describing immediate browser-side Phaser feedback to run on keydown before Shiny receives the event.
 
 ------------------------------------------------------------------------
 

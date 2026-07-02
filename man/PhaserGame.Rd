@@ -451,8 +451,9 @@ Adds a collider between two game objects.
   object_one,
   object_two = NULL,
   group = NULL,
-  callback_fun,
-  input
+  callback_fun = NULL,
+  input,
+  client_action = NULL
 )}\if{html}{\out{</div>}}
 }
 
@@ -465,9 +466,12 @@ Adds a collider between two game objects.
 
 \item{\code{group}}{Character. Name of the group.}
 
-\item{\code{callback_fun}}{A function to be run when overlap occurs.}
+\item{\code{callback_fun}}{Optional function to be run on the Shiny server when overlap occurs.}
 
 \item{\code{input}}{Shiny input list.}
+
+\item{\code{client_action}}{Optional list or list of lists describing immediate
+browser-side Phaser feedback to run when overlap occurs.}
 }
 \if{html}{\out{</div>}}
 }
@@ -503,9 +507,10 @@ Register a callback fired when overlap between objects ends.
   object_one,
   object_two = NULL,
   group = NULL,
-  callback_fun,
+  callback_fun = NULL,
   input,
-  session = shiny::getDefaultReactiveDomain()
+  session = shiny::getDefaultReactiveDomain(),
+  client_action = NULL
 )}\if{html}{\out{</div>}}
 }
 
@@ -518,11 +523,14 @@ Register a callback fired when overlap between objects ends.
 
 \item{\code{group}}{Character. Name of the group to compare against.}
 
-\item{\code{callback_fun}}{Function. Callback executed when overlap ends.}
+\item{\code{callback_fun}}{Optional function. Callback executed on the Shiny server when overlap ends.}
 
 \item{\code{input}}{Shiny input list.}
 
 \item{\code{session}}{Shiny session object.}
+
+\item{\code{client_action}}{Optional list or list of lists describing immediate
+browser-side Phaser feedback to run when overlap ends.}
 }
 \if{html}{\out{</div>}}
 }
@@ -533,7 +541,12 @@ Register a callback fired when overlap between objects ends.
 \subsection{Method \code{add_control()}}{
 Register a callback fired when a specific key is pressed.
 \subsection{Usage}{
-\if{html}{\out{<div class="r">}}\preformatted{PhaserGame$add_control(key, action, input)}\if{html}{\out{</div>}}
+\if{html}{\out{<div class="r">}}\preformatted{PhaserGame$add_control(
+  key,
+  action = NULL,
+  input,
+  client_action = NULL
+)}\if{html}{\out{</div>}}
 }
 
 \subsection{Arguments}{
@@ -542,9 +555,13 @@ Register a callback fired when a specific key is pressed.
 \item{\code{key}}{A character, accepts Javascript key events (they need to align with
 event.code).}
 
-\item{\code{action}}{A function to be run after key is pressed.}
+\item{\code{action}}{Optional function to be run on the Shiny server after key is pressed.}
 
 \item{\code{input}}{Shiny input list.}
+
+\item{\code{client_action}}{Optional list or list of lists describing immediate
+browser-side Phaser feedback to run on keydown before Shiny receives the
+event.}
 }
 \if{html}{\out{</div>}}
 }
