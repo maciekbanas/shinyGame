@@ -234,6 +234,14 @@ PhaserGame <- R6::R6Class(
                            input,
                            client_action = NULL) {
       Sys.sleep(0.1)
+      recorded_client_action <- NULL
+      if (is.null(client_action) && !is.null(callback_fun)) {
+        recorded_client_action <- record_client_callback(callback_fun)
+        if (!is.null(recorded_client_action)) {
+          client_action <- recorded_client_action
+        }
+      }
+
       input_id <- paste(
         c("overlap", object_one,
           object_two %||% group),
@@ -255,7 +263,7 @@ PhaserGame <- R6::R6Class(
       }
       send_js(private, js)
 
-      if (!is.null(callback_fun)) {
+      if (!is.null(callback_fun) && is.null(recorded_client_action)) {
         shiny::observeEvent(input[[input_id]], {
           evt <- input[[input_id]]
           callback_fun(evt)
@@ -299,6 +307,14 @@ PhaserGame <- R6::R6Class(
                               input,
                               session = shiny::getDefaultReactiveDomain(),
                               client_action = NULL) {
+     recorded_client_action <- NULL
+     if (is.null(client_action) && !is.null(callback_fun)) {
+       recorded_client_action <- record_client_callback(callback_fun)
+       if (!is.null(recorded_client_action)) {
+         client_action <- recorded_client_action
+       }
+     }
+
      input_id <- paste(
        c("overlap_end", object_one,
          object_two %||% group),
@@ -311,7 +327,7 @@ PhaserGame <- R6::R6Class(
                    jsonlite::toJSON(client_action %||% list(), auto_unbox = TRUE, null = "null"))
      session$sendCustomMessage("phaser", list(js = js))
 
-     if (!is.null(callback_fun)) {
+     if (!is.null(callback_fun) && is.null(recorded_client_action)) {
        shiny::observeEvent(input[[input_id]], {
          evt <- input[[input_id]]
          callback_fun(evt)
