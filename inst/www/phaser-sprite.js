@@ -124,6 +124,10 @@ function getSpriteByName(name, caller) {
 function playAnimation(name, animName) {
   const sprite = getSpriteByName(name, "playAnimation()");
   if (!sprite) return;
+  if (typeof sprite.play !== "function") {
+    console.warn(`playAnimation(): sprite "${name}" cannot play animations`);
+    return;
+  }
   GameBridge.forcedAnimations[name] = { key: animName, until: null };
   sprite.play(animName, true);
 }
@@ -131,11 +135,16 @@ function playAnimation(name, animName) {
 function playAnimationForDuration(name, animName, duration) {
   const sprite = getSpriteByName(name, "playAnimationForDuration()");
   if (!sprite) return;
+  if (typeof sprite.play !== "function") {
+    console.warn(`playAnimationForDuration(): sprite "${name}" cannot play animations`);
+    return;
+  }
   const until = scene && scene.time ? scene.time.now + duration : null;
   GameBridge.forcedAnimations[name] = { key: animName, until };
   sprite.play(animName, true);
   scene.time.delayedCall(duration, () => {
     delete GameBridge.forcedAnimations[name];
+    if (!sprite || !sprite.active || !sprite.play || !sprite.anims) return;
     if (scene.anims.exists(name + "_idle")) {
       sprite.play(name + "_idle", true);
     } else {
@@ -173,6 +182,20 @@ function destroySprite(name) {
   }
 }
 
+function disableSprite(name) {
+  const sprite = getSpriteByName(name, "disableSprite()");
+  if (!sprite) return;
+
+  sprite.setVisible(false);
+  sprite.setActive(false);
+  if (sprite.body) {
+    sprite.body.enable = false;
+    if (typeof sprite.body.stop === "function") {
+      sprite.body.stop();
+    }
+  }
+}
+
 function getClientObject(name) {
   return scene && scene.children && scene.children.getByName(name);
 }
@@ -197,8 +220,83 @@ function objectsOverlap(objectNames) {
   );
 }
 
+
+function normalizeStateKey(key) {
+  return String(key || "");
+}
+
+function ensureClientState() {
+  window.GameBridge = window.GameBridge || {};
+  GameBridge.clientState = GameBridge.clientState || {};
+  return GameBridge.clientState;
+}
+
+function getClientState(key) {
+  return ensureClientState()[normalizeStateKey(key)];
+}
+
+function setClientState(key, value) {
+  ensureClientState()[normalizeStateKey(key)] = value;
+  return value;
+}
+
+function clampNumber(value, min, max) {
+  let nextValue = Number(value);
+  if (!Number.isFinite(nextValue)) nextValue = 0;
+  if (Number.isFinite(Number(min))) nextValue = Math.max(Number(min), nextValue);
+  if (Number.isFinite(Number(max))) nextValue = Math.min(Number(max), nextValue);
+  return nextValue;
+}
+
+function applyStateAction(stateAction) {
+  if (!stateAction || stateAction.key === undefined) return;
+
+  const key = normalizeStateKey(stateAction.key);
+  const op = stateAction.op || "set";
+  const currentValue = Number(getClientState(key) ?? 0);
+  const amount = Number(stateAction.amount ?? stateAction.value ?? 0);
+  let nextValue;
+
+  if (op === "initialize" || op === "init") {
+    if (getClientState(key) !== undefined) return;
+    nextValue = amount;
+  } else if (op === "increment" || op === "add") {
+    nextValue = currentValue + amount;
+  } else if (op === "decrement" || op === "subtract") {
+    nextValue = currentValue - amount;
+  } else {
+    nextValue = amount;
+  }
+
+  setClientState(key, clampNumber(nextValue, stateAction.min, stateAction.max));
+}
+
+function interpolateClientStateText(text) {
+  return String(text || "").replace(/\{state\.([^}]+)\}/g, (_match, key) => {
+    const value = getClientState(key);
+    return value === undefined ? "" : String(value);
+  });
+}
+
+function stateConditionPasses(condition) {
+  if (!condition || condition.key === undefined) return true;
+
+  const actual = Number(getClientState(condition.key) ?? 0);
+  const value = Number(condition.value ?? 0);
+  const op = condition.op || "eq";
+
+  if (op === "lte") return actual <= value;
+  if (op === "lt") return actual < value;
+  if (op === "gte") return actual >= value;
+  if (op === "gt") return actual > value;
+  if (op === "neq") return actual !== value;
+  return actual === value;
+}
+
 function actionConditionPasses(action) {
   if (action.when_overlap && !objectsOverlap(action.when_overlap)) return false;
+
+  if (action.when_state && !stateConditionPasses(action.when_state)) return false;
 
   if (action.when_exists) {
     const existsConditions = Array.isArray(action.when_exists)
@@ -238,6 +336,11 @@ function runClientAction(key, action) {
     GameBridge.keyControlLastRun[cooldownKey] = now;
   }
 
+  if (action.set_state) {
+    const stateActions = Array.isArray(action.set_state) ? action.set_state : [action.set_state];
+    stateActions.forEach(applyStateAction);
+  }
+
   if (action.raw_js) {
     const snippets = Array.isArray(action.raw_js) ? action.raw_js : [action.raw_js];
     for (const snippet of snippets) {
@@ -265,7 +368,7 @@ function runClientAction(key, action) {
   }
 
   if (action.set_text && action.set_text.id !== undefined) {
-    setText(action.set_text.text || "", action.set_text.id);
+    setText(interpolateClientStateText(action.set_text.text || ""), action.set_text.id);
   }
 
   if (action.show_text) {
@@ -278,6 +381,34 @@ function runClientAction(key, action) {
 
   if (action.show_alert) {
     showClientAlert(action.show_alert);
+  }
+
+  if (action.hide_when_state) {
+    const checks = Array.isArray(action.hide_when_state) ? action.hide_when_state : [action.hide_when_state];
+    checks.forEach((check) => {
+      if (stateConditionPasses(check)) hideText(check.id || check.name);
+    });
+  }
+
+  if (action.show_when_state) {
+    const checks = Array.isArray(action.show_when_state) ? action.show_when_state : [action.show_when_state];
+    checks.forEach((check) => {
+      if (stateConditionPasses(check)) showText(check.id || check.name);
+    });
+  }
+
+  if (action.destroy_when_state) {
+    const checks = Array.isArray(action.destroy_when_state) ? action.destroy_when_state : [action.destroy_when_state];
+    checks.forEach((check) => {
+      if (stateConditionPasses(check)) destroySprite(check.name || check.id);
+    });
+  }
+
+  if (action.disable_when_state) {
+    const checks = Array.isArray(action.disable_when_state) ? action.disable_when_state : [action.disable_when_state];
+    checks.forEach((check) => {
+      if (stateConditionPasses(check)) disableSprite(check.name || check.id);
+    });
   }
 
   return true;
