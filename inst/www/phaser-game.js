@@ -8,10 +8,12 @@ GameBridge.forcedAnimations = GameBridge.forcedAnimations || {};
 GameBridge.pendingCameraFollow = GameBridge.pendingCameraFollow || {};
 GameBridge.pendingScrollFactor = GameBridge.pendingScrollFactor || {};
 GameBridge.pendingWorldBounds = GameBridge.pendingWorldBounds || null;
+GameBridge.pendingTerrainColliders = GameBridge.pendingTerrainColliders || [];
+GameBridge.lastHeroOverlapState = GameBridge.lastHeroOverlapState || "";
+GameBridge.nextHeroOverlapSendAt = GameBridge.nextHeroOverlapSendAt || 0;
 GameBridge.sounds = GameBridge.sounds || {};
 GameBridge.pendingSoundActions = GameBridge.pendingSoundActions || {};
 GameBridge.clientState = GameBridge.clientState || {};
-
 
 function sendPhaserEvent(target, payload) {
   if (typeof target === "string" && (/^https?:/.test(target) || target.includes("/")) && window.fetch) {
@@ -87,6 +89,7 @@ function initPhaserGame(containerId, config) {
   function update(time, delta) {
       applyPendingCameraFollows();
       applyPendingScrollFactors();
+      sendHeroOverlapState(time);
 
       Object.entries(GameBridge.playerControls).forEach(([name, opts]) => {
           const sprite = this.children.getByName(name);
@@ -327,14 +330,31 @@ function addMap(mapKey, mapUrl, tilesetUrls, tilesetNames, layerName) {
     scene.cameras.main.setBounds(0, 0, map.widthInPixels, map.heightInPixels);
 
     scene.terrainLayer = groundLayer;
+    applyPendingTerrainColliders();
   });
 
   scene.load.start();
 }
 
+function applyPendingTerrainColliders() {
+  if (!scene || !scene.terrainLayer) return;
+
+  GameBridge.pendingTerrainColliders = GameBridge.pendingTerrainColliders.filter((spriteName) => {
+    const sprite = scene.children.getByName(spriteName);
+    if (!sprite) return true;
+    scene.physics.add.collider(sprite, scene.terrainLayer);
+    return false;
+  });
+}
+
 function addPlayerTerrainCollider(spriteName) {
   const sprite = scene.children.getByName(spriteName);
-  if (!sprite || !scene.terrainLayer) return;
+  if (!sprite || !scene.terrainLayer) {
+    if (!GameBridge.pendingTerrainColliders.includes(spriteName)) {
+      GameBridge.pendingTerrainColliders.push(spriteName);
+    }
+    return;
+  }
   scene.physics.add.collider(sprite, scene.terrainLayer);
 }
 
@@ -363,12 +383,14 @@ function addGroupCollider(objectName, groupName, inputId) {
 function retryWhenMissingObjects(fn, objectNames) {
   const missingObject = objectNames.some((name) => !scene.children.getByName(name));
   if (!missingObject) return false;
+
   window.setTimeout(fn, 100);
   return true;
 }
 
 function addOverlap(objectOneName, objectTwoName, inputId, clientActions = []) {
   if (retryWhenMissingObjects(() => addOverlap(objectOneName, objectTwoName, inputId, clientActions), [objectOneName, objectTwoName])) return;
+
   const objectOne = scene.children.getByName(objectOneName);
   const objectTwo = scene.children.getByName(objectTwoName);
   scene.physics.add.overlap(
@@ -403,6 +425,7 @@ function areOverlap(objectOneName, objectTwoName, inputId) {
 
 function addOverlapEnd(objectOneName, objectTwoName, inputId, clientActions = []) {
   if (retryWhenMissingObjects(() => addOverlapEnd(objectOneName, objectTwoName, inputId, clientActions), [objectOneName, objectTwoName])) return;
+
   const obj1 = scene.children.getByName(objectOneName);
   const obj2 = scene.children.getByName(objectTwoName);
 
@@ -459,6 +482,27 @@ function addRectangle(name, x, y, width, height, fillColor, visible = true, clic
 
 function addGraphics(name, x, y, width, height, fillColor) {
   scene[name] = scene.add.rectangle(x, y, width, height, fillColor);
+}
+
+function shinyInputReady() {
+  return typeof Shiny !== "undefined" && typeof Shiny.setInputValue === "function";
+}
+
+function sendHeroOverlapState(time) {
+  if (typeof currentHeroOverlaps !== "function" || !shinyInputReady()) return;
+  if (time < GameBridge.nextHeroOverlapSendAt) return;
+
+  const overlaps = currentHeroOverlaps();
+  const state = JSON.stringify(overlaps);
+  if (state === GameBridge.lastHeroOverlapState) return;
+
+  GameBridge.lastHeroOverlapState = state;
+  GameBridge.nextHeroOverlapSendAt = time + 250;
+  Shiny.setInputValue(
+    "hero_overlaps",
+    { overlaps, evt_nonce: Date.now() + Math.random() },
+    { priority: "event" }
+  );
 }
 
 Shiny.addCustomMessageHandler("phaser", function (message) {

@@ -82,6 +82,9 @@ function addSprite(name, url, x, y, frameWidth, frameHeight, frameCount, frameRa
     if (typeof applyPendingScrollFactors === "function") {
       applyPendingScrollFactors();
     }
+    if (typeof applyPendingTerrainColliders === "function") {
+      applyPendingTerrainColliders();
+    }
   });
 
   scene.load.start();
@@ -101,6 +104,9 @@ function addStaticSprite(name, url, x, y) {
     }
     if (typeof applyPendingScrollFactors === "function") {
       applyPendingScrollFactors();
+    }
+    if (typeof applyPendingTerrainColliders === "function") {
+      applyPendingTerrainColliders();
     }
   });
   scene.load.start();
@@ -145,6 +151,10 @@ function getSpriteByName(name, caller) {
 function playAnimation(name, animName) {
   const sprite = getSpriteByName(name, "playAnimation()");
   if (!sprite) return;
+  if (typeof sprite.play !== "function") {
+    console.warn(`playAnimation(): sprite "${name}" cannot play animations`);
+    return;
+  }
   GameBridge.forcedAnimations[name] = { key: animName, until: null };
   sprite.play(animName, true);
 }
@@ -152,11 +162,16 @@ function playAnimation(name, animName) {
 function playAnimationForDuration(name, animName, duration) {
   const sprite = getSpriteByName(name, "playAnimationForDuration()");
   if (!sprite) return;
+  if (typeof sprite.play !== "function") {
+    console.warn(`playAnimationForDuration(): sprite "${name}" cannot play animations`);
+    return;
+  }
   const until = scene && scene.time ? scene.time.now + duration : null;
   GameBridge.forcedAnimations[name] = { key: animName, until };
   sprite.play(animName, true);
   scene.time.delayedCall(duration, () => {
     delete GameBridge.forcedAnimations[name];
+    if (!sprite || !sprite.active || !sprite.play || !sprite.anims) return;
     if (scene.anims.exists(name + "_idle")) {
       sprite.play(name + "_idle", true);
     } else {
@@ -190,6 +205,151 @@ function destroySprite(name) {
   const sprite = getSpriteByName(name, "destroySprite()");
   if (!sprite) return;
   sprite.destroy();
+  if (scene && scene[name] === sprite) {
+    delete scene[name];
+  }
+}
+
+function disableSprite(name) {
+  const sprite = getSpriteByName(name, "disableSprite()");
+  if (!sprite) return;
+
+  sprite.setVisible(false);
+  sprite.setActive(false);
+  if (sprite.body) {
+    sprite.body.enable = false;
+    if (typeof sprite.body.stop === "function") {
+      sprite.body.stop();
+    }
+  }
+}
+
+function getClientObject(name) {
+  return scene && scene.children && scene.children.getByName(name);
+}
+
+function objectExists(name) {
+  const object = getClientObject(name);
+  return Boolean(object && object.active !== false);
+}
+
+function objectsOverlap(objectNames) {
+  if (!Array.isArray(objectNames) || objectNames.length !== 2) return false;
+
+  const objectOne = getClientObject(objectNames[0]);
+  const objectTwo = getClientObject(objectNames[1]);
+  if (!objectOne || !objectTwo || !objectOne.getBounds || !objectTwo.getBounds) {
+    return false;
+  }
+
+  return Phaser.Geom.Intersects.RectangleToRectangle(
+    objectOne.getBounds(),
+    objectTwo.getBounds()
+  );
+}
+
+
+function normalizeStateKey(key) {
+  return String(key || "");
+}
+
+function ensureClientState() {
+  window.GameBridge = window.GameBridge || {};
+  GameBridge.clientState = GameBridge.clientState || {};
+  return GameBridge.clientState;
+}
+
+function getClientState(key) {
+  return ensureClientState()[normalizeStateKey(key)];
+}
+
+function setClientState(key, value) {
+  ensureClientState()[normalizeStateKey(key)] = value;
+  return value;
+}
+
+function clampNumber(value, min, max) {
+  let nextValue = Number(value);
+  if (!Number.isFinite(nextValue)) nextValue = 0;
+  if (Number.isFinite(Number(min))) nextValue = Math.max(Number(min), nextValue);
+  if (Number.isFinite(Number(max))) nextValue = Math.min(Number(max), nextValue);
+  return nextValue;
+}
+
+function applyStateAction(stateAction) {
+  if (!stateAction || stateAction.key === undefined) return;
+
+  const key = normalizeStateKey(stateAction.key);
+  const op = stateAction.op || "set";
+  const currentValue = Number(getClientState(key) ?? 0);
+  const amount = Number(stateAction.amount ?? stateAction.value ?? 0);
+  let nextValue;
+
+  if (op === "initialize" || op === "init") {
+    if (getClientState(key) !== undefined) return;
+    nextValue = amount;
+  } else if (op === "increment" || op === "add") {
+    nextValue = currentValue + amount;
+  } else if (op === "decrement" || op === "subtract") {
+    nextValue = currentValue - amount;
+  } else {
+    nextValue = amount;
+  }
+
+  setClientState(key, clampNumber(nextValue, stateAction.min, stateAction.max));
+}
+
+function interpolateClientStateText(text) {
+  return String(text || "").replace(/\{state\.([^}]+)\}/g, (_match, key) => {
+    const value = getClientState(key);
+    return value === undefined ? "" : String(value);
+  });
+}
+
+function stateConditionPasses(condition) {
+  if (!condition || condition.key === undefined) return true;
+
+  const actual = Number(getClientState(condition.key) ?? 0);
+  const value = Number(condition.value ?? 0);
+  const op = condition.op || "eq";
+
+  if (op === "lte") return actual <= value;
+  if (op === "lt") return actual < value;
+  if (op === "gte") return actual >= value;
+  if (op === "gt") return actual > value;
+  if (op === "neq") return actual !== value;
+  return actual === value;
+}
+
+function actionConditionPasses(action) {
+  if (action.when_overlap && !objectsOverlap(action.when_overlap)) return false;
+
+  if (action.when_state && !stateConditionPasses(action.when_state)) return false;
+
+  if (action.when_exists) {
+    const existsConditions = Array.isArray(action.when_exists)
+      ? action.when_exists
+      : [action.when_exists];
+
+    const allExist = existsConditions.every((condition) => {
+      if (typeof condition === "string") return objectExists(condition);
+      if (condition && typeof condition === "object") {
+        return objectExists(condition.name) === Boolean(condition.exists);
+      }
+      return false;
+    });
+
+    if (!allExist) return false;
+  }
+
+  return true;
+}
+
+function normalizeClientActions(clientActions) {
+  if (!clientActions || (Array.isArray(clientActions) && clientActions.length === 0)) {
+    return [];
+  }
+  return Array.isArray(clientActions) ? clientActions : [clientActions];
 }
 
 function getClientObject(name) {
@@ -303,6 +463,7 @@ function showClientAlert(alertOptions) {
 
 function runClientAction(key, action) {
   if (!actionConditionPasses(action)) return false;
+
   const cooldown = Number(action.cooldown || 0);
   if (cooldown > 0) {
     const cooldownKey = key + "::" + JSON.stringify(action);
@@ -311,20 +472,105 @@ function runClientAction(key, action) {
     if (lastRun !== undefined && (now - lastRun) < cooldown) return false;
     GameBridge.keyControlLastRun[cooldownKey] = now;
   }
-  if (action.set_state) (Array.isArray(action.set_state) ? action.set_state : [action.set_state]).forEach(applyStateAction);
-  if (action.raw_js) (Array.isArray(action.raw_js) ? action.raw_js : [action.raw_js]).forEach((snippet) => eval(snippet));
-  if (action.play_sound) playSound(action.play_sound, action.volume ?? null, action.loop ?? null);
+
+  if (action.set_state) {
+    const stateActions = Array.isArray(action.set_state) ? action.set_state : [action.set_state];
+    stateActions.forEach(applyStateAction);
+  }
+
+  if (action.raw_js) {
+    const snippets = Array.isArray(action.raw_js) ? action.raw_js : [action.raw_js];
+    for (const snippet of snippets) {
+      eval(snippet);
+    }
+  }
+
+  if (action.play_sound) {
+    playSound(action.play_sound, action.volume ?? null, action.loop ?? null);
+  }
+
   if (action.play_animation) {
     const spriteName = action.sprite || action.name;
-    if (Number.isFinite(action.duration)) playAnimationForDuration(spriteName, action.play_animation, action.duration);
-    else playAnimation(spriteName, action.play_animation);
+    if (!spriteName) {
+      console.warn("client action play_animation requires a sprite/name field");
+    } else if (Number.isFinite(action.duration)) {
+      playAnimationForDuration(spriteName, action.play_animation, action.duration);
+    } else {
+      playAnimation(spriteName, action.play_animation);
+    }
   }
-  if (action.destroy_sprite) destroySprite(action.destroy_sprite);
-  if (action.set_text && action.set_text.id !== undefined) setText(interpolateClientStateText(action.set_text.text || ""), action.set_text.id);
-  if (action.show_text) showText(action.show_text);
-  if (action.hide_text) hideText(action.hide_text);
-  if (action.show_alert) showClientAlert(action.show_alert);
+
+  if (action.destroy_sprite) {
+    destroySprite(action.destroy_sprite);
+  }
+
+  if (action.set_text && action.set_text.id !== undefined) {
+    setText(interpolateClientStateText(action.set_text.text || ""), action.set_text.id);
+  }
+
+  if (action.show_text) {
+    showText(action.show_text);
+  }
+
+  if (action.hide_text) {
+    hideText(action.hide_text);
+  }
+
+  if (action.show_alert) {
+    showClientAlert(action.show_alert);
+  }
+
+  if (action.hide_when_state) {
+    const checks = Array.isArray(action.hide_when_state) ? action.hide_when_state : [action.hide_when_state];
+    checks.forEach((check) => {
+      if (stateConditionPasses(check)) hideText(check.id || check.name);
+    });
+  }
+
+  if (action.show_when_state) {
+    const checks = Array.isArray(action.show_when_state) ? action.show_when_state : [action.show_when_state];
+    checks.forEach((check) => {
+      if (stateConditionPasses(check)) showText(check.id || check.name);
+    });
+  }
+
+  if (action.destroy_when_state) {
+    const checks = Array.isArray(action.destroy_when_state) ? action.destroy_when_state : [action.destroy_when_state];
+    checks.forEach((check) => {
+      if (stateConditionPasses(check)) destroySprite(check.name || check.id);
+    });
+  }
+
+  if (action.disable_when_state) {
+    const checks = Array.isArray(action.disable_when_state) ? action.disable_when_state : [action.disable_when_state];
+    checks.forEach((check) => {
+      if (stateConditionPasses(check)) disableSprite(check.name || check.id);
+    });
+  }
+
   return true;
+}
+
+function showClientAlert(alertOptions) {
+  const options = typeof alertOptions === "string"
+    ? { title: alertOptions }
+    : alertOptions || {};
+
+  if (typeof swal === "function") {
+    swal(options);
+    return;
+  }
+
+  if (typeof sweetAlert === "function") {
+    sweetAlert(options);
+    return;
+  }
+
+  window.alert(options.title || options.text || "");
+}
+
+function runClientActions(key) {
+  runClientActionList(key, GameBridge.keyControlActions[key]);
 }
 
 function runClientActionList(key, actions) {
@@ -340,6 +586,7 @@ function runClientActions(key) {
 
 function addKeyControl(key, clientActions = []) {
   GameBridge.keyControlActions[key] = clientActions;
+
   if (GameBridge.keyControlHandlers[key]) {
     return;
   }

@@ -67,7 +67,10 @@ PhaserGame <- R6::R6Class(
     #' @param style Named list. Styling options passed to Phaser text rendering.
     #' @param visible Logical. Whether text is initially visible.
     add_text = function(text, id, x, y, style = list(font_size = '22px'), visible = TRUE) {
-      return(Text$new(text, id, x, y, style, visible))
+      return(Text$new(
+        text, id, x, y, style, visible,
+        session = private$session %||% shiny::getDefaultReactiveDomain()
+      ))
     },
 
     #' @description Add a rectangle object to the Phaser scene.
@@ -228,6 +231,8 @@ PhaserGame <- R6::R6Class(
     #' @param group Character. Name of the group.
     #' @param callback_fun A function to be run when overlap occurs.
     #' @param input Shiny input list.
+    #' @param client_action Optional list or list of lists describing immediate
+    #'   browser-side Phaser feedback to run when overlap occurs.
     add_overlap = function(object_one,
                            object_two = NULL,
                            group = NULL,
@@ -236,6 +241,7 @@ PhaserGame <- R6::R6Class(
                            client_action = NULL) {
       Sys.sleep(0.1)
       client_action <- validate_client_action(client_action)
+
       input_id <- paste(
         c("overlap", object_one,
           object_two %||% group),
@@ -292,6 +298,8 @@ PhaserGame <- R6::R6Class(
    #' @param callback_fun Function. Callback executed when overlap ends.
    #' @param input Shiny input list.
    #' @param session Shiny session object.
+   #' @param client_action Optional list or list of lists describing immediate
+   #'   browser-side Phaser feedback to run when overlap ends.
    add_overlap_end = function(object_one,
                               object_two = NULL,
                               group = NULL,
@@ -300,6 +308,7 @@ PhaserGame <- R6::R6Class(
                               session = shiny::getDefaultReactiveDomain(),
                               client_action = NULL) {
      client_action <- validate_client_action(client_action)
+
      input_id <- paste(
        c("overlap_end", object_one,
          object_two %||% group),
@@ -324,7 +333,13 @@ PhaserGame <- R6::R6Class(
    #'   event.code).
    #' @param action A function to be run after key is pressed.
    #' @param input Shiny input list.
-   add_control = function(key, action = NULL, input, client_action = NULL) {
+   #' @param client_action Optional list or list of lists describing immediate
+   #'   browser-side Phaser feedback to run on keydown before Shiny receives the
+   #'   event.
+   add_control = function(key,
+                          action = NULL,
+                          input,
+                          client_action = NULL) {
      event <- paste0(key, "_action")
      client_action <- validate_client_action(client_action)
      js <- sprintf(
