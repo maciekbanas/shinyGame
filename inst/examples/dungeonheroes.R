@@ -622,7 +622,7 @@ dungeonheroes_game_over_client_action <- function(enemy_name) {
     when_state = list(key = "hero_life", op = "lte", value = 0),
     set_text = list(
       id = "combat_status",
-      text = sprintf("%s defeated you. Game over.", format_enemy_label(enemy_name))
+      text = sprintf("%s defeated you. Game over.", gsub("_", " ", enemy_name))
     ),
     raw_js = paste0(
       "const state = (window.GameBridge && GameBridge.clientState) || {};",
