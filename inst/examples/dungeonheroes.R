@@ -518,7 +518,9 @@ server <- function(input, output, session) {
       show_text = "talk_bubble_text",
       sprite = "wizard",
       play_animation = "wizard_talk",
-      duration = 2000
+      duration = 2000,
+      play_sound = "wizard_laugh",
+      cooldown = 5000
     )
   )
   game$add_overlap_end(
@@ -580,7 +582,7 @@ server <- function(input, output, session) {
           )
         ),
         dungeonheroes_life_bar_client_actions(max_life_points, health_bar_segment_count),
-        dungeonheroes_game_over_client_action(skeleton_name)
+        list(dungeonheroes_game_over_client_action(skeleton_name))
       )
     )
 
@@ -698,7 +700,6 @@ dungeonheroes_space_client_actions <- function(hero_attack_cooldown, enemy_specs
         stop_after_match = TRUE
       ),
       list(
-        play_sound = "wizard_laugh",
         show_alert = list(
           title = "Dear, oh dear. What are you doing here in these dark forests, lad?",
           text = "",
