@@ -5,7 +5,33 @@ GameBridge.keyControlLastRun = GameBridge.keyControlLastRun || {};
 GameBridge.forcedAnimations = GameBridge.forcedAnimations || {};
 GameBridge.pendingCameraFollow = GameBridge.pendingCameraFollow || {};
 GameBridge.pendingScrollFactor = GameBridge.pendingScrollFactor || {};
+GameBridge.pendingSpriteActions = GameBridge.pendingSpriteActions || {};
+GameBridge.clientState = GameBridge.clientState || {};
 
+
+
+function applyPendingSpriteActions(name) {
+  const sprite = scene && scene[name];
+  const actions = GameBridge.pendingSpriteActions[name];
+  if (!sprite || !actions) return;
+
+  actions.forEach((action) => action(sprite));
+  delete GameBridge.pendingSpriteActions[name];
+}
+
+function withSprite(name, action, caller) {
+  const sprite = scene && scene[name];
+  if (sprite) {
+    action(sprite);
+    return;
+  }
+
+  GameBridge.pendingSpriteActions[name] = GameBridge.pendingSpriteActions[name] || [];
+  GameBridge.pendingSpriteActions[name].push(action);
+  if (caller) {
+    console.debug(`${caller}: queued until sprite "${name}" is ready`);
+  }
+}
 
 function resolveFrameCount(textureKey, frameWidth, frameHeight, frameCount) {
   if (Number.isFinite(frameCount) && frameCount > 0) {
@@ -48,6 +74,7 @@ function addSprite(name, url, x, y, frameWidth, frameHeight, frameCount, frameRa
     sprite.play(name + '_idle');
 
     scene[name] = sprite;
+    applyPendingSpriteActions(name);
 
     if (typeof applyPendingCameraFollows === "function") {
       applyPendingCameraFollows();
@@ -154,8 +181,9 @@ function playAnimationForDuration(name, animName, duration) {
 }
 
 function setGravity(name, x, y) {
-  const sprite = scene[name];
-  sprite.body.setGravity(x, y);
+  withSprite(name, (sprite) => {
+    if (sprite.body) sprite.body.setGravity(x, y);
+  }, "setGravity()");
 }
 
 function setVelocityX(name, x) {
@@ -324,6 +352,115 @@ function normalizeClientActions(clientActions) {
   return Array.isArray(clientActions) ? clientActions : [clientActions];
 }
 
+function getClientObject(name) {
+  return scene && scene.children && scene.children.getByName(name);
+}
+
+function objectExists(name) {
+  const object = getClientObject(name);
+  return Boolean(object && object.active !== false);
+}
+
+function objectsOverlap(objectNames) {
+  if (!Array.isArray(objectNames) || objectNames.length !== 2) return false;
+  const objectOne = getClientObject(objectNames[0]);
+  const objectTwo = getClientObject(objectNames[1]);
+  if (!objectOne || !objectTwo || !objectOne.getBounds || !objectTwo.getBounds) return false;
+  return Phaser.Geom.Intersects.RectangleToRectangle(objectOne.getBounds(), objectTwo.getBounds());
+}
+
+function ensureClientState() {
+  window.GameBridge = window.GameBridge || {};
+  GameBridge.clientState = GameBridge.clientState || {};
+  return GameBridge.clientState;
+}
+
+function getClientState(key) {
+  return ensureClientState()[String(key || "")];
+}
+
+function setClientState(key, value) {
+  ensureClientState()[String(key || "")] = value;
+  return value;
+}
+
+function clampNumber(value, min, max) {
+  let nextValue = Number(value);
+  if (!Number.isFinite(nextValue)) nextValue = 0;
+  if (Number.isFinite(Number(min))) nextValue = Math.max(Number(min), nextValue);
+  if (Number.isFinite(Number(max))) nextValue = Math.min(Number(max), nextValue);
+  return nextValue;
+}
+
+function applyStateAction(stateAction) {
+  if (!stateAction || stateAction.key === undefined) return;
+  const key = String(stateAction.key || "");
+  const op = stateAction.op || "set";
+  const currentValue = Number(getClientState(key) ?? 0);
+  const amount = Number(stateAction.amount ?? stateAction.value ?? 0);
+  let nextValue;
+  if (op === "initialize" || op === "init") {
+    if (getClientState(key) !== undefined) return;
+    nextValue = amount;
+  } else if (op === "increment" || op === "add") {
+    nextValue = currentValue + amount;
+  } else if (op === "decrement" || op === "subtract") {
+    nextValue = currentValue - amount;
+  } else {
+    nextValue = amount;
+  }
+  setClientState(key, clampNumber(nextValue, stateAction.min, stateAction.max));
+}
+
+function interpolateClientStateText(text) {
+  return String(text || "").replace(/\{state\.([^}]+)\}/g, (_match, key) => {
+    const value = getClientState(key);
+    return value === undefined ? "" : String(value);
+  });
+}
+
+function stateConditionPasses(condition) {
+  if (!condition || condition.key === undefined) return true;
+  const actual = Number(getClientState(condition.key) ?? 0);
+  const value = Number(condition.value ?? 0);
+  const op = condition.op || "eq";
+  if (op === "lte") return actual <= value;
+  if (op === "lt") return actual < value;
+  if (op === "gte") return actual >= value;
+  if (op === "gt") return actual > value;
+  if (op === "neq") return actual !== value;
+  return actual === value;
+}
+
+function actionConditionPasses(action) {
+  if (action.when_overlap && !objectsOverlap(action.when_overlap)) return false;
+  if (action.when_state && !stateConditionPasses(action.when_state)) return false;
+  if (action.when_exists) {
+    const existsConditions = Array.isArray(action.when_exists) ? action.when_exists : [action.when_exists];
+    const allExist = existsConditions.every((condition) => {
+      if (typeof condition === "string") return objectExists(condition);
+      if (condition && typeof condition === "object") {
+        return objectExists(condition.name) === Boolean(condition.exists);
+      }
+      return false;
+    });
+    if (!allExist) return false;
+  }
+  return true;
+}
+
+function normalizeClientActions(clientActions) {
+  if (!clientActions || (Array.isArray(clientActions) && clientActions.length === 0)) return [];
+  return Array.isArray(clientActions) ? clientActions : [clientActions];
+}
+
+function showClientAlert(alertOptions) {
+  const options = typeof alertOptions === "string" ? { title: alertOptions } : alertOptions || {};
+  if (typeof swal === "function") { swal(options); return; }
+  if (typeof sweetAlert === "function") { sweetAlert(options); return; }
+  window.alert(options.title || options.text || "");
+}
+
 function runClientAction(key, action) {
   if (!actionConditionPasses(action)) return false;
 
@@ -443,14 +580,8 @@ function runClientActionList(key, actions) {
   }
 }
 
-function currentHeroOverlaps() {
-  const hero = getClientObject("hero");
-  if (!hero || !hero.getBounds || !scene || !scene.children) return [];
-
-  return scene.children.getChildren()
-    .filter((object) => object && object.name && object.name !== "hero" && object.getBounds)
-    .filter((object) => Phaser.Geom.Intersects.RectangleToRectangle(hero.getBounds(), object.getBounds()))
-    .map((object) => object.name);
+function runClientActions(key) {
+  runClientActionList(key, GameBridge.keyControlActions[key]);
 }
 
 function addKeyControl(key, clientActions = []) {
@@ -466,7 +597,7 @@ function addKeyControl(key, clientActions = []) {
       runClientActions(key);
       Shiny.setInputValue(
         inputId,
-        { code: e.code, overlaps: currentHeroOverlaps(), evt_nonce: Date.now() + Math.random() },
+        { code: e.code, evt_nonce: Date.now() + Math.random() },
         { priority: "event" }
       );
     }

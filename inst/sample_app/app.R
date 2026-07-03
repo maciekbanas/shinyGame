@@ -98,7 +98,7 @@ server <- function(input, output, session) {
       shinyalert::shinyalert(
         title = "Game over", type = "error",
         closeOnClickOutside = FALSE, showCancelButton = FALSE,
-        callbackR = function(value) shiny::stopApp()
+        callbackR = function(value) session$reload()
       )
     },
     input = input

@@ -1,6 +1,6 @@
 Package: shinyphaser
 Title: An Interface to the 'Phaser.js' Game Framework
-Version: 0.1.0.9007
+Version: 0.1.0.9008
 Authors@R: 
     person(
       given = "Maciej", 
@@ -19,6 +19,8 @@ URL: https://github.com/maciekbanas/shinyphaser
 BugReports: https://github.com/maciekbanas/shinyphaser/issues
 Imports:
   htmltools,
+  jsonlite,
+  promises,
   R6,
   rlang,
   shiny

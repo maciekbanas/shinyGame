@@ -124,7 +124,7 @@ server <- function(input, output, session) {
         shinyalert::shinyalert(
           title = "Game over", text = paste0("A ", enemy_name, " caught the hedgehog. Try again!"), type = "error",
           closeOnClickOutside = FALSE, showCancelButton = FALSE,
-          callbackR = function(value) shiny::stopApp()
+          callbackR = function(value) session$reload()
         )
       }, input = input
     )
@@ -203,7 +203,7 @@ server <- function(input, output, session) {
             shinyalert::shinyalert(
               title = "You won!", text = "Great job! You finished all levels and collected all apples.",
               type = "success", closeOnClickOutside = FALSE, showCancelButton = FALSE,
-              callbackR = function(value) shiny::stopApp()
+              callbackR = function(value) session$reload()
             )
           }
         }
