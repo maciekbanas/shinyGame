@@ -10,6 +10,10 @@ register_phaser_event_endpoint <- function(session, event_id, callback_fun) {
     stop("A Shiny session is required to register Phaser event endpoints.", call. = FALSE)
   }
 
+  if (!is.function(session$registerDataObj)) {
+    return(event_id)
+  }
+
   session$registerDataObj(
     name = event_id,
     data = callback_fun,
