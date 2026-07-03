@@ -90,6 +90,7 @@ server <- function(input, output, session) {
   health_bar_segment_gap <- 3
   game_over_shown <- FALSE
   defeated_enemy_count <- 0
+  spirit_saved <- FALSE
 
   session$onFlushed(function() {
     shinyalert::shinyalert(
@@ -492,6 +493,17 @@ server <- function(input, output, session) {
     frame_count = 2, frame_rate = 4
   )
 
+  mushroom_spirit <- game$add_sprite(
+    name = "mushroom_spirit",
+    url = "assets/dungeonheroes/sprites/mushroom_spirit.png",
+    x = 2850,
+    y = 5850,
+    frame_width = 32,
+    frame_height = 32,
+    frame_count = 14,
+    frame_rate = 8
+  )
+
   talk_bubble_text <- game$add_text(
     text = "...",
     id = "talk_bubble_text",
@@ -519,6 +531,29 @@ server <- function(input, output, session) {
       sprite = "wizard",
       play_animation = "wizard_idle"
     )
+  )
+
+  game$add_overlap(
+    object_one = "hero",
+    object_two = "mushroom_spirit",
+    callback_fun = function(evt) {
+      if (spirit_saved || game_over_shown) {
+        return(invisible(NULL))
+      }
+
+      spirit_saved <<- TRUE
+      game_over_shown <<- TRUE
+      hero$set_velocity_x(0)
+      hero$set_velocity_y(0)
+      shinyalert::shinyalert(
+        title = "Mushroom spirit saved!",
+        text = "The good spirit is safe. You win!",
+        type = "success",
+        closeOnClickOutside = FALSE,
+        showCancelButton = FALSE
+      )
+    },
+    input = input
   )
 
   add_enemy_handlers <- function(skeleton_name) {
@@ -648,6 +683,7 @@ dungeonheroes_space_client_actions <- function(hero_attack_cooldown, enemy_specs
           text = "",
           type = "info"
         ),
+        raw_js = "setTimeout(function() { if (typeof swal === 'function') swal({ title: 'There is a good spirit waiting to be saved!', text: '', type: 'info' }); }, 2200);",
         when_overlap = c("hero", "wizard"),
         cooldown = 1000,
         stop_after_match = TRUE
