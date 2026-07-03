@@ -90,7 +90,6 @@ server <- function(input, output, session) {
   health_bar_segment_gap <- 3
   game_over_shown <- FALSE
   defeated_enemy_count <- 0
-  spirit_saved <- FALSE
 
   session$onFlushed(function() {
     shinyalert::shinyalert(
@@ -371,7 +370,7 @@ server <- function(input, output, session) {
     enemy
   }), enemy_names)
 
-  lapply(mushroom_enemy_names, function(enemy_name) {
+  lapply(enemy_names, function(enemy_name) {
     game$enable_terrain_collision(enemy_name)
   })
 
@@ -536,24 +535,24 @@ server <- function(input, output, session) {
   game$add_overlap(
     object_one = "hero",
     object_two = "mushroom_spirit",
-    callback_fun = function(evt) {
-      if (spirit_saved || game_over_shown) {
-        return(invisible(NULL))
-      }
-
-      spirit_saved <<- TRUE
-      game_over_shown <<- TRUE
-      hero$set_velocity_x(0)
-      hero$set_velocity_y(0)
-      shinyalert::shinyalert(
+    input = input,
+    client_action = list(
+      show_alert = list(
         title = "Mushroom spirit saved!",
         text = "The good spirit is safe. You win!",
         type = "success",
         closeOnClickOutside = FALSE,
         showCancelButton = FALSE
-      )
-    },
-    input = input
+      ),
+      raw_js = paste0(
+        "const state = (window.GameBridge && GameBridge.clientState) || {};",
+        "state.dungeonheroes_game_over = true;",
+        "if (window.GameBridge && GameBridge.playerControls) delete GameBridge.playerControls.hero;",
+        "const hero = scene.children.getByName('hero');",
+        "if (hero && hero.body && typeof hero.body.stop === 'function') hero.body.stop();"
+      ),
+      disable_sprite = "mushroom_spirit"
+    )
   )
 
   add_enemy_handlers <- function(skeleton_name) {
@@ -580,7 +579,8 @@ server <- function(input, output, session) {
             cooldown = enemy_attack_cooldown * 1000
           )
         ),
-        dungeonheroes_life_bar_client_actions(max_life_points, health_bar_segment_count)
+        dungeonheroes_life_bar_client_actions(max_life_points, health_bar_segment_count),
+        dungeonheroes_game_over_client_action(skeleton_name)
       )
     )
 
@@ -616,6 +616,27 @@ dungeonheroes_life_bar_client_actions <- function(max_life_points, health_bar_se
     )
   })
 }
+
+dungeonheroes_game_over_client_action <- function(enemy_name) {
+  list(
+    when_state = list(key = "hero_life", op = "lte", value = 0),
+    set_text = list(
+      id = "combat_status",
+      text = sprintf("%s defeated you. Game over.", format_enemy_label(enemy_name))
+    ),
+    raw_js = paste0(
+      "const state = (window.GameBridge && GameBridge.clientState) || {};",
+      "if (!state.dungeonheroes_game_over) {",
+      "state.dungeonheroes_game_over = true;",
+      "if (window.GameBridge && GameBridge.playerControls) delete GameBridge.playerControls.hero;",
+      "const hero = scene.children.getByName('hero');",
+      "if (hero && hero.body && typeof hero.body.stop === 'function') hero.body.stop();",
+      "if (typeof swal === 'function') swal({ title: 'Game over', text: 'Your life points reached 0.', type: 'error', closeOnClickOutside: false, showCancelButton: false });",
+      "}"
+    )
+  )
+}
+
 
 dungeonheroes_space_client_actions <- function(hero_attack_cooldown, enemy_specs, hero_fist_damage, hero_sword_damage) {
   enemy_names <- vapply(enemy_specs, `[[`, character(1), "name")
