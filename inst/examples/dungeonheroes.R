@@ -337,6 +337,15 @@ server <- function(input, output, session) {
         frame_rate = 8
       )
 
+      lapply(c("down", "left", "right", "up"), function(direction) {
+        enemy$add_animation(
+          suffix = paste0("move_", direction),
+          url = sprintf("assets/dungeonheroes/sprites/mushroom_man_walk_%s.png", direction),
+          frame_width = 100, frame_height = 100,
+          frame_count = 12, frame_rate = 8
+        )
+      })
+
       enemy$add_animation(
         suffix = "attack",
         url = "assets/dungeonheroes/sprites/mushroom_man_attack.png",

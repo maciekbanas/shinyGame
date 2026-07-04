@@ -647,10 +647,18 @@ function setSpriteInMotion(name, dirX, dirY, speed, distance) {
       ease: 'Linear',
       onStart: () => {
         if (!sprite || !sprite.active || !sprite.play) return;
-        if (dirX < 0 && scene.anims.exists(name + "_move_left")) {
-          sprite.play(name + "_move_left", true);
-        } else if (dirX > 0 && scene.anims.exists(name + "_move_right")) {
-          sprite.play(name + "_move_right", true);
+        const directionalAnim = dirX < 0
+          ? name + "_move_left"
+          : dirX > 0
+            ? name + "_move_right"
+            : dirY < 0
+              ? name + "_move_up"
+              : dirY > 0
+                ? name + "_move_down"
+                : null;
+
+        if (directionalAnim && scene.anims.exists(directionalAnim)) {
+          sprite.play(directionalAnim, true);
         } else if (scene.anims.exists(name + "_move")) {
           sprite.play(name + "_move", true);
         } else if (scene.anims.exists(name + "_idle")) {
