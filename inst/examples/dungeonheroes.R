@@ -145,6 +145,7 @@ server <- function(input, output, session) {
     enemy_names
   )
   mushroom_enemy_names <- enemy_names[enemy_type == "mushroom_man"]
+  mushroom_sight_range <- 300
   mushroom_motion_specs <- list(
     mushroom_man_1 = list(speed = 42, distance = 70, lag = 0.0, interval = 1300),
     mushroom_man_2 = list(speed = 48, distance = 95, lag = 0.2, interval = 1700),
@@ -415,7 +416,9 @@ server <- function(input, output, session) {
         list(c(-1, 0), c(1, 0), c(0, -1), c(0, 1)),
         1
       )[[1]]
-      enemies[[enemy_name]]$set_in_motion(
+      enemies[[enemy_name]]$set_in_motion_random_or_toward(
+        target_name = "hero",
+        sight_range = mushroom_sight_range,
         dir_x = direction[1],
         dir_y = direction[2],
         speed = motion_spec$speed,
@@ -782,4 +785,3 @@ dungeonheroes_space_client_actions <- function(hero_attack_cooldown, enemy_specs
 
 
 shiny::shinyApp(ui, server)
-
