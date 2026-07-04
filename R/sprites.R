@@ -197,7 +197,7 @@ Sprite <- R6::R6Class(
                                               lag = distance/speed) {
       Sys.sleep(lag)
       js <- sprintf(
-        "setSpriteInMotionRandomOrToward(%s, %s, %d, %d, %d, %d, %d, %f, %f);",
+        "setSpriteInMotionRandomOrToward(%s, %s, %f, %f, %f, %f, %f, %f, %f);",
         jsonlite::toJSON(private$name, auto_unbox = TRUE),
         jsonlite::toJSON(target_name, auto_unbox = TRUE),
         sight_range, dir_x, dir_y, speed, distance,
@@ -220,7 +220,7 @@ Sprite <- R6::R6Class(
                                        check_interval = 250,
                                        alert_duration = 1200) {
       js <- sprintf(
-        "startSpriteApproachOnSight(%s, %s, %d, %d, %d, %d, %d);",
+        "startSpriteApproachOnSight(%s, %s, %f, %f, %f, %f, %f);",
         jsonlite::toJSON(private$name, auto_unbox = TRUE),
         jsonlite::toJSON(target_name, auto_unbox = TRUE),
         sight_range, speed, distance, check_interval, alert_duration

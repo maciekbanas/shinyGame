@@ -103,8 +103,8 @@ test_that("Sprite utility methods send expected JS", {
   expect_true(any(grepl("setGravity\\('hero', 1, 2\\);", msgs)))
   expect_true(any(grepl("setBounce\\('hero', 0.500000\\);", msgs)))
   expect_true(any(grepl("setSpriteInMotion\\('hero', 1, 0, 90, 45\\);", msgs)))
-  expect_true(any(grepl('setSpriteInMotionRandomOrToward\\("hero", "mushroom_man", 300, 0, 1, 90, 45, 1.350000, 2.000000\\);', msgs)))
-  expect_true(any(grepl('startSpriteApproachOnSight\\("hero", "mushroom_man", 500, 120, 80, 250, 1200\\);', msgs)))
+  expect_true(any(grepl('setSpriteInMotionRandomOrToward\\("hero", "mushroom_man", 300.000000, 0.000000, 1.000000, 90.000000, 45.000000, 1.350000, 2.000000\\);', msgs)))
+  expect_true(any(grepl('startSpriteApproachOnSight\\("hero", "mushroom_man", 500.000000, 120.000000, 80.000000, 250.000000, 1200.000000\\);', msgs)))
   expect_true(any(grepl("destroySprite\\('hero'\\);", msgs)))
 })
 
