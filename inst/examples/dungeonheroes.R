@@ -11,14 +11,39 @@ dungeonheroes_version <- read.dcf("DESCRIPTION", fields = "Version")[[1]]
 
 ui <- shiny::tagList(
   shinyalert::useShinyalert(),
+  htmltools::tags$style(htmltools::HTML("
+    @keyframes dungeonheroes-skeleton-loader {
+      from { background-position: 0 0; }
+      to { background-position: -800px 0; }
+    }
+
+    #dungeonheroes_loader {
+      position: fixed;
+      inset: 0;
+      z-index: 9999;
+      display: flex;
+      flex-direction: column;
+      gap: 18px;
+      align-items: center;
+      justify-content: center;
+      background: #111827;
+      color: #f9fafb;
+      font: 24px sans-serif;
+    }
+
+    #dungeonheroes_loader .skeleton_loader_sprite {
+      width: 100px;
+      height: 100px;
+      background-image: url('assets/dungeonheroes/sprites/skeleton_idle.png');
+      background-repeat: no-repeat;
+      animation: dungeonheroes-skeleton-loader 1s steps(8) infinite;
+      image-rendering: pixelated;
+    }
+  ")),
   htmltools::tags$div(
     id = "dungeonheroes_loader",
-    style = paste(
-      "position:fixed; inset:0; z-index:9999;",
-      "display:flex; align-items:center; justify-content:center;",
-      "background:#111827; color:#f9fafb; font:24px sans-serif;"
-    ),
-    "Loading dungeon heroes..."
+    htmltools::tags$div(class = "skeleton_loader_sprite"),
+    htmltools::tags$div("Loading dungeon heroes...")
   ),
   game$use_phaser(),
   htmltools::tags$script(htmltools::HTML("
