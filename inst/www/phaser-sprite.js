@@ -504,6 +504,10 @@ function runClientAction(key, action) {
     destroySprite(action.destroy_sprite);
   }
 
+  if (action.disable_sprite) {
+    disableSprite(action.disable_sprite);
+  }
+
   if (action.set_text && action.set_text.id !== undefined) {
     setText(interpolateClientStateText(action.set_text.text || ""), action.set_text.id);
   }
@@ -623,10 +627,17 @@ function setSpriteInMotion(name, dirX, dirY, speed, distance) {
     const originX = sprite.x;
     const originY = sprite.y;
 
-    const endX = originX + dirX * distance;
-    const endY = originY + dirY * distance;
+    const endPoint = constrainedTerrainMotionEnd(sprite, dirX, dirY, distance);
+    const endX = endPoint.x;
+    const endY = endPoint.y;
+    const adjustedDistance = Phaser.Math.Distance.Between(originX, originY, endX, endY);
 
-    const duration = (distance / speed) * 1000;
+    if (adjustedDistance <= 0) {
+      if (sprite.body && typeof sprite.body.stop === "function") sprite.body.stop();
+      return;
+    }
+
+    const duration = (adjustedDistance / speed) * 1000;
 
     scene.tweens.add({
       targets: sprite,
@@ -636,10 +647,18 @@ function setSpriteInMotion(name, dirX, dirY, speed, distance) {
       ease: 'Linear',
       onStart: () => {
         if (!sprite || !sprite.active || !sprite.play) return;
-        if (dirX < 0 && scene.anims.exists(name + "_move_left")) {
-          sprite.play(name + "_move_left", true);
-        } else if (dirX > 0 && scene.anims.exists(name + "_move_right")) {
-          sprite.play(name + "_move_right", true);
+        const directionalAnim = dirX < 0
+          ? name + "_move_left"
+          : dirX > 0
+            ? name + "_move_right"
+            : dirY < 0
+              ? name + "_move_up"
+              : dirY > 0
+                ? name + "_move_down"
+                : null;
+
+        if (directionalAnim && scene.anims.exists(directionalAnim)) {
+          sprite.play(directionalAnim, true);
         } else if (scene.anims.exists(name + "_move")) {
           sprite.play(name + "_move", true);
         } else if (scene.anims.exists(name + "_idle")) {
@@ -652,4 +671,62 @@ function setSpriteInMotion(name, dirX, dirY, speed, distance) {
       }
     });
   });
+}
+
+function constrainedTerrainMotionEnd(sprite, dirX, dirY, distance) {
+  const originX = sprite.x;
+  const originY = sprite.y;
+
+  if (!scene || !scene.terrainLayer || (!dirX && !dirY)) {
+    return {
+      x: originX + dirX * distance,
+      y: originY + dirY * distance
+    };
+  }
+
+  const steps = Math.max(1, Math.ceil(distance / 4));
+  let lastSafeX = originX;
+  let lastSafeY = originY;
+
+  for (let step = 1; step <= steps; step++) {
+    const nextDistance = Math.min(distance, step * 4);
+    const nextX = originX + dirX * nextDistance;
+    const nextY = originY + dirY * nextDistance;
+
+    if (spriteWouldTouchCollidingTerrain(sprite, nextX, nextY)) {
+      break;
+    }
+
+    lastSafeX = nextX;
+    lastSafeY = nextY;
+  }
+
+  return { x: lastSafeX, y: lastSafeY };
+}
+
+function spriteWouldTouchCollidingTerrain(sprite, x, y) {
+  if (!scene || !scene.terrainLayer) return false;
+
+  const bounds = sprite.getBounds();
+  const offsetX = x - sprite.x;
+  const offsetY = y - sprite.y;
+  const left = bounds.left + offsetX;
+  const right = bounds.right + offsetX;
+  const top = bounds.top + offsetY;
+  const bottom = bounds.bottom + offsetY;
+  const centerX = (left + right) / 2;
+  const centerY = (top + bottom) / 2;
+
+  return [
+    [left, top],
+    [right, top],
+    [left, bottom],
+    [right, bottom],
+    [centerX, centerY]
+  ].some(([pointX, pointY]) => terrainCollidesAtWorldXY(pointX, pointY));
+}
+
+function terrainCollidesAtWorldXY(x, y) {
+  const tile = scene.terrainLayer.getTileAtWorldXY(x, y, true);
+  return Boolean(tile && (tile.collides || (tile.properties && tile.properties.collides)));
 }
