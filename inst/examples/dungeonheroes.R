@@ -145,6 +145,11 @@ server <- function(input, output, session) {
     enemy_names
   )
   mushroom_enemy_names <- enemy_names[enemy_type == "mushroom_man"]
+  mushroom_sight_range <- 500
+  mushroom_approach_speed_multiplier <- 1.35
+  mushroom_approach_distance_multiplier <- 2
+  mushroom_reaction_check_interval <- 250
+  mushroom_alert_duration <- 1200
   mushroom_motion_specs <- list(
     mushroom_man_1 = list(speed = 42, distance = 70, lag = 0.0, interval = 1300),
     mushroom_man_2 = list(speed = 48, distance = 95, lag = 0.2, interval = 1700),
@@ -391,6 +396,12 @@ server <- function(input, output, session) {
       frame_width = 100, frame_height = 100,
       frame_count = 6, frame_rate = 6
     )
+    enemy$add_animation(
+      suffix = "destroy",
+      url = "assets/dungeonheroes/sprites/mushroom_man_destroy.png",
+      frame_width = 100, frame_height = 100,
+      frame_count = 6, frame_rate = 8
+    )
 
     enemy
   }), enemy_names)
@@ -401,6 +412,14 @@ server <- function(input, output, session) {
 
   lapply(mushroom_enemy_names, function(enemy_name) {
     motion_spec <- mushroom_motion_specs[[enemy_name]]
+    enemies[[enemy_name]]$start_approach_on_sight(
+      target_name = "hero",
+      sight_range = mushroom_sight_range,
+      speed = motion_spec$speed * mushroom_approach_speed_multiplier,
+      distance = motion_spec$distance * mushroom_approach_distance_multiplier,
+      check_interval = mushroom_reaction_check_interval,
+      alert_duration = mushroom_alert_duration
+    )
     force(enemy_name)
     force(motion_spec)
 
@@ -415,11 +434,15 @@ server <- function(input, output, session) {
         list(c(-1, 0), c(1, 0), c(0, -1), c(0, 1)),
         1
       )[[1]]
-      enemies[[enemy_name]]$set_in_motion(
+      enemies[[enemy_name]]$set_in_motion_random_or_toward(
+        target_name = "hero",
+        sight_range = mushroom_sight_range,
         dir_x = direction[1],
         dir_y = direction[2],
         speed = motion_spec$speed,
         distance = motion_spec$distance,
+        approach_speed_multiplier = mushroom_approach_speed_multiplier,
+        approach_distance_multiplier = mushroom_approach_distance_multiplier,
         lag = motion_spec$lag
       )
     })
@@ -683,6 +706,24 @@ dungeonheroes_space_client_actions <- function(hero_attack_cooldown, enemy_specs
     enemy_label <- gsub("_", " ", enemy_name)
     enemy_state_key <- paste0("enemy_life_", enemy_name)
     enemy_max_life <- enemy_max_hit_points[[enemy_name]]
+    enemy_destroy_js <- sprintf(
+      paste0(
+        "const state = (window.GameBridge && GameBridge.clientState) || {};",
+        "const enemy = scene.children.getByName(%s);",
+        "if (state[%s] <= 0 && enemy && !enemy.getData('destroying')) {",
+        "enemy.setData('destroying', true);",
+        "scene.tweens.killTweensOf(enemy);",
+        "if (enemy.body) { enemy.body.enable = false; if (typeof enemy.body.stop === 'function') enemy.body.stop(); }",
+        "if (scene.anims.exists(%s)) enemy.play(%s, true);",
+        "setTimeout(function() { disableSprite(%s); }, 750);",
+        "}"
+      ),
+      jsonlite::toJSON(enemy_name, auto_unbox = TRUE),
+      jsonlite::toJSON(enemy_state_key, auto_unbox = TRUE),
+      jsonlite::toJSON(paste0(enemy_name, "_destroy"), auto_unbox = TRUE),
+      jsonlite::toJSON(paste0(enemy_name, "_destroy"), auto_unbox = TRUE),
+      jsonlite::toJSON(enemy_name, auto_unbox = TRUE)
+    )
 
     list(
       list(
@@ -699,7 +740,7 @@ dungeonheroes_space_client_actions <- function(hero_attack_cooldown, enemy_specs
           enemy_name,
           list(name = "sword", exists = TRUE)
         ),
-        disable_when_state = list(name = enemy_name, key = enemy_state_key, op = "lte", value = 0)
+        raw_js = enemy_destroy_js
       ),
       list(
         set_state = list(
@@ -715,7 +756,7 @@ dungeonheroes_space_client_actions <- function(hero_attack_cooldown, enemy_specs
           enemy_name,
           list(name = "sword", exists = FALSE)
         ),
-        disable_when_state = list(name = enemy_name, key = enemy_state_key, op = "lte", value = 0)
+        raw_js = enemy_destroy_js
       )
     )
   }), recursive = FALSE)
@@ -782,4 +823,3 @@ dungeonheroes_space_client_actions <- function(hero_attack_cooldown, enemy_specs
 
 
 shiny::shinyApp(ui, server)
-
