@@ -34,7 +34,7 @@ ui <- shiny::tagList(
 server <- function(input, output, session) {
 
   enemy_specs <- list(
-    list(name = "mushroom_man_1", type = "mushroom_man", x = 1250, y = 1450, hit_points = 2, damage = 4, motion = "walk"),
+    list(name = "mushroom_man_1", type = "mushroom_man", x = 1250, y = 1550, hit_points = 2, damage = 4, motion = "walk"),
     list(name = "mushroom_man_2", type = "mushroom_man", x = 850, y = 2150, hit_points = 2, damage = 4, motion = "attack"),
     list(name = "mushroom_man_3", type = "mushroom_man", x = 1750, y = 2450, hit_points = 2, damage = 5, motion = "walk"),
     list(name = "mushroom_man_4", type = "mushroom_man", x = 2650, y = 2350, hit_points = 3, damage = 5, motion = "attack"),
