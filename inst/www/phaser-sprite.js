@@ -675,7 +675,17 @@ function setSpriteInMotion(name, dirX, dirY, speed, distance) {
   });
 }
 
-function setSpriteInMotionRandomOrToward(name, targetName, sightRange, dirX, dirY, speed, distance) {
+function setSpriteInMotionRandomOrToward(
+  name,
+  targetName,
+  sightRange,
+  dirX,
+  dirY,
+  speed,
+  distance,
+  approachSpeedMultiplier = 1,
+  approachDistanceMultiplier = 1
+) {
   const sprite = scene.children.getByName(name);
   const target = scene.children.getByName(targetName);
   if (!sprite || !target) {
@@ -689,8 +699,8 @@ function setSpriteInMotionRandomOrToward(name, targetName, sightRange, dirX, dir
       name,
       (target.x - sprite.x) / targetDistance,
       (target.y - sprite.y) / targetDistance,
-      speed,
-      Math.min(distance, targetDistance)
+      speed * approachSpeedMultiplier,
+      Math.min(distance * approachDistanceMultiplier, targetDistance)
     );
     return;
   }

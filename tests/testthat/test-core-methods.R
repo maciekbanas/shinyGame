@@ -87,7 +87,7 @@ test_that("Sprite utility methods send expected JS", {
   s$set_gravity(1, 2)
   s$set_bounce(0.5)
   s$set_in_motion(1, 0, 90, 45, lag = 0)
-  s$set_in_motion_random_or_toward("mushroom_man", 300, 0, 1, 90, 45, lag = 0)
+  s$set_in_motion_random_or_toward("mushroom_man", 300, 0, 1, 90, 45, 1.35, 2, lag = 0)
   s$destroy()
 
   msgs <- vapply(session$get_messages(), function(m) m$message$js, character(1))
@@ -102,7 +102,7 @@ test_that("Sprite utility methods send expected JS", {
   expect_true(any(grepl("setGravity\\('hero', 1, 2\\);", msgs)))
   expect_true(any(grepl("setBounce\\('hero', 0.500000\\);", msgs)))
   expect_true(any(grepl("setSpriteInMotion\\('hero', 1, 0, 90, 45\\);", msgs)))
-  expect_true(any(grepl('setSpriteInMotionRandomOrToward\\("hero", "mushroom_man", 300, 0, 1, 90, 45\\);', msgs)))
+  expect_true(any(grepl('setSpriteInMotionRandomOrToward\\("hero", "mushroom_man", 300, 0, 1, 90, 45, 1.350000, 2.000000\\);', msgs)))
   expect_true(any(grepl("destroySprite\\('hero'\\);", msgs)))
 })
 

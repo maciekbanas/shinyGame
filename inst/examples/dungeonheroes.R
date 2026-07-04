@@ -146,6 +146,8 @@ server <- function(input, output, session) {
   )
   mushroom_enemy_names <- enemy_names[enemy_type == "mushroom_man"]
   mushroom_sight_range <- 300
+  mushroom_approach_speed_multiplier <- 1.35
+  mushroom_approach_distance_multiplier <- 2
   mushroom_motion_specs <- list(
     mushroom_man_1 = list(speed = 42, distance = 70, lag = 0.0, interval = 1300),
     mushroom_man_2 = list(speed = 48, distance = 95, lag = 0.2, interval = 1700),
@@ -423,6 +425,8 @@ server <- function(input, output, session) {
         dir_y = direction[2],
         speed = motion_spec$speed,
         distance = motion_spec$distance,
+        approach_speed_multiplier = mushroom_approach_speed_multiplier,
+        approach_distance_multiplier = mushroom_approach_distance_multiplier,
         lag = motion_spec$lag
       )
     })

@@ -183,6 +183,8 @@ Sprite <- R6::R6Class(
     #' @param dir_y Numeric. Fallback vertical direction (-1 = up, +1 = down, 0 = none).
     #' @param speed Numeric. Speed in pixels/second.
     #' @param distance Numeric. Distance in pixels to travel before stopping.
+    #' @param approach_speed_multiplier Numeric. Multiplier applied to speed while moving toward the target.
+    #' @param approach_distance_multiplier Numeric. Multiplier applied to distance while moving toward the target.
     #' @param lag Numeric. Optional delay before sending the command (defaults to distance/speed).
     set_in_motion_random_or_toward = function(target_name,
                                               sight_range,
@@ -190,13 +192,16 @@ Sprite <- R6::R6Class(
                                               dir_y,
                                               speed,
                                               distance,
+                                              approach_speed_multiplier = 1,
+                                              approach_distance_multiplier = 1,
                                               lag = distance/speed) {
       Sys.sleep(lag)
       js <- sprintf(
-        "setSpriteInMotionRandomOrToward(%s, %s, %d, %d, %d, %d, %d);",
+        "setSpriteInMotionRandomOrToward(%s, %s, %d, %d, %d, %d, %d, %f, %f);",
         jsonlite::toJSON(private$name, auto_unbox = TRUE),
         jsonlite::toJSON(target_name, auto_unbox = TRUE),
-        sight_range, dir_x, dir_y, speed, distance
+        sight_range, dir_x, dir_y, speed, distance,
+        approach_speed_multiplier, approach_distance_multiplier
       )
       send_js(private, js)
     }
