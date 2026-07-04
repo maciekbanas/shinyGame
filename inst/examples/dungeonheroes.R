@@ -328,7 +328,7 @@ server <- function(input, output, session) {
     if (identical(spec$type, "mushroom_man")) {
       enemy <- game$add_sprite(
         name = spec$name,
-        url = "assets/dungeonheroes/sprites/mushroom_man_walk.png",
+        url = "assets/dungeonheroes/sprites/mushroom_man_idle.png",
         x = spec$x,
         y = spec$y,
         frame_width = 100,
