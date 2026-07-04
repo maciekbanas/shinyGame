@@ -333,7 +333,7 @@ server <- function(input, output, session) {
         y = spec$y,
         frame_width = 100,
         frame_height = 100,
-        frame_count = 12,
+        frame_count = 8,
         frame_rate = 8
       )
 
