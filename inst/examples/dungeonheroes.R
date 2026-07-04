@@ -564,26 +564,54 @@ server <- function(input, output, session) {
       object_one = "hero",
       object_two = skeleton_name,
       input = input,
-      client_action = c(
-        list(
-          list(
-            set_state = list(
-              list(key = "hero_life", op = "init", value = max_life_points, min = 0, max = max_life_points),
-              list(key = "hero_life", op = "decrement", amount = enemy_damage[[skeleton_name]], min = 0, max = max_life_points)
-            ),
-            set_text = list(
-              id = "combat_status",
-              text = sprintf("%s hits you for %d. Life: {state.hero_life}/%d", format_enemy_label(skeleton_name), enemy_damage[[skeleton_name]], max_life_points)
-            ),
-            sprite = skeleton_name,
-            play_animation = enemy_animation_key(skeleton_name, "attack"),
-            duration = 350,
-            cooldown = enemy_attack_cooldown * 1000
+      callback_fun = function(evt) {
+        now <- as.numeric(Sys.time())
+        if (
+          !isTRUE(enemy_is_alive[[skeleton_name]]) ||
+            life_points <= 0 ||
+            (now - enemy_last_attack_time[[skeleton_name]]) < enemy_attack_cooldown
+        ) {
+          return(invisible(NULL))
+        }
+
+        enemy_in_range <<- skeleton_name
+        enemy_last_attack_time[[skeleton_name]] <<- now
+        life_points <<- max(0, life_points - enemy_damage[[skeleton_name]])
+
+        set_combat_status(sprintf(
+          "%s hits you for %d. Life: %d/%d",
+          format_enemy_label(skeleton_name),
+          enemy_damage[[skeleton_name]],
+          life_points,
+          max_life_points
+        ))
+        update_life_points()
+
+        enemies[[skeleton_name]]$play_animation(
+          enemy_animation_key(skeleton_name, "attack"),
+          duration = 350
+        )
+
+        if (life_points <= 0 && !isTRUE(game_over_shown)) {
+          game_over_shown <<- TRUE
+          session$sendCustomMessage(
+            "phaser",
+            list(js = paste0(
+              "if (window.GameBridge && GameBridge.playerControls) delete GameBridge.playerControls.hero;",
+              "const hero = scene.children.getByName('hero');",
+              "if (hero && hero.body && typeof hero.body.stop === 'function') hero.body.stop();"
+            ))
           )
-        ),
-        dungeonheroes_life_bar_client_actions(max_life_points, health_bar_segment_count),
-        list(dungeonheroes_game_over_client_action(skeleton_name))
-      )
+          set_combat_status(sprintf("%s defeated you. Game over.", format_enemy_label(skeleton_name)))
+          shinyalert::shinyalert(
+            title = "Game over",
+            text = "Your life points reached 0.",
+            type = "error",
+            closeOnClickOutside = FALSE,
+            showCancelButton = FALSE
+          )
+        }
+      }
     )
 
     game$add_overlap_end(
@@ -602,41 +630,6 @@ server <- function(input, output, session) {
   }
 
   lapply(enemy_names, add_enemy_handlers)
-}
-
-
-dungeonheroes_life_bar_client_actions <- function(max_life_points, health_bar_segment_count) {
-  lapply(seq_len(health_bar_segment_count), function(segment_index) {
-    threshold <- (segment_index - 1) * max_life_points / health_bar_segment_count
-    list(
-      hide_when_state = list(
-        id = sprintf("life_bar_green_%02d", segment_index),
-        key = "hero_life",
-        op = "lte",
-        value = threshold
-      )
-    )
-  })
-}
-
-dungeonheroes_game_over_client_action <- function(enemy_name) {
-  list(
-    when_state = list(key = "hero_life", op = "lte", value = 0),
-    set_text = list(
-      id = "combat_status",
-      text = sprintf("%s defeated you. Game over.", gsub("_", " ", enemy_name))
-    ),
-    raw_js = paste0(
-      "const state = (window.GameBridge && GameBridge.clientState) || {};",
-      "if (!state.dungeonheroes_game_over) {",
-      "state.dungeonheroes_game_over = true;",
-      "if (window.GameBridge && GameBridge.playerControls) delete GameBridge.playerControls.hero;",
-      "const hero = scene.children.getByName('hero');",
-      "if (hero && hero.body && typeof hero.body.stop === 'function') hero.body.stop();",
-      "if (typeof swal === 'function') swal({ title: 'Game over', text: 'Your life points reached 0.', type: 'error', closeOnClickOutside: false, showCancelButton: false });",
-      "}"
-    )
-  )
 }
 
 
@@ -735,4 +728,3 @@ dungeonheroes_space_client_actions <- function(hero_attack_cooldown, enemy_specs
 
 
 shiny::shinyApp(ui, server)
-
