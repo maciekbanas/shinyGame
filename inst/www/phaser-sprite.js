@@ -624,6 +624,12 @@ function setSpriteInMotion(name, dirX, dirY, speed, distance) {
   }
 
   matches.forEach(sprite => {
+    const sightAlertUntil = sprite.getData && sprite.getData("sightAlertUntil");
+    if (Number.isFinite(sightAlertUntil) && performance.now() < sightAlertUntil) {
+      if (sprite.body && typeof sprite.body.stop === "function") sprite.body.stop();
+      return;
+    }
+
     scene.tweens.killTweensOf(sprite);
 
     const originX = sprite.x;
@@ -706,6 +712,70 @@ function setSpriteInMotionRandomOrToward(
   }
 
   setSpriteInMotion(name, dirX, dirY, speed, distance);
+}
+
+function startSpriteApproachOnSight(
+  name,
+  targetName,
+  sightRange,
+  speed,
+  distance,
+  checkInterval = 250,
+  alertDuration = 1200
+) {
+  if (!GameBridge.sightApproachIntervals) GameBridge.sightApproachIntervals = {};
+  if (GameBridge.sightApproachIntervals[name]) {
+    clearInterval(GameBridge.sightApproachIntervals[name]);
+  }
+
+  GameBridge.sightApproachIntervals[name] = setInterval(() => {
+    const sprite = scene.children.getByName(name);
+    const target = scene.children.getByName(targetName);
+    if (!sprite || !sprite.active || !target || !target.active) return;
+
+    const targetDistance = Phaser.Math.Distance.Between(sprite.x, sprite.y, target.x, target.y);
+    if (targetDistance <= 0 || targetDistance > sightRange) {
+      if (sprite.getData && sprite.getData("sightAlert")) {
+        sprite.setData("sightAlert", null);
+      }
+      return;
+    }
+
+    const now = performance.now();
+    if (!sprite.getData("sightAlert")) {
+      sprite.setData("sightAlert", true);
+      sprite.setData("sightAlertUntil", now + alertDuration);
+      scene.tweens.killTweensOf(sprite);
+      if (sprite.body && typeof sprite.body.stop === "function") sprite.body.stop();
+
+      const alertText = scene.add.text(sprite.x, sprite.y - sprite.displayHeight * 0.6, "!", {
+        fontSize: "28px",
+        color: "#ffeb3b",
+        stroke: "#000000",
+        strokeThickness: 4
+      }).setOrigin(0.5);
+      scene.tweens.add({
+        targets: alertText,
+        y: alertText.y - 24,
+        alpha: 0,
+        duration: alertDuration,
+        ease: "Cubic.easeOut",
+        onComplete: () => alertText.destroy()
+      });
+      return;
+    }
+
+    const sightAlertUntil = sprite.getData("sightAlertUntil");
+    if (Number.isFinite(sightAlertUntil) && now < sightAlertUntil) return;
+
+    setSpriteInMotion(
+      name,
+      (target.x - sprite.x) / targetDistance,
+      (target.y - sprite.y) / targetDistance,
+      speed,
+      Math.min(distance, targetDistance)
+    );
+  }, checkInterval);
 }
 
 function constrainedTerrainMotionEnd(sprite, dirX, dirY, distance) {

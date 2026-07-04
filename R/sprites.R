@@ -204,6 +204,28 @@ Sprite <- R6::R6Class(
         approach_speed_multiplier, approach_distance_multiplier
       )
       send_js(private, js)
+    },
+
+    #' @description Start client-side sight checks that make this sprite alert, then approach a target.
+    #' @param target_name Character. Name of the target sprite to approach.
+    #' @param sight_range Numeric. Maximum distance in pixels at which the target is noticed.
+    #' @param speed Numeric. Approach speed in pixels/second.
+    #' @param distance Numeric. Distance in pixels to travel for each approach step.
+    #' @param check_interval Numeric. Milliseconds between sight checks.
+    #' @param alert_duration Numeric. Milliseconds to show the alert before approaching.
+    start_approach_on_sight = function(target_name,
+                                       sight_range,
+                                       speed,
+                                       distance,
+                                       check_interval = 250,
+                                       alert_duration = 1200) {
+      js <- sprintf(
+        "startSpriteApproachOnSight(%s, %s, %d, %d, %d, %d, %d);",
+        jsonlite::toJSON(private$name, auto_unbox = TRUE),
+        jsonlite::toJSON(target_name, auto_unbox = TRUE),
+        sight_range, speed, distance, check_interval, alert_duration
+      )
+      send_js(private, js)
     }
   ),
   private = list(
