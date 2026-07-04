@@ -10,7 +10,6 @@ shinyphaser_version <- as.character(utils::packageVersion("shinyphaser"))
 dungeonheroes_version <- read.dcf("DESCRIPTION", fields = "Version")[[1]]
 
 ui <- shiny::tagList(
-  shinyalert::useShinyalert(),
   htmltools::tags$style(htmltools::HTML("
     @keyframes dungeonheroes-skeleton-loader {
       from { background-position: 0 0; }
