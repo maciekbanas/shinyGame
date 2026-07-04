@@ -715,12 +715,20 @@ dungeonheroes_space_client_actions <- function(hero_attack_cooldown, enemy_specs
           type = "info"
         ),
         raw_js = paste0(
-          "setTimeout(function() { if (typeof swal === 'function') swal({ ",
+          "setTimeout(function() { ",
+          "if (typeof swal !== 'function') return; ",
+          "if (!document.getElementById('mushroom-spirit-alert-style')) { ",
+          "var style = document.createElement('style'); ",
+          "style.id = 'mushroom-spirit-alert-style'; ",
+          "style.textContent = '@keyframes mushroomSpiritAlert { from { background-position: 0 0; } to { background-position: -448px 0; } } .mushroom-spirit-alert-animation { width: 32px; height: 32px; margin: 0 auto; background-image: url(\"assets/dungeonheroes/sprites/mushroom_spirit.png\"); background-repeat: no-repeat; animation: mushroomSpiritAlert 1s steps(14) infinite; image-rendering: pixelated; }'; ",
+          "document.head.appendChild(style); ",
+          "} ",
+          "swal({ ",
           "title: 'There is a good spirit waiting to be saved!', ",
-          "text: '', type: 'info', ",
-          "imageUrl: 'assets/dungeonheroes/sprites/mushroom_spirit.png', ",
-          "imageSize: '32x32' ",
-          "}); }, 2200);"
+          "text: '<div class=\"mushroom-spirit-alert-animation\"></div>', ",
+          "html: true ",
+          "}); ",
+          "}, 2200);"
         ),
         when_overlap = c("hero", "wizard"),
         cooldown = 1000,
