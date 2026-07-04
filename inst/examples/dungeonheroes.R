@@ -705,7 +705,14 @@ dungeonheroes_space_client_actions <- function(hero_attack_cooldown, enemy_specs
           text = "",
           type = "info"
         ),
-        raw_js = "setTimeout(function() { if (typeof swal === 'function') swal({ title: 'There is a good spirit waiting to be saved!', text: '', type: 'info' }); }, 2200);",
+        raw_js = paste0(
+          "setTimeout(function() { if (typeof swal === 'function') swal({ ",
+          "title: 'There is a good spirit waiting to be saved!', ",
+          "text: '', type: 'info', ",
+          "imageUrl: 'assets/dungeonheroes/sprites/mushroom_spirit.png', ",
+          "imageSize: '32x32' ",
+          "}); }, 2200);"
+        ),
         when_overlap = c("hero", "wizard"),
         cooldown = 1000,
         stop_after_match = TRUE
