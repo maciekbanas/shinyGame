@@ -36,25 +36,39 @@ PhaserGame <- R6::R6Class(
     },
 
     #' @description Load dependencies and initialize the Phaser game in the UI.
+    #' @param refresh_browser Logical. Whether to refresh the browser once with a
+    #'   cache-busting URL and load shinyphaser JavaScript dependencies with a
+    #'   unique dependency version (default: TRUE).
     #' @return HTML tag list containing dependencies and initialization script.
     #' @examples
     #'  game$use_phaser()
-    use_phaser = function() {
+    use_phaser = function(refresh_browser = TRUE) {
       shiny::addResourcePath("assets", system.file("assets", package = "shinyphaser"))
+
+      dependency_version <- if (isTRUE(refresh_browser)) {
+        paste0("0.1-", as.integer(Sys.time()))
+      } else {
+        "0.1"
+      }
+
       htmltools::tagList(
         phaser_dependency(),
         htmltools::tags$div(id = self$id, style = "width:100vw; height:100vh;"),
         htmltools::htmlDependency(
           name = "shinyphaser-assets",
-          version = "0.1",
+          version = dependency_version,
           package = "shinyphaser",
           src = "www",
           script = c("phaser-game.js", "phaser-groups.js",
                      "phaser-sprite.js", "phaser-image.js")
         ),
         htmltools::tags$script(
-          sprintf("initPhaserGame('%s', %s);", self$id,
-                  jsonlite::toJSON(private$config, auto_unbox = TRUE))
+          sprintf(
+            "refreshBrowserWithoutCache(%s); initPhaserGame('%s', %s);",
+            tolower(isTRUE(refresh_browser)),
+            self$id,
+            jsonlite::toJSON(private$config, auto_unbox = TRUE)
+          )
         )
       )
     },
