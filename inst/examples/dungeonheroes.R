@@ -109,6 +109,8 @@ server <- function(input, output, session) {
   )
   enemy_attack_cooldown <- 2
   enemy_in_range <- NULL
+  sword_in_range <- FALSE
+  wizard_in_range <- FALSE
   has_sword <- FALSE
   hero_last_attack_time <- as.numeric(Sys.time()) - 1
   hero_attack_cooldown <- 0.75
@@ -450,7 +452,60 @@ server <- function(input, output, session) {
 
   game$add_control(
     "Space",
-    action = NULL,
+    action = function() {
+      if (life_points <= 0) return(invisible(NULL))
+
+      if (sword_in_range && !has_sword) {
+        has_sword <<- TRUE
+        sword_in_range <<- FALSE
+        sword$destroy()
+        inventory_text$set("weapon: sword")
+        hero$play_animation("hero_sword")
+        set_combat_status("You picked up the sword.")
+        return(invisible(NULL))
+      }
+
+      if (wizard_in_range) {
+        shinyalert::shinyalert(
+          title = "Dear, oh dear. What are you doing here in these dark forests, lad?",
+          type = "info",
+          callbackR = function(value) shinyalert::shinyalert(
+            title = "There is a good spirit waiting to be saved!",
+            type = "info"
+          )
+        )
+        return(invisible(NULL))
+      }
+
+      now <- as.numeric(Sys.time())
+      if (now - hero_last_attack_time < hero_attack_cooldown) return(invisible(NULL))
+      hero_last_attack_time <<- now
+      hero_attack_sound$play()
+
+      if (!is.null(enemy_in_range) && isTRUE(enemy_is_alive[[enemy_in_range]])) {
+        damage <- if (has_sword) hero_sword_damage else hero_fist_damage
+        hero_animation <- if (has_sword) "hero_sword_attack" else "hero_attack"
+        enemy_hit_points[[enemy_in_range]] <<- max(0, enemy_hit_points[[enemy_in_range]] - damage)
+        play_hero_timed_animation(hero_animation)
+        set_combat_status(sprintf(
+          "You hit %s for %d. Enemy life: %d/%d",
+          format_enemy_label(enemy_in_range), damage,
+          enemy_hit_points[[enemy_in_range]], enemy_max_hit_points[[enemy_in_range]]
+        ))
+
+        if (enemy_hit_points[[enemy_in_range]] <= 0) {
+          defeated <- enemy_in_range
+          enemy_is_alive[[defeated]] <<- FALSE
+          defeated_enemy_count <<- defeated_enemy_count + 1
+          enemies[[defeated]]$play_animation(enemy_animation_key(defeated, "destroy"), duration = 750)
+          later::later(function() enemies[[defeated]]$destroy(), delay = 0.75)
+          enemy_in_range <<- NULL
+        }
+        update_enemy_status()
+      } else {
+        play_hero_timed_animation(if (has_sword) "hero_sword_attack" else "hero_attack")
+      }
+    },
     input
   )
 
@@ -515,6 +570,14 @@ server <- function(input, output, session) {
     x = 300,
     y = 300
   )
+  game$add_overlap("hero", "sword", input = input)
+  game$add_overlap_end("hero", "sword", input = input, session = session)
+  shiny::observeEvent(input$overlap_hero_sword, {
+    sword_in_range <<- TRUE
+  }, ignoreInit = TRUE)
+  shiny::observeEvent(input$overlap_end_hero_sword, {
+    sword_in_range <<- FALSE
+  }, ignoreInit = TRUE)
 
 
   wizard <- game$add_sprite(
@@ -571,12 +634,28 @@ server <- function(input, output, session) {
       wizard$play_animation("idle")
     }
   )
+  shiny::observeEvent(input$overlap_hero_wizard, {
+    wizard_in_range <<- TRUE
+  }, ignoreInit = TRUE)
+  shiny::observeEvent(input$overlap_end_hero_wizard, {
+    wizard_in_range <<- FALSE
+  }, ignoreInit = TRUE)
 
   game$add_overlap(
     object_one = "hero",
     object_two = "mushroom_spirit",
-    input = input
+    input = input,
+    action = mushroom_spirit$destroy()
   )
+  shiny::observeEvent(input$overlap_hero_mushroom_spirit, {
+    shinyalert::shinyalert(
+      title = "Mushroom spirit saved!",
+      text = "The good spirit is safe. You win!",
+      type = "success",
+      closeOnClickOutside = FALSE,
+      showCancelButton = FALSE
+    )
+  }, ignoreInit = TRUE, once = TRUE)
 
   add_enemy_handlers <- function(enemy_name) {
     force(enemy_name)
@@ -584,25 +663,57 @@ server <- function(input, output, session) {
     game$add_overlap(
       object_one = "hero",
       object_two = enemy_name,
-      callback_fun = function(evt) {
-        enemy_in_range <<- enemy_name
-      },
       input = input
-  )
+    )
+    overlap_event <- paste("overlap", "hero", enemy_name, sep = "_")
+    shiny::observeEvent(input[[overlap_event]], {
+      enemy_in_range <<- enemy_name
+      now <- as.numeric(Sys.time())
+      if (life_points <= 0 || !isTRUE(enemy_is_alive[[enemy_name]]) ||
+          now - enemy_last_attack_time[[enemy_name]] < enemy_attack_cooldown) {
+        return(invisible(NULL))
+      }
+
+      enemy_last_attack_time[[enemy_name]] <<- now
+      life_points <<- max(0, life_points - enemy_damage[[enemy_name]])
+      enemies[[enemy_name]]$play_animation(
+        enemy_animation_key(enemy_name, "attack"),
+        duration = 1000
+      )
+      set_combat_status(sprintf(
+        "%s hits you for %d. Life: %d/%d",
+        format_enemy_label(enemy_name), enemy_damage[[enemy_name]],
+        life_points, max_life_points
+      ))
+      update_life_points()
+
+      if (life_points <= 0 && !game_over_shown) {
+        game_over_shown <<- TRUE
+        shinyalert::shinyalert(
+          title = "Game over",
+          text = "Your life points reached 0.",
+          type = "error",
+          closeOnClickOutside = FALSE,
+          showCancelButton = FALSE
+        )
+      }
+    }, ignoreInit = TRUE)
 
     game$add_overlap_end(
       object_one = "hero",
       object_two = enemy_name,
-      callback_fun = function(evt) {
+      action = enemies[[enemy_name]]$play_animation(
+        enemy_animation_key(enemy_name, "idle")
+      ),
+      input = input,
+      session = session
+    )
+    overlap_end_event <- paste("overlap_end", "hero", enemy_name, sep = "_")
+    shiny::observeEvent(input[[overlap_end_event]], {
         if (identical(enemy_in_range, enemy_name)) {
           enemy_in_range <<- NULL
         }
-        if (isTRUE(enemy_is_alive[[enemy_name]])) {
-          enemies[[enemy_name]]$play_animation(enemy_animation_key(enemy_name, "idle"))
-        }
-      },
-      input = input
-    )
+    }, ignoreInit = TRUE)
   }
 
   lapply(enemy_names, add_enemy_handlers)

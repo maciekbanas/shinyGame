@@ -272,3 +272,17 @@ test_that("hedgehog action events retain game progress alerts", {
   expect_true(any(grepl('title = "You won!"', example, fixed = TRUE)))
   expect_false(any(grepl("callback_fun", example, fixed = TRUE)))
 })
+
+test_that("dungeonheroes Space action retains interactions and combat", {
+  example <- readLines(
+    system.file("examples", "dungeonheroes.R", package = "shinyphaser"),
+    warn = FALSE
+  )
+
+  expect_true(any(grepl("if (sword_in_range && !has_sword)", example, fixed = TRUE)))
+  expect_true(any(grepl('inventory_text$set("weapon: sword")', example, fixed = TRUE)))
+  expect_true(any(grepl("if (wizard_in_range)", example, fixed = TRUE)))
+  expect_true(any(grepl("enemy_hit_points[[enemy_in_range]]", example, fixed = TRUE)))
+  expect_true(any(grepl('title = "Game over"', example, fixed = TRUE)))
+  expect_false(any(grepl("client_action", example, fixed = TRUE)))
+})
