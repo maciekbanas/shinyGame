@@ -115,13 +115,31 @@ server <- function(input, output, session) {
   }
 
   add_enemy_overlap <- function(name, level_id, enemy_name) {
+    force(name)
+    force(level_id)
+    force(enemy_name)
     game$add_overlap(
       object_one = "hedgehog", 
       object_two = name, 
       action = {
-        hedgehog$destroy()
+        score_text$set("Game over!")
       }, input = input
     )
+    enemy_event <- paste("overlap", "hedgehog", name, sep = "_")
+    shiny::observeEvent(input[[enemy_event]], {
+      if (!state$started || state$game_over || state$current_level != level_id) {
+        return(invisible(NULL))
+      }
+      state$game_over <- TRUE
+      shinyalert::shinyalert(
+        title = "Game over",
+        text = paste0("A ", enemy_name, " caught the hedgehog. Try again!"),
+        type = "error",
+        closeOnClickOutside = FALSE,
+        showCancelButton = FALSE,
+        callbackR = function(value) session$reload()
+      )
+    }, ignoreInit = TRUE)
   }
 
   pause_gameplay <- function(level_id = state$current_level) {
@@ -182,6 +200,35 @@ server <- function(input, output, session) {
         score_text$set(paste0("Level ", level_id, ": apple collected!"))
         apples_group$disable()
     }, input = input)
+    apple_event <- paste("overlap", "hedgehog", paste0("apples_lvl", level_id), sep = "_")
+    shiny::observeEvent(input[[apple_event]], {
+      evt <- input[[apple_event]]
+      if (!state$started || state$current_level != level_id || state$game_over) {
+        return(invisible(NULL))
+      }
+
+      apple_key <- paste(evt$x2, evt$y2, sep = ":")
+      if (isTRUE(state$collected[[apple_key]])) return(invisible(NULL))
+      state$collected[[apple_key]] <- TRUE
+      state$score <- state$score + 1
+      score_text$set(paste0("Level ", level_id, " score: ", state$score))
+
+      if (state$score >= nrow(cfg$apples)) {
+        pause_gameplay(level_id)
+        if (level_id < length(level_config)) {
+          passed_level_alert(level_id)
+        } else {
+          shinyalert::shinyalert(
+            title = "You won!",
+            text = "Great job! You finished all levels and collected all apples.",
+            type = "success",
+            closeOnClickOutside = FALSE,
+            showCancelButton = FALSE,
+            callbackR = function(value) session$reload()
+          )
+        }
+      }
+    }, ignoreInit = TRUE)
 
     list(apples = apples_group, attackers = attackers)
   }

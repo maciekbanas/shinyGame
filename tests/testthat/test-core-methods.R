@@ -260,3 +260,15 @@ test_that("action blocks reject unsupported R code instead of running it", {
   )
   expect_false(ran)
 })
+
+test_that("hedgehog action events retain game progress alerts", {
+  example <- readLines(
+    system.file("examples", "hedgehog.R", package = "shinyphaser"),
+    warn = FALSE
+  )
+
+  expect_true(any(grepl('title = "Game over"', example, fixed = TRUE)))
+  expect_true(any(grepl("passed_level_alert(level_id)", example, fixed = TRUE)))
+  expect_true(any(grepl('title = "You won!"', example, fixed = TRUE)))
+  expect_false(any(grepl("callback_fun", example, fixed = TRUE)))
+})
