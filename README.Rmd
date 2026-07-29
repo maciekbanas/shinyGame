@@ -82,7 +82,7 @@ game$add_collider(
 ```
 
 An immediate action can use supported methods on `Text`, `Image`, `Rectangle`,
-`Sound`, `Sprite`, and `StaticSprite` objects. Arbitrary R code (for example,
+`Sound`, `Sprite`, `StaticSprite`, and `StaticGroup` objects. Arbitrary R code (for example,
 updating a reactive value or querying a database) cannot run in a browser; keep
 that work in the server-side `callback_fun`.
 

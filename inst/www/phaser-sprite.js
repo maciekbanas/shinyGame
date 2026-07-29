@@ -226,7 +226,7 @@ function normalizeBrowserActions(actions) {
   return Array.isArray(actions) ? actions : [actions];
 }
 
-function runBrowserAction(action) {
+function runBrowserAction(action, overlapObjectOne, overlapObjectTwo) {
   if (action.play_sound) playSound(action.play_sound, action.volume ?? null, action.loop ?? null);
   if (action.pause_sound) pauseSound(action.pause_sound);
   if (action.resume_sound) resumeSound(action.resume_sound);
@@ -242,6 +242,13 @@ function runBrowserAction(action) {
   }
 
   if (action.destroy_sprite) destroySprite(action.destroy_sprite);
+  if (action.set_in_motion) {
+    const motion = action.set_in_motion;
+    setSpriteInMotion(motion.name, motion.dir_x, motion.dir_y, motion.speed, motion.distance);
+  }
+  if (action.disable_overlap_member && overlapObjectTwo) {
+    disableBody(action.disable_overlap_member, overlapObjectTwo.x, overlapObjectTwo.y);
+  }
   if (action.set_text && action.set_text.id !== undefined) {
     setText(action.set_text.text || "", action.set_text.id);
   }
@@ -249,8 +256,10 @@ function runBrowserAction(action) {
   if (action.hide_text) hideText(action.hide_text);
 }
 
-function runBrowserActionList(actions) {
-  normalizeBrowserActions(actions).forEach(runBrowserAction);
+function runBrowserActionList(actions, overlapObjectOne, overlapObjectTwo) {
+  normalizeBrowserActions(actions).forEach((action) => {
+    runBrowserAction(action, overlapObjectOne, overlapObjectTwo);
+  });
 }
 
 function addKeyControl(key) {

@@ -362,7 +362,7 @@ function addCollider(objectOneName, objectTwoName, inputId, browserActions = [])
   scene.physics.add.collider(
     objectOne, objectTwo,
     function(obj1, obj2) {
-      runBrowserActionList(browserActions);
+      runBrowserActionList(browserActions, obj1, obj2);
       sendPhaserEvent(inputId, phaserCollisionPayload(obj1, obj2));
     }
   );
@@ -374,7 +374,7 @@ function addGroupCollider(objectName, groupName, inputId, browserActions = []) {
   scene.physics.add.collider(
     objectOne, objectTwo,
     function(obj1, obj2) {
-      runBrowserActionList(browserActions);
+      runBrowserActionList(browserActions, obj1, obj2);
       sendPhaserEvent(inputId, phaserCollisionPayload(obj1, obj2));
     }
   );
@@ -396,7 +396,7 @@ function addOverlap(objectOneName, objectTwoName, inputId, browserActions = []) 
   scene.physics.add.overlap(
     objectOne, objectTwo,
     function(obj1, obj2) {
-      runBrowserActionList(browserActions);
+      runBrowserActionList(browserActions, obj1, obj2);
       sendPhaserEvent(inputId, phaserCollisionPayload(obj1, obj2));
     }
   );
@@ -441,7 +441,7 @@ function addOverlapEnd(objectOneName, objectTwoName, inputId, browserActions = [
     );
 
     if (wasOverlapping && !currentlyOverlapping) {
-      runBrowserActionList(browserActions);
+      runBrowserActionList(browserActions, obj1, obj2);
       sendPhaserEvent(inputId, phaserCollisionPayload(obj1, obj2));
     }
 
@@ -459,7 +459,7 @@ function addGroupOverlap(objectName, groupName, inputId, browserActions = []) {
   scene.physics.add.overlap(
     objectOne, objectTwo,
     function(obj1, obj2) {
-      runBrowserActionList(browserActions);
+      runBrowserActionList(browserActions, obj1, obj2);
       sendPhaserEvent(inputId, phaserCollisionPayload(obj1, obj2));
     }
   );

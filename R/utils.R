@@ -117,6 +117,18 @@ compile_phaser_action_call <- function(expr, env) {
     if (!is.infinite(duration)) action$duration <- duration
     return(action)
   }
+  if (inherits(target, "Sprite") && method == "set_in_motion") {
+    return(list(set_in_motion = list(
+      name = object_name,
+      dir_x = value("dir_x", 1),
+      dir_y = value("dir_y", 2),
+      speed = value("speed", 3),
+      distance = value("distance", 4)
+    )))
+  }
+  if (inherits(target, "StaticGroup") && method == "disable") {
+    return(list(disable_overlap_member = object_name))
+  }
   if (inherits(target, c("Sprite", "StaticSprite")) && method == "destroy") {
     return(list(destroy_sprite = object_name))
   }

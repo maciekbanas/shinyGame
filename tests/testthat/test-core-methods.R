@@ -194,6 +194,7 @@ test_that("PhaserGame action blocks compile R6 calls for immediate execution", {
   prompt <- game$add_text("Talk", "prompt", 0, 0, visible = FALSE)
   sound <- game$add_sound("hello", "hello.wav")
   hero <- game$add_sprite("hero", "hero.png", 0, 0, 32, 32, 1, 1)
+  apples <- game$add_static_group("apples", "apple.png")
   game$add_overlap(
     object_one = "hero",
     object_two = "wizard",
@@ -212,6 +213,13 @@ test_that("PhaserGame action blocks compile R6 calls for immediate execution", {
     action = prompt$hide()
   )
   game$add_collider("hero", "rock", input = input, action = sound$stop())
+  game$add_overlap(
+    "hero", group = "apples", input = input,
+    action = {
+      hero$set_in_motion(1, 0, 100, 50, lag = 0)
+      apples$disable()
+    }
+  )
 
   msgs <- vapply(session$get_messages(), function(m) m$message$js, character(1))
   expect_true(any(grepl('addOverlap("hero", "wizard"', msgs, fixed = TRUE)))
@@ -222,6 +230,8 @@ test_that("PhaserGame action blocks compile R6 calls for immediate execution", {
   expect_true(any(grepl('"hide_text":"prompt"', msgs, fixed = TRUE)))
   expect_true(any(grepl('addCollider(\'hero\',\'rock\'', msgs, fixed = TRUE)))
   expect_true(any(grepl('"stop_sound":"hello"', msgs, fixed = TRUE)))
+  expect_true(any(grepl('"set_in_motion":{"name":"hero","dir_x":1,"dir_y":0,"speed":100,"distance":50}', msgs, fixed = TRUE)))
+  expect_true(any(grepl('"disable_overlap_member":"apples"', msgs, fixed = TRUE)))
 })
 
 test_that("public handlers no longer expose client action lists", {

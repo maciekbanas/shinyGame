@@ -137,7 +137,7 @@ server <- function(input, output, session) {
   game$add_overlap(
     object_one = "bear",
     object_two = "wooden_box",
-    callback_fun = function(evt) {
+    action = {
       wooden_box$set_in_motion(
         dir_x = 1,
         dir_y = 0,
@@ -151,10 +151,9 @@ server <- function(input, output, session) {
   game$add_overlap(
     object_one = "bear",
     group = "apples",
-    callback_fun = function(evt) {
-      points <<- points + 1
-      points_text$set(paste0("apples gathered: ", points))
-      apples$disable(evt)
+    action = {
+      points_text$set("apple gathered!")
+      apples$disable()
     },
     input = input
   )
