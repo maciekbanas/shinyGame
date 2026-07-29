@@ -30,16 +30,21 @@ compile_phaser_value <- function(expr, env) {
 }
 
 compile_phaser_condition <- function(expr, env) {
-  if (is.call(expr) && as.character(expr[[1]]) %in% c("&&", "||")) {
-    return(list(op = as.character(expr[[1]]),
+  operator <- if (is.call(expr) && is.symbol(expr[[1]])) {
+    as.character(expr[[1]])
+  } else {
+    NULL
+  }
+  if (!is.null(operator) && operator %in% c("&&", "||")) {
+    return(list(op = operator,
                 left = compile_phaser_condition(expr[[2]], env),
                 right = compile_phaser_condition(expr[[3]], env)))
   }
   if (is.call(expr) && identical(expr[[1]], as.name("!"))) {
     return(list(op = "!", value = compile_phaser_condition(expr[[2]], env)))
   }
-  if (is.call(expr) && as.character(expr[[1]]) %in% c("==", "!=", "<", "<=", ">", ">=")) {
-    return(list(op = as.character(expr[[1]]),
+  if (!is.null(operator) && operator %in% c("==", "!=", "<", "<=", ">", ">=")) {
+    return(list(op = operator,
                 left = compile_phaser_value(expr[[2]], env),
                 right = compile_phaser_value(expr[[3]], env)))
   }
