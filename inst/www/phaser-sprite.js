@@ -497,13 +497,16 @@ function startSpriteApproachOnSight(
         color: "#ffeb3b",
         stroke: "#000000",
         strokeThickness: 4
-      }).setOrigin(0.5);
+      }).setOrigin(0.5).setDepth(10000);
       scene.tweens.add({
         targets: alertText,
-        y: alertText.y - 24,
         alpha: 0,
         duration: alertDuration,
         ease: "Cubic.easeOut",
+        onUpdate: () => {
+          if (!sprite || !sprite.active) return;
+          alertText.setPosition(sprite.x, sprite.y - sprite.displayHeight * 0.6);
+        },
         onComplete: () => alertText.destroy()
       });
       return;

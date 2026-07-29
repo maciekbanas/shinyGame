@@ -83,6 +83,12 @@ function initPhaserGame(containerId, config) {
   function create() {
     cursors = this.input.keyboard.createCursorKeys();
     applyWorldBounds(GameBridge.pendingWorldBounds);
+    const unlockAudio = () => {
+      const context = this.sound && this.sound.context;
+      if (context && context.state === "suspended") context.resume();
+    };
+    this.input.keyboard.once("keydown", unlockAudio);
+    this.input.once("pointerdown", unlockAudio);
   }
 
   function update(time, delta) {
@@ -185,7 +191,12 @@ function playSound(name, volume = null, loop = null) {
     const config = {};
     if (volume !== null) config.volume = volume;
     if (loop !== null) config.loop = loop;
-    sound.play(config);
+    const context = scene && scene.sound && scene.sound.context;
+    if (context && context.state === "suspended") {
+      context.resume().then(() => sound.play(config));
+    } else {
+      sound.play(config);
+    }
   });
 }
 

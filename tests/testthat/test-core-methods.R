@@ -322,3 +322,13 @@ test_that("dungeonheroes Space action retains interactions and combat", {
   expect_true(any(grepl('title = "Game over"', example, fixed = TRUE)))
   expect_false(any(grepl("client_action", example, fixed = TRUE)))
 })
+
+test_that("browser feedback is configured for immediate visibility and audio", {
+  game_js <- readLines(system.file("www", "phaser-game.js", package = "shinyphaser"), warn = FALSE)
+  sprite_js <- readLines(system.file("www", "phaser-sprite.js", package = "shinyphaser"), warn = FALSE)
+
+  expect_true(any(grepl('context.state === "suspended"', game_js, fixed = TRUE)))
+  expect_true(any(grepl("context.resume().then", game_js, fixed = TRUE)))
+  expect_true(any(grepl("setDepth(10000)", sprite_js, fixed = TRUE)))
+  expect_true(any(grepl("alertText.setPosition(sprite.x", sprite_js, fixed = TRUE)))
+})
