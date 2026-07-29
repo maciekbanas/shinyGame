@@ -425,7 +425,7 @@ server <- function(input, output, session) {
     )
   })
 
-  shiny::observeEvent(input$phaser_dungeon_space, {
+  shiny::observeEvent(input$Space_action, {
       if (life_points <= 0) return(invisible(NULL))
 
       if (sword_in_range && !has_sword) {
@@ -481,7 +481,12 @@ server <- function(input, output, session) {
 
   }, ignoreInit = TRUE)
 
-  game$add_control("Space", action = game$emit("dungeon_space"), input = input)
+  game$add_control(
+    "Space",
+    action = NULL,
+    input = input,
+    notify_server = TRUE
+  )
 
   inventory_text <- game$add_text(
     text = "weapon: none",

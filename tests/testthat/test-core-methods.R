@@ -316,6 +316,8 @@ test_that("dungeonheroes Space action retains interactions and combat", {
   expect_true(any(grepl("if (sword_in_range && !has_sword)", example, fixed = TRUE)))
   expect_true(any(grepl('inventory_text$set("weapon: sword")', example, fixed = TRUE)))
   expect_true(any(grepl("if (wizard_in_range)", example, fixed = TRUE)))
+  expect_true(any(grepl("input$Space_action", example, fixed = TRUE)))
+  expect_true(any(grepl("notify_server = TRUE", example, fixed = TRUE)))
   expect_true(any(grepl("enemy_hit_points[[enemy_in_range]]", example, fixed = TRUE)))
   expect_true(any(grepl('title = "Game over"', example, fixed = TRUE)))
   expect_false(any(grepl("client_action", example, fixed = TRUE)))
