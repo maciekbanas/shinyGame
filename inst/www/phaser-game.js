@@ -177,13 +177,13 @@ function addSound(name, url, volume = 1, loop = false) {
   }
 
   scene.load.audio(name, url);
-  scene.load.once('complete', () => {
+  scene.load.once(`filecomplete-audio-${name}`, () => {
     if (GameBridge.sounds[name]) return;
 
     GameBridge.sounds[name] = scene.sound.add(name, { volume, loop });
     applyPendingSoundActions(name);
   });
-  scene.load.start();
+  if (!scene.load.isLoading()) scene.load.start();
 }
 
 function playSound(name, volume = null, loop = null) {
@@ -369,6 +369,10 @@ function addPlayerTerrainCollider(spriteName) {
 }
 
 function addCollider(objectOneName, objectTwoName, inputId, browserActions = []) {
+  if (retryWhenMissingObjects(
+    () => addCollider(objectOneName, objectTwoName, inputId, browserActions),
+    [objectOneName, objectTwoName]
+  )) return;
   const objectOne = scene.children.getByName(objectOneName);
   const objectTwo = scene.children.getByName(objectTwoName);
   scene.physics.add.collider(
@@ -381,6 +385,10 @@ function addCollider(objectOneName, objectTwoName, inputId, browserActions = [])
 }
 
 function addGroupCollider(objectName, groupName, inputId, browserActions = []) {
+  if (!scene.children.getByName(objectName) || !scene[groupName]) {
+    window.setTimeout(() => addGroupCollider(objectName, groupName, inputId, browserActions), 100);
+    return;
+  }
   const objectOne = scene.children.getByName(objectName);
   const objectTwo = scene[groupName];
   scene.physics.add.collider(
