@@ -70,7 +70,7 @@ compile_phaser_action_call <- function(expr, env) {
     return(list(`if` = list(
       condition = compile_phaser_condition(expr[[2]], env),
       then = compile_phaser_action(expr[[3]], env),
-      else = if (length(expr) >= 4) compile_phaser_action(expr[[4]], env) else list()
+      `else` = if (length(expr) >= 4) compile_phaser_action(expr[[4]], env) else list()
     )))
   }
   if (!is.call(expr) || !is.call(expr[[1]]) ||
