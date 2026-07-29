@@ -55,7 +55,7 @@ function addSprite(name, url, x, y, frameWidth, frameHeight, frameCount, frameRa
     frameHeight: frameHeight
   });
 
-  scene.load.once('complete', () => {
+  scene.load.once(`filecomplete-spritesheet-${name}`, () => {
     const resolvedFrameCount = resolveFrameCount(name, frameWidth, frameHeight, frameCount);
 
     scene.anims.create({
@@ -86,12 +86,12 @@ function addSprite(name, url, x, y, frameWidth, frameHeight, frameCount, frameRa
     }
   });
 
-  scene.load.start();
+  if (!scene.load.isLoading()) scene.load.start();
 }
 
 function addStaticSprite(name, url, x, y) {
   scene.load.image(name, url);
-  scene.load.once('complete', () => {
+  scene.load.once(`filecomplete-image-${name}`, () => {
     const staticSprite = scene.physics.add.staticSprite(x, y, name).setName(name);
     if (scene.terrainLayer) {
       scene.physics.add.collider(staticSprite, scene.terrainLayer);
@@ -108,7 +108,7 @@ function addStaticSprite(name, url, x, y) {
       applyPendingTerrainColliders();
     }
   });
-  scene.load.start();
+  if (!scene.load.isLoading()) scene.load.start();
 }
 
 function addSpriteAnimation(name, suffix, url, frameWidth, frameHeight, frameCount, frameRate) {
@@ -121,7 +121,7 @@ function addSpriteAnimation(name, suffix, url, frameWidth, frameHeight, frameCou
     frameWidth:  frameWidth,
     frameHeight: frameHeight
   });
-  scene.load.once("complete", () => {
+  scene.load.once(`filecomplete-spritesheet-${animKey}`, () => {
     const resolvedFrameCount = resolveFrameCount(animKey, frameWidth, frameHeight, frameCount);
 
     scene.anims.create({
@@ -134,7 +134,7 @@ function addSpriteAnimation(name, suffix, url, frameWidth, frameHeight, frameCou
       repeat: -1
     });
   });
-  scene.load.start();
+  if (!scene.load.isLoading()) scene.load.start();
 }
 
 

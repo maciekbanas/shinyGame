@@ -1,7 +1,7 @@
 function addImage(imageName, imageUrl, x = null, y = null, visible = true, clickable = true) {
   scene.load.image(imageName, imageUrl);
 
-  scene.load.once('complete', () => {
+  scene.load.once(`filecomplete-image-${imageName}`, () => {
     const px = x !== null
       ? x
       : scene.cameras.main.width  / 2;
@@ -23,7 +23,7 @@ function addImage(imageName, imageUrl, x = null, y = null, visible = true, click
     }
   });
 
-  scene.load.start();
+  if (!scene.load.isLoading()) scene.load.start();
 }
 
 function showImage(imageName) {

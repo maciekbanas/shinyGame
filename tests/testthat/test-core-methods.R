@@ -334,4 +334,6 @@ test_that("browser feedback is configured for immediate visibility and audio", {
   expect_true(any(grepl("filecomplete-audio-${name}", game_js, fixed = TRUE)))
   expect_true(any(grepl("if (!scene.load.isLoading()) scene.load.start()", game_js, fixed = TRUE)))
   expect_true(any(grepl("() => addCollider(objectOneName", game_js, fixed = TRUE)))
+  expect_true(any(grepl("filecomplete-spritesheet-${name}", sprite_js, fixed = TRUE)))
+  expect_true(any(grepl("filecomplete-image-${name}", sprite_js, fixed = TRUE)))
 })
