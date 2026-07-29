@@ -168,10 +168,9 @@ Sprite <- R6::R6Class(
                              speed,
                              distance,
                              lag = distance/speed) {
-      Sys.sleep(lag)
       js <- sprintf(
-        "setSpriteInMotion('%s', %d, %d, %d, %d);",
-        private$name, dir_x, dir_y, speed, distance
+        "window.setTimeout(function() { setSpriteInMotion('%s', %d, %d, %d, %d); }, %f);",
+        private$name, dir_x, dir_y, speed, distance, lag * 1000
       )
       send_js(private, js)
     },
@@ -195,13 +194,12 @@ Sprite <- R6::R6Class(
                                               approach_speed_multiplier = 1,
                                               approach_distance_multiplier = 1,
                                               lag = distance/speed) {
-      Sys.sleep(lag)
       js <- sprintf(
-        "setSpriteInMotionRandomOrToward(%s, %s, %f, %f, %f, %f, %f, %f, %f);",
+        "window.setTimeout(function() { setSpriteInMotionRandomOrToward(%s, %s, %f, %f, %f, %f, %f, %f, %f); }, %f);",
         jsonlite::toJSON(private$name, auto_unbox = TRUE),
         jsonlite::toJSON(target_name, auto_unbox = TRUE),
         sight_range, dir_x, dir_y, speed, distance,
-        approach_speed_multiplier, approach_distance_multiplier
+        approach_speed_multiplier, approach_distance_multiplier, lag * 1000
       )
       send_js(private, js)
     },
@@ -213,17 +211,19 @@ Sprite <- R6::R6Class(
     #' @param distance Numeric. Distance in pixels to travel for each approach step.
     #' @param check_interval Numeric. Milliseconds between sight checks.
     #' @param alert_duration Numeric. Milliseconds to show the alert before approaching.
+    #' @param wander_interval Numeric. Milliseconds between random movements while the target is out of sight.
     start_approach_on_sight = function(target_name,
                                        sight_range,
                                        speed,
                                        distance,
                                        check_interval = 250,
-                                       alert_duration = 1200) {
+                                       alert_duration = 1200,
+                                       wander_interval = 1500) {
       js <- sprintf(
-        "startSpriteApproachOnSight(%s, %s, %f, %f, %f, %f, %f);",
+        "startSpriteApproachOnSight(%s, %s, %f, %f, %f, %f, %f, %f);",
         jsonlite::toJSON(private$name, auto_unbox = TRUE),
         jsonlite::toJSON(target_name, auto_unbox = TRUE),
-        sight_range, speed, distance, check_interval, alert_duration
+        sight_range, speed, distance, check_interval, alert_duration, wander_interval
       )
       send_js(private, js)
     }

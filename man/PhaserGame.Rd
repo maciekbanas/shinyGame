@@ -420,8 +420,9 @@ Adds a collider between two game objects.
   object_one,
   object_two = NULL,
   group = NULL,
-  callback_fun = NULL,
-  input
+  action = NULL,
+  input,
+  notify_server = FALSE
 )}\if{html}{\out{</div>}}
 }
 
@@ -434,7 +435,10 @@ Adds a collider between two game objects.
 
 \item{\code{group}}{Character. Name of the group to compare against.}
 
-\item{\code{callback_fun}}{A function to be run when collision occurs.}
+\item{\code{action}}{R code containing supported shinyphaser R6 method calls,
+compiled for immediate browser execution when a collision occurs.}
+
+\item{\code{notify_server}}{Whether to also emit a Shiny input event.}
 
 \item{\code{input}}{Shiny input list.}
 }
@@ -451,9 +455,11 @@ Adds a collider between two game objects.
   object_one,
   object_two = NULL,
   group = NULL,
-  callback_fun = NULL,
+  action = NULL,
   input,
-  client_action = NULL
+  mode = c("enter", "stay"),
+  interval = 0,
+  notify_server = FALSE
 )}\if{html}{\out{</div>}}
 }
 
@@ -466,12 +472,17 @@ Adds a collider between two game objects.
 
 \item{\code{group}}{Character. Name of the group.}
 
-\item{\code{callback_fun}}{Optional function to be run on the Shiny server when overlap occurs.}
+\item{\code{action}}{R code containing supported shinyphaser R6 method calls,
+compiled for immediate browser execution when an overlap occurs.}
+
+\item{\code{mode}}{Whether actions run on overlap entry or remain active while overlapping.}
+
+\item{\code{interval}}{Minimum milliseconds between sustained actions.}
+
+\item{\code{notify_server}}{Whether to also emit a Shiny input event.}
 
 \item{\code{input}}{Shiny input list.}
 
-\item{\code{client_action}}{Optional list or list of lists describing immediate
-browser-side Phaser feedback to run when overlap occurs.}
 }
 \if{html}{\out{</div>}}
 }
@@ -507,10 +518,10 @@ Register a callback fired when overlap between objects ends.
   object_one,
   object_two = NULL,
   group = NULL,
-  callback_fun = NULL,
+  action = NULL,
   input,
   session = shiny::getDefaultReactiveDomain(),
-  client_action = NULL
+  notify_server = FALSE
 )}\if{html}{\out{</div>}}
 }
 
@@ -523,14 +534,15 @@ Register a callback fired when overlap between objects ends.
 
 \item{\code{group}}{Character. Name of the group to compare against.}
 
-\item{\code{callback_fun}}{Optional function. Callback executed on the Shiny server when overlap ends.}
+\item{\code{action}}{R code containing supported shinyphaser R6 method calls,
+compiled for immediate browser execution when the overlap ends.}
+
+\item{\code{notify_server}}{Whether to also emit a Shiny input event.}
 
 \item{\code{input}}{Shiny input list.}
 
 \item{\code{session}}{Shiny session object.}
 
-\item{\code{client_action}}{Optional list or list of lists describing immediate
-browser-side Phaser feedback to run when overlap ends.}
 }
 \if{html}{\out{</div>}}
 }
@@ -545,7 +557,7 @@ Register a callback fired when a specific key is pressed.
   key,
   action = NULL,
   input,
-  client_action = NULL
+  notify_server = FALSE
 )}\if{html}{\out{</div>}}
 }
 
@@ -555,13 +567,12 @@ Register a callback fired when a specific key is pressed.
 \item{\code{key}}{A character, accepts Javascript key events (they need to align with
 event.code).}
 
-\item{\code{action}}{Optional function to be run on the Shiny server after key is pressed.}
+\item{\code{action}}{R code compiled and run immediately in the browser.}
+
+\item{\code{notify_server}}{Whether to also emit a Shiny input event.}
 
 \item{\code{input}}{Shiny input list.}
 
-\item{\code{client_action}}{Optional list or list of lists describing immediate
-browser-side Phaser feedback to run on keydown before Shiny receives the
-event.}
 }
 \if{html}{\out{</div>}}
 }

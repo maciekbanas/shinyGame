@@ -1,12 +1,11 @@
 window.GameBridge = window.GameBridge || {};
 GameBridge.keyControlHandlers = GameBridge.keyControlHandlers || {};
-GameBridge.keyControlActions = GameBridge.keyControlActions || {};
-GameBridge.keyControlLastRun = GameBridge.keyControlLastRun || {};
 GameBridge.forcedAnimations = GameBridge.forcedAnimations || {};
 GameBridge.pendingCameraFollow = GameBridge.pendingCameraFollow || {};
 GameBridge.pendingScrollFactor = GameBridge.pendingScrollFactor || {};
 GameBridge.pendingSpriteActions = GameBridge.pendingSpriteActions || {};
-GameBridge.clientState = GameBridge.clientState || {};
+GameBridge.browserState = GameBridge.browserState || {};
+GameBridge.cooldowns = GameBridge.cooldowns || {};
 
 
 
@@ -56,7 +55,7 @@ function addSprite(name, url, x, y, frameWidth, frameHeight, frameCount, frameRa
     frameHeight: frameHeight
   });
 
-  scene.load.once('complete', () => {
+  scene.load.once(`filecomplete-spritesheet-${name}`, () => {
     const resolvedFrameCount = resolveFrameCount(name, frameWidth, frameHeight, frameCount);
 
     scene.anims.create({
@@ -87,12 +86,12 @@ function addSprite(name, url, x, y, frameWidth, frameHeight, frameCount, frameRa
     }
   });
 
-  scene.load.start();
+  if (!scene.load.isLoading()) scene.load.start();
 }
 
 function addStaticSprite(name, url, x, y) {
   scene.load.image(name, url);
-  scene.load.once('complete', () => {
+  scene.load.once(`filecomplete-image-${name}`, () => {
     const staticSprite = scene.physics.add.staticSprite(x, y, name).setName(name);
     if (scene.terrainLayer) {
       scene.physics.add.collider(staticSprite, scene.terrainLayer);
@@ -109,7 +108,7 @@ function addStaticSprite(name, url, x, y) {
       applyPendingTerrainColliders();
     }
   });
-  scene.load.start();
+  if (!scene.load.isLoading()) scene.load.start();
 }
 
 function addSpriteAnimation(name, suffix, url, frameWidth, frameHeight, frameCount, frameRate) {
@@ -122,7 +121,7 @@ function addSpriteAnimation(name, suffix, url, frameWidth, frameHeight, frameCou
     frameWidth:  frameWidth,
     frameHeight: frameHeight
   });
-  scene.load.once("complete", () => {
+  scene.load.once(`filecomplete-spritesheet-${animKey}`, () => {
     const resolvedFrameCount = resolveFrameCount(animKey, frameWidth, frameHeight, frameCount);
 
     scene.anims.create({
@@ -135,7 +134,7 @@ function addSpriteAnimation(name, suffix, url, frameWidth, frameHeight, frameCou
       repeat: -1
     });
   });
-  scene.load.start();
+  if (!scene.load.isLoading()) scene.load.start();
 }
 
 
@@ -224,391 +223,129 @@ function disableSprite(name) {
   }
 }
 
-function getClientObject(name) {
-  return scene && scene.children && scene.children.getByName(name);
+function normalizeBrowserActions(actions) {
+  if (!actions || (Array.isArray(actions) && actions.length === 0)) return [];
+  return Array.isArray(actions) ? actions : [actions];
 }
 
-function objectExists(name) {
-  const object = getClientObject(name);
-  return Boolean(object && object.active !== false);
+function setBrowserState(key, value) { GameBridge.browserState[key] = value; }
+function resolveBrowserValue(value) {
+  return value && typeof value === "object" && value.state !== undefined
+    ? GameBridge.browserState[value.state]
+    : value;
 }
-
-function objectsOverlap(objectNames) {
-  if (!Array.isArray(objectNames) || objectNames.length !== 2) return false;
-
-  const objectOne = getClientObject(objectNames[0]);
-  const objectTwo = getClientObject(objectNames[1]);
-  if (!objectOne || !objectTwo || !objectOne.getBounds || !objectTwo.getBounds) {
-    return false;
+function browserObject(name) { return scene && scene.children.getByName(name); }
+function browserCondition(condition) {
+  if (!condition) return true;
+  if (condition.op === "&&") return browserCondition(condition.left) && browserCondition(condition.right);
+  if (condition.op === "||") return browserCondition(condition.left) || browserCondition(condition.right);
+  if (condition.op === "!") return !browserCondition(condition.value);
+  if (condition.op === "exists") return Boolean(browserObject(condition.object)?.active);
+  if (condition.op === "overlaps") {
+    const a = browserObject(condition.objects[0]);
+    const b = browserObject(condition.objects[1]);
+    return Boolean(a && b && Phaser.Geom.Intersects.RectangleToRectangle(a.getBounds(), b.getBounds()));
   }
-
-  return Phaser.Geom.Intersects.RectangleToRectangle(
-    objectOne.getBounds(),
-    objectTwo.getBounds()
-  );
-}
-
-
-function normalizeStateKey(key) {
-  return String(key || "");
-}
-
-function ensureClientState() {
-  window.GameBridge = window.GameBridge || {};
-  GameBridge.clientState = GameBridge.clientState || {};
-  return GameBridge.clientState;
-}
-
-function getClientState(key) {
-  return ensureClientState()[normalizeStateKey(key)];
-}
-
-function setClientState(key, value) {
-  ensureClientState()[normalizeStateKey(key)] = value;
-  return value;
-}
-
-function clampNumber(value, min, max) {
-  let nextValue = Number(value);
-  if (!Number.isFinite(nextValue)) nextValue = 0;
-  if (Number.isFinite(Number(min))) nextValue = Math.max(Number(min), nextValue);
-  if (Number.isFinite(Number(max))) nextValue = Math.min(Number(max), nextValue);
-  return nextValue;
-}
-
-function applyStateAction(stateAction) {
-  if (!stateAction || stateAction.key === undefined) return;
-
-  const key = normalizeStateKey(stateAction.key);
-  const op = stateAction.op || "set";
-  const currentValue = Number(getClientState(key) ?? 0);
-  const amount = Number(stateAction.amount ?? stateAction.value ?? 0);
-  let nextValue;
-
-  if (op === "initialize" || op === "init") {
-    if (getClientState(key) !== undefined) return;
-    nextValue = amount;
-  } else if (op === "increment" || op === "add") {
-    nextValue = currentValue + amount;
-  } else if (op === "decrement" || op === "subtract") {
-    nextValue = currentValue - amount;
-  } else {
-    nextValue = amount;
+  if (condition.op === "is_true") return Boolean(GameBridge.browserState[condition.state]);
+  if (condition.op === "is_false") return !GameBridge.browserState[condition.state];
+  if (condition.op === "cooldown_ready") {
+    return performance.now() - (GameBridge.cooldowns[condition.key] ?? -Infinity) >= condition.duration;
   }
-
-  setClientState(key, clampNumber(nextValue, stateAction.min, stateAction.max));
+  const left = resolveBrowserValue(condition.left);
+  const right = resolveBrowserValue(condition.right);
+  if (condition.op === "==") return left === right;
+  if (condition.op === "!=") return left !== right;
+  if (condition.op === "<") return left < right;
+  if (condition.op === "<=") return left <= right;
+  if (condition.op === ">") return left > right;
+  if (condition.op === ">=") return left >= right;
+  return false;
 }
 
-function interpolateClientStateText(text) {
-  return String(text || "").replace(/\{state\.([^}]+)\}/g, (_match, key) => {
-    const value = getClientState(key);
-    return value === undefined ? "" : String(value);
-  });
-}
-
-function stateConditionPasses(condition) {
-  if (!condition || condition.key === undefined) return true;
-
-  const actual = Number(getClientState(condition.key) ?? 0);
-  const value = Number(condition.value ?? 0);
-  const op = condition.op || "eq";
-
-  if (op === "lte") return actual <= value;
-  if (op === "lt") return actual < value;
-  if (op === "gte") return actual >= value;
-  if (op === "gt") return actual > value;
-  if (op === "neq") return actual !== value;
-  return actual === value;
-}
-
-function actionConditionPasses(action) {
-  if (action.when_overlap && !objectsOverlap(action.when_overlap)) return false;
-
-  if (action.when_state && !stateConditionPasses(action.when_state)) return false;
-
-  if (action.when_exists) {
-    const existsConditions = Array.isArray(action.when_exists)
-      ? action.when_exists
-      : [action.when_exists];
-
-    const allExist = existsConditions.every((condition) => {
-      if (typeof condition === "string") return objectExists(condition);
-      if (condition && typeof condition === "object") {
-        return objectExists(condition.name) === Boolean(condition.exists);
-      }
-      return false;
-    });
-
-    if (!allExist) return false;
+function runBrowserAction(action, overlapObjectOne, overlapObjectTwo) {
+  if (action.after) {
+    window.setTimeout(() => runBrowserActionList(
+      action.after.actions, overlapObjectOne, overlapObjectTwo
+    ), Number(resolveBrowserValue(action.after.delay)));
+    return;
   }
-
-  return true;
-}
-
-function normalizeClientActions(clientActions) {
-  if (!clientActions || (Array.isArray(clientActions) && clientActions.length === 0)) {
-    return [];
+  if (action.if) {
+    runBrowserActionList(
+      browserCondition(action.if.condition) ? action.if.then : action.if.else,
+      overlapObjectOne, overlapObjectTwo
+    );
+    return;
   }
-  return Array.isArray(clientActions) ? clientActions : [clientActions];
-}
-
-function getClientObject(name) {
-  return scene && scene.children && scene.children.getByName(name);
-}
-
-function objectExists(name) {
-  const object = getClientObject(name);
-  return Boolean(object && object.active !== false);
-}
-
-function objectsOverlap(objectNames) {
-  if (!Array.isArray(objectNames) || objectNames.length !== 2) return false;
-  const objectOne = getClientObject(objectNames[0]);
-  const objectTwo = getClientObject(objectNames[1]);
-  if (!objectOne || !objectTwo || !objectOne.getBounds || !objectTwo.getBounds) return false;
-  return Phaser.Geom.Intersects.RectangleToRectangle(objectOne.getBounds(), objectTwo.getBounds());
-}
-
-function ensureClientState() {
-  window.GameBridge = window.GameBridge || {};
-  GameBridge.clientState = GameBridge.clientState || {};
-  return GameBridge.clientState;
-}
-
-function getClientState(key) {
-  return ensureClientState()[String(key || "")];
-}
-
-function setClientState(key, value) {
-  ensureClientState()[String(key || "")] = value;
-  return value;
-}
-
-function clampNumber(value, min, max) {
-  let nextValue = Number(value);
-  if (!Number.isFinite(nextValue)) nextValue = 0;
-  if (Number.isFinite(Number(min))) nextValue = Math.max(Number(min), nextValue);
-  if (Number.isFinite(Number(max))) nextValue = Math.min(Number(max), nextValue);
-  return nextValue;
-}
-
-function applyStateAction(stateAction) {
-  if (!stateAction || stateAction.key === undefined) return;
-  const key = String(stateAction.key || "");
-  const op = stateAction.op || "set";
-  const currentValue = Number(getClientState(key) ?? 0);
-  const amount = Number(stateAction.amount ?? stateAction.value ?? 0);
-  let nextValue;
-  if (op === "initialize" || op === "init") {
-    if (getClientState(key) !== undefined) return;
-    nextValue = amount;
-  } else if (op === "increment" || op === "add") {
-    nextValue = currentValue + amount;
-  } else if (op === "decrement" || op === "subtract") {
-    nextValue = currentValue - amount;
-  } else {
-    nextValue = amount;
+  if (action.state_action) {
+    const state = action.state_action;
+    const current = GameBridge.browserState[state.key];
+    const value = resolveBrowserValue(state.value);
+    if (state.op === "set") GameBridge.browserState[state.key] = value;
+    else if (state.op === "increment" || state.op === "add") GameBridge.browserState[state.key] = Number(current || 0) + Number(value);
+    else GameBridge.browserState[state.key] = Number(current || 0) - Number(value);
   }
-  setClientState(key, clampNumber(nextValue, stateAction.min, stateAction.max));
-}
-
-function interpolateClientStateText(text) {
-  return String(text || "").replace(/\{state\.([^}]+)\}/g, (_match, key) => {
-    const value = getClientState(key);
-    return value === undefined ? "" : String(value);
-  });
-}
-
-function stateConditionPasses(condition) {
-  if (!condition || condition.key === undefined) return true;
-  const actual = Number(getClientState(condition.key) ?? 0);
-  const value = Number(condition.value ?? 0);
-  const op = condition.op || "eq";
-  if (op === "lte") return actual <= value;
-  if (op === "lt") return actual < value;
-  if (op === "gte") return actual >= value;
-  if (op === "gt") return actual > value;
-  if (op === "neq") return actual !== value;
-  return actual === value;
-}
-
-function actionConditionPasses(action) {
-  if (action.when_overlap && !objectsOverlap(action.when_overlap)) return false;
-  if (action.when_state && !stateConditionPasses(action.when_state)) return false;
-  if (action.when_exists) {
-    const existsConditions = Array.isArray(action.when_exists) ? action.when_exists : [action.when_exists];
-    const allExist = existsConditions.every((condition) => {
-      if (typeof condition === "string") return objectExists(condition);
-      if (condition && typeof condition === "object") {
-        return objectExists(condition.name) === Boolean(condition.exists);
-      }
-      return false;
-    });
-    if (!allExist) return false;
-  }
-  return true;
-}
-
-function normalizeClientActions(clientActions) {
-  if (!clientActions || (Array.isArray(clientActions) && clientActions.length === 0)) return [];
-  return Array.isArray(clientActions) ? clientActions : [clientActions];
-}
-
-function showClientAlert(alertOptions) {
-  const options = typeof alertOptions === "string" ? { title: alertOptions } : alertOptions || {};
-  if (typeof swal === "function") { swal(options); return; }
-  if (typeof sweetAlert === "function") { sweetAlert(options); return; }
-  window.alert(options.title || options.text || "");
-}
-
-function runClientAction(key, action) {
-  if (!actionConditionPasses(action)) return false;
-
-  const cooldown = Number(action.cooldown || 0);
-  if (cooldown > 0) {
-    const cooldownKey = key + "::" + JSON.stringify(action);
-    const now = performance.now();
-    const lastRun = GameBridge.keyControlLastRun[cooldownKey];
-    if (lastRun !== undefined && (now - lastRun) < cooldown) return false;
-    GameBridge.keyControlLastRun[cooldownKey] = now;
-  }
-
-  if (action.set_state) {
-    const stateActions = Array.isArray(action.set_state) ? action.set_state : [action.set_state];
-    stateActions.forEach(applyStateAction);
-  }
-
-  if (action.raw_js) {
-    const snippets = Array.isArray(action.raw_js) ? action.raw_js : [action.raw_js];
-    for (const snippet of snippets) {
-      eval(snippet);
-    }
-  }
-
-  if (action.play_sound) {
-    playSound(action.play_sound, action.volume ?? null, action.loop ?? null);
-  }
+  if (action.cooldown_trigger) GameBridge.cooldowns[action.cooldown_trigger] = performance.now();
+  if (action.play_sound) playSound(action.play_sound, action.volume ?? null, action.loop ?? null);
+  if (action.pause_sound) pauseSound(action.pause_sound);
+  if (action.resume_sound) resumeSound(action.resume_sound);
+  if (action.stop_sound) stopSound(action.stop_sound);
 
   if (action.play_animation) {
     const spriteName = action.sprite || action.name;
-    if (!spriteName) {
-      console.warn("client action play_animation requires a sprite/name field");
-    } else if (Number.isFinite(action.duration)) {
+    if (Number.isFinite(action.duration)) {
       playAnimationForDuration(spriteName, action.play_animation, action.duration);
     } else {
       playAnimation(spriteName, action.play_animation);
     }
   }
 
-  if (action.destroy_sprite) {
-    destroySprite(action.destroy_sprite);
+  if (action.destroy_sprite) destroySprite(action.destroy_sprite);
+  if (action.set_in_motion) {
+    const motion = action.set_in_motion;
+    setSpriteInMotion(motion.name, motion.dir_x, motion.dir_y, motion.speed, motion.distance);
   }
-
-  if (action.disable_sprite) {
-    disableSprite(action.disable_sprite);
+  if (action.set_velocity_x) setVelocityX(action.set_velocity_x.name, action.set_velocity_x.value);
+  if (action.set_velocity_y) setVelocityY(action.set_velocity_y.name, action.set_velocity_y.value);
+  if (action.player_controls) {
+    addPlayerControls(action.player_controls.name, action.player_controls.directions, action.player_controls.speed);
   }
-
+  if (action.disable_overlap_member && overlapObjectTwo) {
+    disableBody(action.disable_overlap_member, overlapObjectTwo.x, overlapObjectTwo.y);
+  }
   if (action.set_text && action.set_text.id !== undefined) {
-    setText(interpolateClientStateText(action.set_text.text || ""), action.set_text.id);
+    setText(String(resolveBrowserValue(action.set_text.text) ?? ""), action.set_text.id);
   }
-
-  if (action.show_text) {
-    showText(action.show_text);
-  }
-
-  if (action.hide_text) {
-    hideText(action.hide_text);
-  }
-
+  if (action.show_text) showText(action.show_text);
+  if (action.hide_text) hideText(action.hide_text);
   if (action.show_alert) {
-    showClientAlert(action.show_alert);
+    if (typeof swal === "function") swal(action.show_alert);
+    else window.alert(action.show_alert.title || action.show_alert.text || "");
   }
-
-  if (action.hide_when_state) {
-    const checks = Array.isArray(action.hide_when_state) ? action.hide_when_state : [action.hide_when_state];
-    checks.forEach((check) => {
-      if (stateConditionPasses(check)) hideText(check.id || check.name);
-    });
-  }
-
-  if (action.show_when_state) {
-    const checks = Array.isArray(action.show_when_state) ? action.show_when_state : [action.show_when_state];
-    checks.forEach((check) => {
-      if (stateConditionPasses(check)) showText(check.id || check.name);
-    });
-  }
-
-  if (action.destroy_when_state) {
-    const checks = Array.isArray(action.destroy_when_state) ? action.destroy_when_state : [action.destroy_when_state];
-    checks.forEach((check) => {
-      if (stateConditionPasses(check)) destroySprite(check.name || check.id);
-    });
-  }
-
-  if (action.disable_when_state) {
-    const checks = Array.isArray(action.disable_when_state) ? action.disable_when_state : [action.disable_when_state];
-    checks.forEach((check) => {
-      if (stateConditionPasses(check)) disableSprite(check.name || check.id);
-    });
-  }
-
-  return true;
-}
-
-function showClientAlert(alertOptions) {
-  const options = typeof alertOptions === "string"
-    ? { title: alertOptions }
-    : alertOptions || {};
-
-  if (typeof swal === "function") {
-    swal(options);
-    return;
-  }
-
-  if (typeof sweetAlert === "function") {
-    sweetAlert(options);
-    return;
-  }
-
-  window.alert(options.title || options.text || "");
-}
-
-function runClientActions(key) {
-  runClientActionList(key, GameBridge.keyControlActions[key]);
-}
-
-function runClientActionList(key, actions) {
-  for (const action of normalizeClientActions(actions)) {
-    const didRun = runClientAction(key, action);
-    if (didRun && action.stop_after_match) break;
+  if (action.emit) {
+    Shiny.setInputValue("phaser_" + action.emit.name, action.emit.data || {}, { priority: "event" });
   }
 }
 
-function runClientActions(key) {
-  runClientActionList(key, GameBridge.keyControlActions[key]);
+function runBrowserActionList(actions, overlapObjectOne, overlapObjectTwo) {
+  normalizeBrowserActions(actions).forEach((action) => {
+    runBrowserAction(action, overlapObjectOne, overlapObjectTwo);
+  });
 }
 
-function addKeyControl(key, clientActions = []) {
-  GameBridge.keyControlActions[key] = clientActions;
-
-  if (GameBridge.keyControlHandlers[key]) {
-    return;
-  }
+function addKeyControl(key, browserActions = [], notifyServer = false) {
+  if (GameBridge.keyControlHandlers[key]) return;
 
   const handler = function(e) {
-    const inputId = key + "_action";
-    if (key == e.code) {
-      runClientActions(key);
-      Shiny.setInputValue(
-        inputId,
-        { code: e.code, evt_nonce: Date.now() + Math.random() },
-        { priority: "event" }
-      );
+    if (key === e.code) {
+      runBrowserActionList(browserActions);
+      if (notifyServer) {
+        Shiny.setInputValue(key + "_action", { code: e.code, evt_nonce: Date.now() + Math.random() }, { priority: "event" });
+      }
     }
   };
 
   GameBridge.keyControlHandlers[key] = handler;
-  document.addEventListener('keydown', handler);
+  document.addEventListener("keydown", handler);
 }
 
 function setSpriteInMotion(name, dirX, dirY, speed, distance) {
@@ -721,7 +458,8 @@ function startSpriteApproachOnSight(
   speed,
   distance,
   checkInterval = 250,
-  alertDuration = 1200
+  alertDuration = 1200,
+  wanderInterval = 1500
 ) {
   if (!GameBridge.sightApproachIntervals) GameBridge.sightApproachIntervals = {};
   if (GameBridge.sightApproachIntervals[name]) {
@@ -738,6 +476,12 @@ function startSpriteApproachOnSight(
       if (sprite.getData && sprite.getData("sightAlert")) {
         sprite.setData("sightAlert", null);
       }
+      const lastWander = sprite.getData("lastWander") || 0;
+      if (performance.now() - lastWander >= wanderInterval) {
+        sprite.setData("lastWander", performance.now());
+        const direction = Phaser.Math.RND.pick([[1, 0], [-1, 0], [0, 1], [0, -1]]);
+        setSpriteInMotion(name, direction[0], direction[1], speed, distance);
+      }
       return;
     }
 
@@ -753,13 +497,16 @@ function startSpriteApproachOnSight(
         color: "#ffeb3b",
         stroke: "#000000",
         strokeThickness: 4
-      }).setOrigin(0.5);
+      }).setOrigin(0.5).setDepth(10000);
       scene.tweens.add({
         targets: alertText,
-        y: alertText.y - 24,
         alpha: 0,
         duration: alertDuration,
         ease: "Cubic.easeOut",
+        onUpdate: () => {
+          if (!sprite || !sprite.active) return;
+          alertText.setPosition(sprite.x, sprite.y - sprite.displayHeight * 0.6);
+        },
         onComplete: () => alertText.destroy()
       });
       return;

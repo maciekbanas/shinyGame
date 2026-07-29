@@ -103,8 +103,8 @@ test_that("Sprite utility methods send expected JS", {
   expect_true(any(grepl("setGravity\\('hero', 1, 2\\);", msgs)))
   expect_true(any(grepl("setBounce\\('hero', 0.500000\\);", msgs)))
   expect_true(any(grepl("setSpriteInMotion\\('hero', 1, 0, 90, 45\\);", msgs)))
-  expect_true(any(grepl('setSpriteInMotionRandomOrToward\\("hero", "mushroom_man", 300.000000, 0.000000, 1.000000, 90.000000, 45.000000, 1.350000, 2.000000\\);', msgs)))
-  expect_true(any(grepl('startSpriteApproachOnSight\\("hero", "mushroom_man", 500.000000, 120.000000, 80.000000, 250.000000, 1200.000000\\);', msgs)))
+  expect_true(any(grepl('setSpriteInMotionRandomOrToward("hero", "mushroom_man", 300.000000', msgs, fixed = TRUE)))
+  expect_true(any(grepl('startSpriteApproachOnSight("hero", "mushroom_man", 500.000000, 120.000000, 80.000000, 250.000000, 1200.000000, 1500.000000);', msgs, fixed = TRUE)))
   expect_true(any(grepl("destroySprite\\('hero'\\);", msgs)))
 })
 
@@ -185,125 +185,155 @@ test_that("PhaserGame can create Sound objects", {
   expect_true(any(grepl("addSound\\(\\\"jump\\\", \\\"jump.wav\\\", 0.400000, true\\);", msgs)))
 })
 
-test_that("PhaserGame add_control supports immediate client actions", {
-  session <- make_mock_session()
-  game <- PhaserGame$new()
-  game$set_shiny_session(session)
-
-  input <- list(Space_action = NULL)
-  game$add_control(
-    "Space",
-    action = function() NULL,
-    input = input,
-    client_action = list(
-      play_sound = "hero_attack",
-      sprite = "hero",
-      play_animation = "hero_attack",
-      duration = 500,
-      cooldown = 750,
-      show_alert = list(title = "Hello", type = "info")
-    )
-  )
-
-  msgs <- vapply(session$get_messages(), function(m) m$message$js, character(1))
-  expect_true(any(grepl("addKeyControl\\(\"Space\",", msgs)))
-  expect_true(any(grepl('"play_sound":"hero_attack"', msgs, fixed = TRUE)))
-  expect_true(any(grepl('"play_animation":"hero_attack"', msgs, fixed = TRUE)))
-  expect_true(any(grepl('"cooldown":750', msgs, fixed = TRUE)))
-  expect_true(any(grepl('"show_alert":{"title":"Hello","type":"info"}', msgs, fixed = TRUE)))
-})
-
-test_that("PhaserGame client actions reject functions", {
-  session <- make_mock_session()
-  game <- PhaserGame$new()
-  game$set_shiny_session(session)
-
-  input <- list(Space_action = NULL)
-  expect_error(
-    game$add_control("Space", input = input, client_action = function(evt) NULL),
-    "client_action must be a list or list of lists",
-    fixed = TRUE
-  )
-})
-
-test_that("PhaserGame client actions support browser-side state changes", {
-  session <- make_mock_session()
-  game <- PhaserGame$new()
-  game$set_shiny_session(session)
-
-  input <- list(Space_action = NULL)
-  game$add_control(
-    "Space",
-    input = input,
-    client_action = list(
-      set_state = list(
-        list(key = "hero_life", op = "init", value = 100, min = 0, max = 100),
-        list(key = "hero_life", op = "decrement", amount = 10, min = 0, max = 100)
-      ),
-      set_text = list(id = "combat_status", text = "Life: {state.hero_life}/100"),
-      hide_when_state = list(id = "life_bar_green_10", key = "hero_life", op = "lte", value = 90),
-      disable_when_state = list(name = "mushroom_man_1", key = "enemy_life_mushroom_man_1", op = "lte", value = 0),
-      when_state = list(key = "hero_life", op = "gt", value = 0)
-    )
-  )
-
-  msgs <- vapply(session$get_messages(), function(m) m$message$js, character(1))
-  expect_true(any(grepl('"set_state":[{"key":"hero_life","op":"init"', msgs, fixed = TRUE)))
-  expect_true(any(grepl('"text":"Life: {state.hero_life}/100"', msgs, fixed = TRUE)))
-  expect_true(any(grepl('"hide_when_state":{"id":"life_bar_green_10"', msgs, fixed = TRUE)))
-  expect_true(any(grepl('"disable_when_state":{"name":"mushroom_man_1"', msgs, fixed = TRUE)))
-  expect_true(any(grepl('"when_state":{"key":"hero_life","op":"gt","value":0}', msgs, fixed = TRUE)))
-})
-
-test_that("PhaserGame client actions do not require server callbacks", {
+test_that("PhaserGame action blocks compile R6 calls for immediate execution", {
   session <- make_mock_session()
   game <- PhaserGame$new()
   game$set_shiny_session(session)
   input <- list()
 
-  game$add_control("KeyE", input = input, client_action = list(show_text = "prompt"))
+  prompt <- game$add_text("Talk", "prompt", 0, 0, visible = FALSE)
+  sound <- game$add_sound("hello", "hello.wav")
+  hero <- game$add_sprite("hero", "hero.png", 0, 0, 32, 32, 1, 1)
+  apples <- game$add_static_group("apples", "apple.png")
   game$add_overlap(
     object_one = "hero",
     object_two = "wizard",
     input = input,
-    client_action = list(show_text = "talk_bubble_text")
+    action = {
+      prompt$show()
+      sound$play(volume = 0.5)
+      hero$play_animation("wave", duration = 250)
+    }
   )
   game$add_overlap_end(
     object_one = "hero",
     object_two = "wizard",
     input = input,
     session = session,
-    client_action = list(hide_text = "talk_bubble_text")
+    action = prompt$hide()
+  )
+  game$add_collider("hero", "rock", input = input, action = sound$stop())
+  game$add_overlap(
+    "hero", group = "apples", input = input,
+    action = {
+      hero$set_in_motion(1, 0, 100, 50, lag = 0)
+      apples$disable()
+    }
   )
 
   msgs <- vapply(session$get_messages(), function(m) m$message$js, character(1))
-  expect_true(any(grepl('"show_text":"prompt"', msgs, fixed = TRUE)))
   expect_true(any(grepl('addOverlap("hero", "wizard"', msgs, fixed = TRUE)))
-  expect_true(any(grepl('"show_text":"talk_bubble_text"', msgs, fixed = TRUE)))
+  expect_true(any(grepl('"show_text":"prompt"', msgs, fixed = TRUE)))
+  expect_true(any(grepl('"play_sound":"hello","volume":0.5', msgs, fixed = TRUE)))
+  expect_true(any(grepl('"play_animation":"wave","sprite":"hero","duration":250', msgs, fixed = TRUE)))
   expect_true(any(grepl('addOverlapEnd("hero", "wizard"', msgs, fixed = TRUE)))
-  expect_true(any(grepl('"hide_text":"talk_bubble_text"', msgs, fixed = TRUE)))
+  expect_true(any(grepl('"hide_text":"prompt"', msgs, fixed = TRUE)))
+  expect_true(any(grepl('addCollider(\'hero\',\'rock\'', msgs, fixed = TRUE)))
+  expect_true(any(grepl('"stop_sound":"hello"', msgs, fixed = TRUE)))
+  expect_true(any(grepl('"set_in_motion":{"name":"hero","dir_x":1,"dir_y":0,"speed":100,"distance":50}', msgs, fixed = TRUE)))
+  expect_true(any(grepl('"disable_overlap_member":"apples"', msgs, fixed = TRUE)))
 })
 
-test_that("overlap callbacks remain server-side callbacks", {
+test_that("public handlers no longer expose client action lists", {
+  game <- PhaserGame$new()
+
+  expect_false("client_action" %in% names(formals(game$add_overlap)))
+  expect_false("client_action" %in% names(formals(game$add_overlap_end)))
+  expect_false("client_action" %in% names(formals(game$add_control)))
+  expect_false("callback_fun" %in% names(formals(game$add_collider)))
+  expect_false("callback_fun" %in% names(formals(game$add_overlap)))
+  expect_false("callback_fun" %in% names(formals(game$add_overlap_end)))
+})
+
+test_that("browser state, cooldowns, conditions, and semantic events compile", {
+  session <- make_mock_session()
+  game <- PhaserGame$new()
+  game$set_shiny_session(session)
+  hero <- game$add_sprite("hero", "hero.png", 0, 0, 32, 32, 1, 1)
+  sword <- game$add_static_sprite("sword", "sword.png", 10, 10)
+  has_sword <- game$add_state("has_sword", FALSE)
+  attack <- game$add_cooldown("attack", 750)
+
+  game$add_control("Space", action = {
+    if (hero$overlaps(sword) && sword$exists()) {
+      sword$destroy()
+      has_sword$set(TRUE)
+    } else if (attack$ready()) {
+      attack$trigger()
+      game$alert(title = "Attack")
+      game$emit("attack")
+    }
+  })
+
+  msgs <- vapply(session$get_messages(), function(m) m$message$js, character(1))
+  expect_true(any(grepl('setBrowserState("has_sword", false)', msgs, fixed = TRUE)))
+  control <- msgs[grepl('addKeyControl("Space"', msgs, fixed = TRUE)]
+  expect_length(control, 1)
+  expect_true(grepl('"op":"overlaps"', control, fixed = TRUE))
+  expect_true(grepl('"op":"cooldown_ready"', control, fixed = TRUE))
+  expect_true(grepl('"state_action":{"key":"has_sword","op":"set","value":true}', control, fixed = TRUE))
+  expect_true(grepl('"show_alert":{"title":"Attack"}', control, fixed = TRUE))
+  expect_true(grepl('"emit":{"name":"attack","data":[]}', control, fixed = TRUE))
+})
+
+test_that("action blocks reject unsupported R code instead of running it", {
   session <- make_mock_session()
   game <- PhaserGame$new()
   game$set_shiny_session(session)
 
   input <- list()
-  prompt <- game$add_text("...", "prompt", 0, 0, visible = FALSE)
+  ran <- FALSE
+  expect_error(
+    game$add_overlap(
+      object_one = "hero",
+      object_two = "wizard",
+      action = { ran <- TRUE },
+      input = input
+    ),
+    "action must contain calls"
+  )
+  expect_false(ran)
+})
 
-  game$add_overlap(
-    object_one = "hero",
-    object_two = "wizard",
-    callback_fun = function(evt) {
-      prompt$show()
-    },
-    input = input
+test_that("hedgehog action events retain game progress alerts", {
+  example <- readLines(
+    system.file("examples", "hedgehog.R", package = "shinyphaser"),
+    warn = FALSE
   )
 
-  msgs <- vapply(session$get_messages(), function(m) m$message$js, character(1))
-  overlap_msg <- msgs[grepl('addOverlap("hero", "wizard"', msgs, fixed = TRUE)]
-  expect_length(overlap_msg, 1)
-  expect_false(grepl('"raw_js"', overlap_msg, fixed = TRUE))
-  expect_false(grepl('showText(\'prompt\');', overlap_msg, fixed = TRUE))
+  expect_true(any(grepl('title = "Game over"', example, fixed = TRUE)))
+  expect_true(any(grepl("passed_level_alert(level_id)", example, fixed = TRUE)))
+  expect_true(any(grepl('title = "You won!"', example, fixed = TRUE)))
+  expect_false(any(grepl("callback_fun", example, fixed = TRUE)))
+})
+
+test_that("dungeonheroes Space action retains interactions and combat", {
+  example <- readLines(
+    system.file("examples", "dungeonheroes.R", package = "shinyphaser"),
+    warn = FALSE
+  )
+
+  expect_true(any(grepl("if (sword_in_range && !has_sword)", example, fixed = TRUE)))
+  expect_true(any(grepl('inventory_text$set("weapon: sword")', example, fixed = TRUE)))
+  expect_true(any(grepl("if (wizard_in_range)", example, fixed = TRUE)))
+  expect_true(any(grepl("input$Space_action", example, fixed = TRUE)))
+  expect_true(any(grepl("notify_server = TRUE", example, fixed = TRUE)))
+  expect_true(any(grepl("enemy_hit_points[[enemy_in_range]]", example, fixed = TRUE)))
+  expect_true(any(grepl('title = "Game over"', example, fixed = TRUE)))
+  expect_false(any(grepl("client_action", example, fixed = TRUE)))
+})
+
+test_that("browser feedback is configured for immediate visibility and audio", {
+  game_js <- readLines(system.file("www", "phaser-game.js", package = "shinyphaser"), warn = FALSE)
+  sprite_js <- readLines(system.file("www", "phaser-sprite.js", package = "shinyphaser"), warn = FALSE)
+
+  expect_true(any(grepl('context.state === "suspended"', game_js, fixed = TRUE)))
+  expect_true(any(grepl("context.resume().then", game_js, fixed = TRUE)))
+  expect_true(any(grepl("setDepth(10000)", sprite_js, fixed = TRUE)))
+  expect_true(any(grepl("alertText.setPosition(sprite.x", sprite_js, fixed = TRUE)))
+  expect_true(any(grepl("filecomplete-audio-${name}", game_js, fixed = TRUE)))
+  expect_true(any(grepl("if (!scene.load.isLoading()) scene.load.start()", game_js, fixed = TRUE)))
+  expect_true(any(grepl("() => addCollider(objectOneName", game_js, fixed = TRUE)))
+  expect_true(any(grepl("filecomplete-spritesheet-${name}", sprite_js, fixed = TRUE)))
+  expect_true(any(grepl("filecomplete-image-${name}", sprite_js, fixed = TRUE)))
 })

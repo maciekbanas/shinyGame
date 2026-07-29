@@ -13,9 +13,9 @@ GameBridge.lastHeroOverlapState = GameBridge.lastHeroOverlapState || "";
 GameBridge.nextHeroOverlapSendAt = GameBridge.nextHeroOverlapSendAt || 0;
 GameBridge.sounds = GameBridge.sounds || {};
 GameBridge.pendingSoundActions = GameBridge.pendingSoundActions || {};
-GameBridge.clientState = GameBridge.clientState || {};
 
 function sendPhaserEvent(target, payload) {
+  if (!target) return;
   if (typeof target === "string" && (/^https?:/.test(target) || target.includes("/")) && window.fetch) {
     window.fetch(target, {
       method: "POST",
@@ -60,7 +60,6 @@ function playTypeAnim(sprite, type, suffix) {
 
 function initPhaserGame(containerId, config) {
   GameBridge.overlapEndWatchers = {};
-  GameBridge.clientState = {};
 
   window.game = new Phaser.Game({
     type: Phaser.AUTO,
@@ -84,6 +83,12 @@ function initPhaserGame(containerId, config) {
   function create() {
     cursors = this.input.keyboard.createCursorKeys();
     applyWorldBounds(GameBridge.pendingWorldBounds);
+    const unlockAudio = () => {
+      const context = this.sound && this.sound.context;
+      if (context && context.state === "suspended") context.resume();
+    };
+    this.input.keyboard.once("keydown", unlockAudio);
+    this.input.once("pointerdown", unlockAudio);
   }
 
   function update(time, delta) {
@@ -172,13 +177,13 @@ function addSound(name, url, volume = 1, loop = false) {
   }
 
   scene.load.audio(name, url);
-  scene.load.once('complete', () => {
+  scene.load.once(`filecomplete-audio-${name}`, () => {
     if (GameBridge.sounds[name]) return;
 
     GameBridge.sounds[name] = scene.sound.add(name, { volume, loop });
     applyPendingSoundActions(name);
   });
-  scene.load.start();
+  if (!scene.load.isLoading()) scene.load.start();
 }
 
 function playSound(name, volume = null, loop = null) {
@@ -186,7 +191,12 @@ function playSound(name, volume = null, loop = null) {
     const config = {};
     if (volume !== null) config.volume = volume;
     if (loop !== null) config.loop = loop;
-    sound.play(config);
+    const context = scene && scene.sound && scene.sound.context;
+    if (context && context.state === "suspended") {
+      context.resume().then(() => sound.play(config));
+    } else {
+      sound.play(config);
+    }
   });
 }
 
@@ -358,23 +368,33 @@ function addPlayerTerrainCollider(spriteName) {
   scene.physics.add.collider(sprite, scene.terrainLayer);
 }
 
-function addCollider(objectOneName, objectTwoName, inputId) {
+function addCollider(objectOneName, objectTwoName, inputId, browserActions = []) {
+  if (retryWhenMissingObjects(
+    () => addCollider(objectOneName, objectTwoName, inputId, browserActions),
+    [objectOneName, objectTwoName]
+  )) return;
   const objectOne = scene.children.getByName(objectOneName);
   const objectTwo = scene.children.getByName(objectTwoName);
   scene.physics.add.collider(
     objectOne, objectTwo,
     function(obj1, obj2) {
+      runBrowserActionList(browserActions, obj1, obj2);
       sendPhaserEvent(inputId, phaserCollisionPayload(obj1, obj2));
     }
   );
 }
 
-function addGroupCollider(objectName, groupName, inputId) {
+function addGroupCollider(objectName, groupName, inputId, browserActions = []) {
+  if (!scene.children.getByName(objectName) || !scene[groupName]) {
+    window.setTimeout(() => addGroupCollider(objectName, groupName, inputId, browserActions), 100);
+    return;
+  }
   const objectOne = scene.children.getByName(objectName);
   const objectTwo = scene[groupName];
   scene.physics.add.collider(
     objectOne, objectTwo,
     function(obj1, obj2) {
+      runBrowserActionList(browserActions, obj1, obj2);
       sendPhaserEvent(inputId, phaserCollisionPayload(obj1, obj2));
     }
   );
@@ -388,16 +408,24 @@ function retryWhenMissingObjects(fn, objectNames) {
   return true;
 }
 
-function addOverlap(objectOneName, objectTwoName, inputId, clientActions = []) {
-  if (retryWhenMissingObjects(() => addOverlap(objectOneName, objectTwoName, inputId, clientActions), [objectOneName, objectTwoName])) return;
+function addOverlap(objectOneName, objectTwoName, inputId, browserActions = [], mode = "enter", interval = 0) {
+  if (retryWhenMissingObjects(() => addOverlap(objectOneName, objectTwoName, inputId, browserActions, mode, interval), [objectOneName, objectTwoName])) return;
 
   const objectOne = scene.children.getByName(objectOneName);
   const objectTwo = scene.children.getByName(objectTwoName);
+  let lastContact = -Infinity;
+  let lastRun = -Infinity;
   scene.physics.add.overlap(
     objectOne, objectTwo,
     function(obj1, obj2) {
-      runClientActionList(inputId, clientActions);
-      sendPhaserEvent(inputId, phaserCollisionPayload(obj1, obj2));
+      const now = performance.now();
+      const entering = now - lastContact > 50;
+      lastContact = now;
+      if ((mode === "enter" && entering) || (mode === "stay" && now - lastRun >= interval)) {
+        lastRun = now;
+        runBrowserActionList(browserActions, obj1, obj2);
+        sendPhaserEvent(inputId, phaserCollisionPayload(obj1, obj2));
+      }
     }
   );
 }
@@ -423,8 +451,8 @@ function areOverlap(objectOneName, objectTwoName, inputId) {
   }
 };
 
-function addOverlapEnd(objectOneName, objectTwoName, inputId, clientActions = []) {
-  if (retryWhenMissingObjects(() => addOverlapEnd(objectOneName, objectTwoName, inputId, clientActions), [objectOneName, objectTwoName])) return;
+function addOverlapEnd(objectOneName, objectTwoName, inputId, browserActions = []) {
+  if (retryWhenMissingObjects(() => addOverlapEnd(objectOneName, objectTwoName, inputId, browserActions), [objectOneName, objectTwoName])) return;
 
   const obj1 = scene.children.getByName(objectOneName);
   const obj2 = scene.children.getByName(objectTwoName);
@@ -441,7 +469,7 @@ function addOverlapEnd(objectOneName, objectTwoName, inputId, clientActions = []
     );
 
     if (wasOverlapping && !currentlyOverlapping) {
-      runClientActionList(inputId, clientActions);
+      runBrowserActionList(browserActions, obj1, obj2);
       sendPhaserEvent(inputId, phaserCollisionPayload(obj1, obj2));
     }
 
@@ -449,18 +477,27 @@ function addOverlapEnd(objectOneName, objectTwoName, inputId, clientActions = []
   });
 }
 
-function addGroupOverlap(objectName, groupName, inputId, clientActions = []) {
+function addGroupOverlap(objectName, groupName, inputId, browserActions = [], mode = "enter", interval = 0) {
   if (!scene.children.getByName(objectName) || !scene[groupName]) {
-    window.setTimeout(() => addGroupOverlap(objectName, groupName, inputId, clientActions), 100);
+    window.setTimeout(() => addGroupOverlap(objectName, groupName, inputId, browserActions, mode, interval), 100);
     return;
   }
   const objectOne = scene.children.getByName(objectName);
   const objectTwo = scene[groupName];
+  const contacts = new WeakMap();
+  const runs = new WeakMap();
   scene.physics.add.overlap(
     objectOne, objectTwo,
     function(obj1, obj2) {
-      runClientActionList(inputId, clientActions);
-      sendPhaserEvent(inputId, phaserCollisionPayload(obj1, obj2));
+      const now = performance.now();
+      const entering = now - (contacts.get(obj2) ?? -Infinity) > 50;
+      contacts.set(obj2, now);
+      if ((mode === "enter" && entering) ||
+          (mode === "stay" && now - (runs.get(obj2) ?? -Infinity) >= interval)) {
+        runs.set(obj2, now);
+        runBrowserActionList(browserActions, obj1, obj2);
+        sendPhaserEvent(inputId, phaserCollisionPayload(obj1, obj2));
+      }
     }
   );
 }

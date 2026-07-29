@@ -109,6 +109,21 @@ PhaserGame <- R6::R6Class(
       ))
     },
 
+    #' @description Create browser-resident state for use in action blocks.
+    #' @param key Character. Unique state key.
+    #' @param initial Initial JSON-serializable value.
+    add_state = function(key, initial = NULL) {
+      send_js(private, sprintf("setBrowserState(%s, %s);",
+        jsonlite::toJSON(key, auto_unbox = TRUE),
+        jsonlite::toJSON(initial, auto_unbox = TRUE, null = "null")))
+      BrowserState$new(key)
+    },
+
+    #' @description Create a browser-resident cooldown for action conditions.
+    #' @param key Character. Unique cooldown key.
+    #' @param duration Numeric. Cooldown duration in milliseconds.
+    add_cooldown = function(key, duration) BrowserCooldown$new(key, duration),
+
     #' @description Add a background (tilemap) layer from Tiled JSON + tileset image(s).
     #' @param map_key Character. Key for the tilemap JSON.
     #' @param map_url Character. URL of the Tiled JSON file (relative to www/assets/).
@@ -161,13 +176,19 @@ PhaserGame <- R6::R6Class(
                           x, y,
                           frame_width, frame_height,
                           frame_count = 1, frame_rate = 1) {
-      return(Sprite$new(name, url, x, y, frame_width, frame_height, frame_count, frame_rate))
+      return(Sprite$new(
+        name, url, x, y, frame_width, frame_height, frame_count, frame_rate,
+        session = private$session %||% shiny::getDefaultReactiveDomain()
+      ))
     },
 
     #' @description Adds a dynamic group from a spritesheet.
     #' @param name Character. Unique name of the group.
     add_group = function(name) {
-      return(Group$new(name))
+      return(Group$new(
+        name,
+        session = private$session %||% shiny::getDefaultReactiveDomain()
+      ))
    },
 
     #' @description Adds a static sprite to the scene (non-animated).
@@ -176,7 +197,10 @@ PhaserGame <- R6::R6Class(
     #' @param x Numeric. X-coordinate in pixels.
     #' @param y Numeric. Y-coordinate in pixels.
     add_static_sprite = function(name, url, x, y) {
-      return(StaticSprite$new(name, url, x, y))
+      return(StaticSprite$new(
+        name, url, x, y,
+        session = private$session %||% shiny::getDefaultReactiveDomain()
+      ))
     },
 
     #' @description Adds a static group to the scene (non-animated).
@@ -185,7 +209,8 @@ PhaserGame <- R6::R6Class(
     add_static_group = function(name, url) {
       return(StaticGroup$new(
         name = name,
-        url = url
+        url = url,
+        session = private$session %||% shiny::getDefaultReactiveDomain()
       ))
     },
 
@@ -193,34 +218,37 @@ PhaserGame <- R6::R6Class(
     #' @param object_one Character. Name of the first object.
     #' @param object_two Character. Name of the second object.
     #' @param group Character. Name of the group to compare against.
-    #' @param callback_fun A function to be run when collision occurs.
+    #' @param action R code containing supported shinyphaser R6 method calls. It
+    #'   is compiled when registered and runs immediately in the browser when a
+    #'   collision occurs, without a Shiny round trip.
     #' @param input Shiny input list.
+    #' @param notify_server Logical. Whether to also emit a Shiny input event.
     add_collider = function(object_one,
                             object_two = NULL,
                             group = NULL,
-                            callback_fun = NULL,
-                            input) {
+                            action = NULL,
+                            input = NULL,
+                            notify_server = FALSE) {
+      action_expr <- substitute(action)
+      browser_actions <- compile_phaser_action(action_expr, parent.frame())
       input_id <- paste(
         c("collide", object_one,
           object_two %||% group),
         collapse = "_"
       )
 
-      event_target <- input_id
-      if (!is.null(callback_fun)) {
-        event_target <- register_phaser_event_endpoint(
-          private$session, input_id, callback_fun
-        )
-      }
+      event_target <- if (notify_server) input_id else NULL
 
       js <- if (!is.null(object_two)) {
-        sprintf("addCollider('%s','%s',%s)",
+        sprintf("addCollider('%s','%s',%s,%s)",
                 object_one, object_two,
-                jsonlite::toJSON(event_target, auto_unbox = TRUE))
+                jsonlite::toJSON(event_target, auto_unbox = TRUE),
+                jsonlite::toJSON(browser_actions, auto_unbox = TRUE, null = "null"))
       } else {
-        sprintf("addGroupCollider('%s','%s',%s)",
+        sprintf("addGroupCollider('%s','%s',%s,%s)",
                 object_one, group,
-                jsonlite::toJSON(event_target, auto_unbox = TRUE))
+                jsonlite::toJSON(event_target, auto_unbox = TRUE),
+                jsonlite::toJSON(browser_actions, auto_unbox = TRUE, null = "null"))
       }
       send_js(private, js)
     },
@@ -229,18 +257,25 @@ PhaserGame <- R6::R6Class(
     #' @param object_one Character. Name of the first object.
     #' @param object_two Character. Name of the second object.
     #' @param group Character. Name of the group.
-    #' @param callback_fun A function to be run when overlap occurs.
+    #' @param action R code containing supported shinyphaser R6 method calls. It
+    #'   is compiled when registered and runs immediately in the browser when an
+    #'   overlap occurs, without a Shiny round trip.
     #' @param input Shiny input list.
-    #' @param client_action Optional list or list of lists describing immediate
-    #'   browser-side Phaser feedback to run when overlap occurs.
+    #' @param mode Character. `"enter"` (default) runs once per contact;
+    #'   `"stay"` repeats while overlapping.
+    #' @param interval Numeric. Minimum milliseconds between `"stay"` actions.
+    #' @param notify_server Logical. Whether to also emit a Shiny input event.
     add_overlap = function(object_one,
                            object_two = NULL,
                            group = NULL,
-                           callback_fun = NULL,
-                           input,
-                           client_action = NULL) {
-      Sys.sleep(0.1)
-      client_action <- validate_client_action(client_action)
+                           action = NULL,
+                           input = NULL,
+                           mode = c("enter", "stay"),
+                           interval = 0,
+                           notify_server = FALSE) {
+      action_expr <- substitute(action)
+      browser_actions <- compile_phaser_action(action_expr, parent.frame())
+      mode <- match.arg(mode)
 
       input_id <- paste(
         c("overlap", object_one,
@@ -248,25 +283,22 @@ PhaserGame <- R6::R6Class(
         collapse = "_"
       )
 
-      event_endpoint <- input_id
-      if (!is.null(callback_fun)) {
-        event_endpoint <- register_phaser_event_endpoint(
-          private$session, input_id, callback_fun
-        )
-      }
+      event_endpoint <- if (notify_server) input_id else NULL
 
       js <- if (!is.null(object_two)) {
-        sprintf("addOverlap(%s, %s, %s, %s)",
+        sprintf("addOverlap(%s, %s, %s, %s, %s, %s)",
                 jsonlite::toJSON(object_one, auto_unbox = TRUE),
                 jsonlite::toJSON(object_two, auto_unbox = TRUE),
                 jsonlite::toJSON(event_endpoint, auto_unbox = TRUE),
-                jsonlite::toJSON(client_action %||% list(), auto_unbox = TRUE, null = "null"))
+                jsonlite::toJSON(browser_actions, auto_unbox = TRUE, null = "null"),
+                jsonlite::toJSON(mode, auto_unbox = TRUE), interval)
       } else {
-        sprintf("addGroupOverlap(%s, %s, %s, %s)",
+        sprintf("addGroupOverlap(%s, %s, %s, %s, %s, %s)",
                 jsonlite::toJSON(object_one, auto_unbox = TRUE),
                 jsonlite::toJSON(group, auto_unbox = TRUE),
                 jsonlite::toJSON(event_endpoint, auto_unbox = TRUE),
-                jsonlite::toJSON(client_action %||% list(), auto_unbox = TRUE, null = "null"))
+                jsonlite::toJSON(browser_actions, auto_unbox = TRUE, null = "null"),
+                jsonlite::toJSON(mode, auto_unbox = TRUE), interval)
       }
       send_js(private, js)
     },
@@ -295,64 +327,55 @@ PhaserGame <- R6::R6Class(
    #' @param object_one Character. Name of the first object.
    #' @param object_two Character. Name of the second object.
    #' @param group Character. Name of the group to compare against.
-   #' @param callback_fun Function. Callback executed when overlap ends.
+   #' @param action R code containing supported shinyphaser R6 method calls. It
+   #'   is compiled when registered and runs immediately in the browser when the
+   #'   overlap ends, without a Shiny round trip.
    #' @param input Shiny input list.
    #' @param session Shiny session object.
-   #' @param client_action Optional list or list of lists describing immediate
-   #'   browser-side Phaser feedback to run when overlap ends.
+   #' @param notify_server Logical. Whether to also emit a Shiny input event.
    add_overlap_end = function(object_one,
                               object_two = NULL,
                               group = NULL,
-                              callback_fun = NULL,
-                              input,
+                              action = NULL,
+                              input = NULL,
                               session = shiny::getDefaultReactiveDomain(),
-                              client_action = NULL) {
-     client_action <- validate_client_action(client_action)
+                              notify_server = FALSE) {
+     action_expr <- substitute(action)
+     browser_actions <- compile_phaser_action(action_expr, parent.frame())
 
      input_id <- paste(
        c("overlap_end", object_one,
          object_two %||% group),
        collapse = "_"
      )
-     event_endpoint <- input_id
-     if (!is.null(callback_fun)) {
-       event_endpoint <- register_phaser_event_endpoint(
-         session, input_id, callback_fun
-       )
-     }
+     event_endpoint <- if (notify_server) input_id else NULL
      js <- sprintf("addOverlapEnd(%s, %s, %s, %s);",
                    jsonlite::toJSON(object_one, auto_unbox = TRUE),
                    jsonlite::toJSON(object_two, auto_unbox = TRUE),
                    jsonlite::toJSON(event_endpoint, auto_unbox = TRUE),
-                   jsonlite::toJSON(client_action %||% list(), auto_unbox = TRUE, null = "null"))
+                   jsonlite::toJSON(browser_actions, auto_unbox = TRUE, null = "null"))
      session$sendCustomMessage("phaser", list(js = js))
    },
 
    #' @description Register a callback fired when a specific key is pressed.
    #' @param key A character, accepts Javascript key events (they need to align with
    #'   event.code).
-   #' @param action A function to be run after key is pressed.
+   #' @param action R code compiled and run immediately in the browser.
    #' @param input Shiny input list.
-   #' @param client_action Optional list or list of lists describing immediate
-   #'   browser-side Phaser feedback to run on keydown before Shiny receives the
-   #'   event.
+   #' @param notify_server Logical. Whether to also emit a Shiny input event.
    add_control = function(key,
                           action = NULL,
-                          input,
-                          client_action = NULL) {
-     event <- paste0(key, "_action")
-     client_action <- validate_client_action(client_action)
+                          input = NULL,
+                          notify_server = FALSE) {
+     action_expr <- substitute(action)
+     browser_actions <- compile_phaser_action(action_expr, parent.frame())
      js <- sprintf(
-       "addKeyControl(%s, %s);",
+       "addKeyControl(%s, %s, %s);",
        jsonlite::toJSON(key, auto_unbox = TRUE),
-       jsonlite::toJSON(client_action %||% list(), auto_unbox = TRUE, null = "null")
+       jsonlite::toJSON(browser_actions, auto_unbox = TRUE, null = "null"),
+       tolower(notify_server)
      )
      send_js(private, js)
-     if (!is.null(action)) {
-       shiny::observeEvent(input[[event]], {
-         action()
-       })
-     }
    }
   ),
   private = list(
