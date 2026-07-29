@@ -1,6 +1,6 @@
 Package: shinyphaser
 Title: An Interface to the 'Phaser.js' Game Framework
-Version: 0.1.0.9010
+Version: 0.1.0.9011
 Authors@R: 
     person(
       given = "Maciej", 
