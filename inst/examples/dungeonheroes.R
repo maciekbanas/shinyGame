@@ -420,39 +420,12 @@ server <- function(input, output, session) {
       speed = motion_spec$speed * mushroom_approach_speed_multiplier,
       distance = motion_spec$distance * mushroom_approach_distance_multiplier,
       check_interval = mushroom_reaction_check_interval,
-      alert_duration = mushroom_alert_duration
+      alert_duration = mushroom_alert_duration,
+      wander_interval = motion_spec$interval
     )
-    force(enemy_name)
-    force(motion_spec)
-
-    shiny::observe({
-      shiny::invalidateLater(motion_spec$interval, session)
-
-      if (!isTRUE(enemy_is_alive[[enemy_name]]) || identical(enemy_in_range, enemy_name)) {
-        return(NULL)
-      }
-
-      direction <- sample(
-        list(c(-1, 0), c(1, 0), c(0, -1), c(0, 1)),
-        1
-      )[[1]]
-      enemies[[enemy_name]]$set_in_motion_random_or_toward(
-        target_name = "hero",
-        sight_range = mushroom_sight_range,
-        dir_x = direction[1],
-        dir_y = direction[2],
-        speed = motion_spec$speed,
-        distance = motion_spec$distance,
-        approach_speed_multiplier = mushroom_approach_speed_multiplier,
-        approach_distance_multiplier = mushroom_approach_distance_multiplier,
-        lag = motion_spec$lag
-      )
-    })
   })
 
-  game$add_control(
-    "Space",
-    action = function() {
+  shiny::observeEvent(input$phaser_dungeon_space, {
       if (life_points <= 0) return(invisible(NULL))
 
       if (sword_in_range && !has_sword) {
@@ -505,9 +478,10 @@ server <- function(input, output, session) {
       } else {
         play_hero_timed_animation(if (has_sword) "hero_sword_attack" else "hero_attack")
       }
-    },
-    input
-  )
+
+  }, ignoreInit = TRUE)
+
+  game$add_control("Space", action = game$emit("dungeon_space"), input = input)
 
   inventory_text <- game$add_text(
     text = "weapon: none",
@@ -570,8 +544,8 @@ server <- function(input, output, session) {
     x = 300,
     y = 300
   )
-  game$add_overlap("hero", "sword", input = input)
-  game$add_overlap_end("hero", "sword", input = input, session = session)
+  game$add_overlap("hero", "sword", input = input, notify_server = TRUE)
+  game$add_overlap_end("hero", "sword", input = input, session = session, notify_server = TRUE)
   shiny::observeEvent(input$overlap_hero_sword, {
     sword_in_range <<- TRUE
   }, ignoreInit = TRUE)
@@ -619,6 +593,7 @@ server <- function(input, output, session) {
     object_one = "hero",
     object_two = "wizard",
     input = input,
+    notify_server = TRUE,
     action = {
       talk_bubble_text$show()
       wizard$play_animation("talk", duration = 2000)
@@ -629,6 +604,7 @@ server <- function(input, output, session) {
     object_one = "hero",
     object_two = "wizard",
     input = input,
+    notify_server = TRUE,
     action = {
       talk_bubble_text$hide()
       wizard$play_animation("idle")
@@ -645,6 +621,7 @@ server <- function(input, output, session) {
     object_one = "hero",
     object_two = "mushroom_spirit",
     input = input,
+    notify_server = TRUE,
     action = mushroom_spirit$destroy()
   )
   shiny::observeEvent(input$overlap_hero_mushroom_spirit, {
@@ -663,7 +640,8 @@ server <- function(input, output, session) {
     game$add_overlap(
       object_one = "hero",
       object_two = enemy_name,
-      input = input
+      input = input,
+      notify_server = TRUE
     )
     overlap_event <- paste("overlap", "hero", enemy_name, sep = "_")
     shiny::observeEvent(input[[overlap_event]], {
@@ -706,7 +684,8 @@ server <- function(input, output, session) {
         enemy_animation_key(enemy_name, "idle")
       ),
       input = input,
-      session = session
+      session = session,
+      notify_server = TRUE
     )
     overlap_end_event <- paste("overlap_end", "hero", enemy_name, sep = "_")
     shiny::observeEvent(input[[overlap_end_event]], {

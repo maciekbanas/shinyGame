@@ -1,8 +1,14 @@
 # shinyphaser (development version)
 
 ## Performance improvements
-* Optimized Phaser collision and overlap callbacks by routing high-frequency events through Shiny data endpoints backed by `promises`, with a client-side fallback to `Shiny.setInputValue()`.
+* Reduced high-frequency overlap traffic by keeping immediate actions in the browser and making server notification opt-in.
 * Added R-style `action` blocks for immediate browser-side overlap and collision reactions.
+* Extended action blocks with browser state, cooldowns, restricted conditionals,
+  overlap/existence predicates, alerts, semantic events, and immediate key controls.
+* Overlaps are edge-triggered by default and notify Shiny only when
+  `notify_server = TRUE`; sustained handlers can use `mode = "stay"` and
+  `interval` throttling.
+* Moved sprite movement delays from blocking R sleeps to browser timers.
 * Queued sprite physics actions until sprites finish loading so setup calls such as `set_gravity()` are not lost during asynchronous asset initialization.
 
 ## New interface features

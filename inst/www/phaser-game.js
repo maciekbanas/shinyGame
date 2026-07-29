@@ -15,6 +15,7 @@ GameBridge.sounds = GameBridge.sounds || {};
 GameBridge.pendingSoundActions = GameBridge.pendingSoundActions || {};
 
 function sendPhaserEvent(target, payload) {
+  if (!target) return;
   if (typeof target === "string" && (/^https?:/.test(target) || target.includes("/")) && window.fetch) {
     window.fetch(target, {
       method: "POST",
@@ -388,16 +389,24 @@ function retryWhenMissingObjects(fn, objectNames) {
   return true;
 }
 
-function addOverlap(objectOneName, objectTwoName, inputId, browserActions = []) {
-  if (retryWhenMissingObjects(() => addOverlap(objectOneName, objectTwoName, inputId, browserActions), [objectOneName, objectTwoName])) return;
+function addOverlap(objectOneName, objectTwoName, inputId, browserActions = [], mode = "enter", interval = 0) {
+  if (retryWhenMissingObjects(() => addOverlap(objectOneName, objectTwoName, inputId, browserActions, mode, interval), [objectOneName, objectTwoName])) return;
 
   const objectOne = scene.children.getByName(objectOneName);
   const objectTwo = scene.children.getByName(objectTwoName);
+  let lastContact = -Infinity;
+  let lastRun = -Infinity;
   scene.physics.add.overlap(
     objectOne, objectTwo,
     function(obj1, obj2) {
-      runBrowserActionList(browserActions, obj1, obj2);
-      sendPhaserEvent(inputId, phaserCollisionPayload(obj1, obj2));
+      const now = performance.now();
+      const entering = now - lastContact > 50;
+      lastContact = now;
+      if ((mode === "enter" && entering) || (mode === "stay" && now - lastRun >= interval)) {
+        lastRun = now;
+        runBrowserActionList(browserActions, obj1, obj2);
+        sendPhaserEvent(inputId, phaserCollisionPayload(obj1, obj2));
+      }
     }
   );
 }
@@ -449,18 +458,27 @@ function addOverlapEnd(objectOneName, objectTwoName, inputId, browserActions = [
   });
 }
 
-function addGroupOverlap(objectName, groupName, inputId, browserActions = []) {
+function addGroupOverlap(objectName, groupName, inputId, browserActions = [], mode = "enter", interval = 0) {
   if (!scene.children.getByName(objectName) || !scene[groupName]) {
-    window.setTimeout(() => addGroupOverlap(objectName, groupName, inputId, browserActions), 100);
+    window.setTimeout(() => addGroupOverlap(objectName, groupName, inputId, browserActions, mode, interval), 100);
     return;
   }
   const objectOne = scene.children.getByName(objectName);
   const objectTwo = scene[groupName];
+  const contacts = new WeakMap();
+  const runs = new WeakMap();
   scene.physics.add.overlap(
     objectOne, objectTwo,
     function(obj1, obj2) {
-      runBrowserActionList(browserActions, obj1, obj2);
-      sendPhaserEvent(inputId, phaserCollisionPayload(obj1, obj2));
+      const now = performance.now();
+      const entering = now - (contacts.get(obj2) ?? -Infinity) > 50;
+      contacts.set(obj2, now);
+      if ((mode === "enter" && entering) ||
+          (mode === "stay" && now - (runs.get(obj2) ?? -Infinity) >= interval)) {
+        runs.set(obj2, now);
+        runBrowserActionList(browserActions, obj1, obj2);
+        sendPhaserEvent(inputId, phaserCollisionPayload(obj1, obj2));
+      }
     }
   );
 }

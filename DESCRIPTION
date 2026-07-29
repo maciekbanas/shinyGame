@@ -20,7 +20,6 @@ BugReports: https://github.com/maciekbanas/shinyphaser/issues
 Imports:
   htmltools,
   jsonlite,
-  promises,
   R6,
   rlang,
   shiny

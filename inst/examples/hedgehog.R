@@ -121,6 +121,7 @@ server <- function(input, output, session) {
     game$add_overlap(
       object_one = "hedgehog", 
       object_two = name, 
+      notify_server = TRUE,
       action = {
         score_text$set("Game over!")
       }, input = input
@@ -196,6 +197,7 @@ server <- function(input, output, session) {
     game$add_overlap(
       object_one = "hedgehog", 
       group = paste0("apples_lvl", level_id), 
+      notify_server = TRUE,
       action = {
         score_text$set(paste0("Level ", level_id, ": apple collected!"))
         apples_group$disable()
@@ -234,19 +236,19 @@ server <- function(input, output, session) {
   }
 
 
-  game$add_control("Space", action = function() {
-    if (!state$started || state$game_over || state$is_boosting) return(invisible(NULL))
-
-    state$is_boosting <- TRUE
+  boost_cooldown <- game$add_cooldown("hedgehog_boost", boost_duration * 1000)
+  game$add_control("Space", action = {
+    if (boost_cooldown$ready()) {
+      boost_cooldown$trigger()
     hedgehog$play_animation("hedgehog_run", duration = boost_duration * 1000)
     hedgehog$add_player_controls(directions = c("left", "right", "up", "down"), speed = boost_speed)
-
-    later::later(function() {
-      state$is_boosting <- FALSE
-      if (state$started && !state$game_over) {
-        hedgehog$add_player_controls(directions = c("left", "right", "up", "down"), speed = base_speed)
-      }
-    }, delay = boost_duration)
+      game$after(boost_duration * 1000, {
+        hedgehog$add_player_controls(
+          directions = c("left", "right", "up", "down"),
+          speed = base_speed
+        )
+      })
+    }
   }, input = input)
 
   state$levels[["1"]] <- init_level(1)

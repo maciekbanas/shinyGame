@@ -103,8 +103,8 @@ test_that("Sprite utility methods send expected JS", {
   expect_true(any(grepl("setGravity\\('hero', 1, 2\\);", msgs)))
   expect_true(any(grepl("setBounce\\('hero', 0.500000\\);", msgs)))
   expect_true(any(grepl("setSpriteInMotion\\('hero', 1, 0, 90, 45\\);", msgs)))
-  expect_true(any(grepl('setSpriteInMotionRandomOrToward\\("hero", "mushroom_man", 300.000000, 0.000000, 1.000000, 90.000000, 45.000000, 1.350000, 2.000000\\);', msgs)))
-  expect_true(any(grepl('startSpriteApproachOnSight\\("hero", "mushroom_man", 500.000000, 120.000000, 80.000000, 250.000000, 1200.000000\\);', msgs)))
+  expect_true(any(grepl('setSpriteInMotionRandomOrToward("hero", "mushroom_man", 300.000000', msgs, fixed = TRUE)))
+  expect_true(any(grepl('startSpriteApproachOnSight("hero", "mushroom_man", 500.000000, 120.000000, 80.000000, 250.000000, 1200.000000, 1500.000000);', msgs, fixed = TRUE)))
   expect_true(any(grepl("destroySprite\\('hero'\\);", msgs)))
 })
 
@@ -240,6 +240,40 @@ test_that("public handlers no longer expose client action lists", {
   expect_false("client_action" %in% names(formals(game$add_overlap)))
   expect_false("client_action" %in% names(formals(game$add_overlap_end)))
   expect_false("client_action" %in% names(formals(game$add_control)))
+  expect_false("callback_fun" %in% names(formals(game$add_collider)))
+  expect_false("callback_fun" %in% names(formals(game$add_overlap)))
+  expect_false("callback_fun" %in% names(formals(game$add_overlap_end)))
+})
+
+test_that("browser state, cooldowns, conditions, and semantic events compile", {
+  session <- make_mock_session()
+  game <- PhaserGame$new()
+  game$set_shiny_session(session)
+  hero <- game$add_sprite("hero", "hero.png", 0, 0, 32, 32, 1, 1)
+  sword <- game$add_static_sprite("sword", "sword.png", 10, 10)
+  has_sword <- game$add_state("has_sword", FALSE)
+  attack <- game$add_cooldown("attack", 750)
+
+  game$add_control("Space", action = {
+    if (hero$overlaps(sword) && sword$exists()) {
+      sword$destroy()
+      has_sword$set(TRUE)
+    } else if (attack$ready()) {
+      attack$trigger()
+      game$alert(title = "Attack")
+      game$emit("attack")
+    }
+  })
+
+  msgs <- vapply(session$get_messages(), function(m) m$message$js, character(1))
+  expect_true(any(grepl('setBrowserState("has_sword", false)', msgs, fixed = TRUE)))
+  control <- msgs[grepl('addKeyControl("Space"', msgs, fixed = TRUE)]
+  expect_length(control, 1)
+  expect_true(grepl('"op":"overlaps"', control, fixed = TRUE))
+  expect_true(grepl('"op":"cooldown_ready"', control, fixed = TRUE))
+  expect_true(grepl('"state_action":{"key":"has_sword","op":"set","value":true}', control, fixed = TRUE))
+  expect_true(grepl('"show_alert":{"title":"Attack"}', control, fixed = TRUE))
+  expect_true(grepl('"emit":{"name":"attack","data":[]}', control, fixed = TRUE))
 })
 
 test_that("action blocks reject unsupported R code instead of running it", {

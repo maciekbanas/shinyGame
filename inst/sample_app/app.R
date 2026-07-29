@@ -63,14 +63,15 @@ server <- function(input, output, session) {
   rocks$create(200, 300)
 
   score_text <- game$add_text(text = "Score: 0", id = "score", x = 20, y = 20)
+  browser_score <- game$add_state("sample_score", 0)
 
   game$add_overlap(
     object_one = "hedgehog",
     group = "apples",
-    callback_fun = function(evt) {
-      apples$disable(evt)
-      score(score() + 1)
-      score_text$set(paste("Score:", score()))
+    action = {
+      apples$disable()
+      browser_score$increment()
+      score_text$set(browser_score$value())
     },
     input = input
   )
@@ -94,12 +95,8 @@ server <- function(input, output, session) {
   game$add_overlap(
     object_one = "hedgehog",
     object_two = "badger",
-    callback_fun = function(evt) {
-      shinyalert::shinyalert(
-        title = "Game over", type = "error",
-        closeOnClickOutside = FALSE, showCancelButton = FALSE,
-        callbackR = function(value) session$reload()
-      )
+    action = {
+      game$alert(title = "Game over", type = "error")
     },
     input = input
   )

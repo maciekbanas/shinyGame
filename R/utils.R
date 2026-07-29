@@ -2,47 +2,6 @@ send_js <- function(private, js) {
   private$session$sendCustomMessage("phaser", list(js = js))
 }
 
-register_phaser_event_endpoint <- function(session, event_id, callback_fun) {
-  if (is.null(session)) {
-    session <- shiny::getDefaultReactiveDomain()
-  }
-  if (is.null(session)) {
-    stop("A Shiny session is required to register Phaser event endpoints.", call. = FALSE)
-  }
-
-  if (!is.function(session$registerDataObj)) {
-    return(event_id)
-  }
-
-  session$registerDataObj(
-    name = event_id,
-    data = callback_fun,
-    filterFunc = function(callback, req) {
-      body <- rawToChar(req$rook.input$read())
-      evt <- if (nzchar(body)) {
-        jsonlite::fromJSON(body, simplifyVector = FALSE)
-      } else {
-        list()
-      }
-
-      promise <- promises::then(promises::promise_resolve(evt), callback)
-      promises::catch(promise, function(error) {
-        warning(
-          sprintf("Phaser event callback '%s' failed: %s", event_id, error$message),
-          call. = FALSE
-        )
-      })
-
-      shiny::httpResponse(
-        status = 202,
-        content_type = "application/json",
-        content = '{"status":"accepted"}'
-      )
-    }
-  )
-}
-
-
 # Translate a deliberately small, R-looking action block into the declarative
 # commands understood by the browser.  The expression is never evaluated: doing
 # so would send the R6 commands to Shiny, which is precisely the round trip this
@@ -59,7 +18,61 @@ compile_phaser_action <- function(expr, env) {
   lapply(expressions, compile_phaser_action_call, env = env)
 }
 
+compile_phaser_value <- function(expr, env) {
+  if (is.call(expr) && is.call(expr[[1]]) && identical(expr[[1]][[1]], as.name("$"))) {
+    target <- eval(expr[[1]][[2]], env)
+    method <- as.character(expr[[1]][[3]])
+    if (inherits(target, "BrowserState") && method == "value") {
+      return(list(state = target$.__enclos_env__$private$key))
+    }
+  }
+  eval(expr, env)
+}
+
+compile_phaser_condition <- function(expr, env) {
+  if (is.call(expr) && as.character(expr[[1]]) %in% c("&&", "||")) {
+    return(list(op = as.character(expr[[1]]),
+                left = compile_phaser_condition(expr[[2]], env),
+                right = compile_phaser_condition(expr[[3]], env)))
+  }
+  if (is.call(expr) && identical(expr[[1]], as.name("!"))) {
+    return(list(op = "!", value = compile_phaser_condition(expr[[2]], env)))
+  }
+  if (is.call(expr) && as.character(expr[[1]]) %in% c("==", "!=", "<", "<=", ">", ">=")) {
+    return(list(op = as.character(expr[[1]]),
+                left = compile_phaser_value(expr[[2]], env),
+                right = compile_phaser_value(expr[[3]], env)))
+  }
+  if (is.call(expr) && is.call(expr[[1]]) && identical(expr[[1]][[1]], as.name("$"))) {
+    target <- eval(expr[[1]][[2]], env)
+    method <- as.character(expr[[1]][[3]])
+    args <- as.list(expr)[-1]
+    private <- target$.__enclos_env__$private
+    name <- private$id %||% private$name
+    if (method == "overlaps") {
+      other <- eval(args[[1]], env)
+      other_name <- other$.__enclos_env__$private$id %||% other$.__enclos_env__$private$name
+      return(list(op = "overlaps", objects = c(name, other_name)))
+    }
+    if (method == "exists") return(list(op = "exists", object = name))
+    if (inherits(target, "BrowserState") && method %in% c("is_true", "is_false")) {
+      return(list(op = method, state = private$key))
+    }
+    if (inherits(target, "BrowserCooldown") && method == "ready") {
+      return(list(op = "cooldown_ready", key = private$key, duration = private$duration))
+    }
+  }
+  stop("Unsupported condition in action block.", call. = FALSE)
+}
+
 compile_phaser_action_call <- function(expr, env) {
+  if (is.call(expr) && identical(expr[[1]], as.name("if"))) {
+    return(list(`if` = list(
+      condition = compile_phaser_condition(expr[[2]], env),
+      then = compile_phaser_action(expr[[3]], env),
+      else = if (length(expr) >= 4) compile_phaser_action(expr[[4]], env) else list()
+    )))
+  }
   if (!is.call(expr) || !is.call(expr[[1]]) ||
       !identical(expr[[1]][[1]], as.name("$"))) {
     stop(
@@ -71,7 +84,14 @@ compile_phaser_action_call <- function(expr, env) {
   target_expr <- expr[[1]][[2]]
   method <- as.character(expr[[1]][[3]])
   target <- eval(target_expr, envir = env)
-  args <- lapply(as.list(expr)[-1], eval, envir = env)
+  arg_exprs <- as.list(expr)[-1]
+  if (inherits(target, "PhaserGame") && method == "after") {
+    return(list(after = list(
+      delay = compile_phaser_value(arg_exprs[[1]], env),
+      actions = compile_phaser_action(arg_exprs[[2]], env)
+    )))
+  }
+  args <- lapply(arg_exprs, compile_phaser_value, env = env)
   arg_names <- names(as.list(expr)[-1])
   if (is.null(arg_names)) arg_names <- rep("", length(args))
   names(args) <- arg_names
@@ -126,8 +146,31 @@ compile_phaser_action_call <- function(expr, env) {
       distance = value("distance", 4)
     )))
   }
+  if (inherits(target, "Sprite") && method %in% c("set_velocity_x", "set_velocity_y")) {
+    return(setNames(list(list(name = object_name, value = value("x", 1, 100))), method))
+  }
+  if (inherits(target, "Sprite") && method == "add_player_controls") {
+    return(list(player_controls = list(
+      name = object_name,
+      directions = value("directions", 1, c("left", "right", "down", "up")),
+      speed = value("speed", 2, 200)
+    )))
+  }
   if (inherits(target, "StaticGroup") && method == "disable") {
     return(list(disable_overlap_member = object_name))
+  }
+  if (inherits(target, "BrowserState") && method %in% c("set", "increment", "decrement", "add", "subtract")) {
+    return(list(state_action = list(key = private$key, op = method,
+                                    value = value("value", 1, 1))))
+  }
+  if (inherits(target, "BrowserCooldown") && method == "trigger") {
+    return(list(cooldown_trigger = private$key))
+  }
+  if (inherits(target, "PhaserGame") && method == "alert") {
+    return(list(show_alert = args))
+  }
+  if (inherits(target, "PhaserGame") && method == "emit") {
+    return(list(emit = list(name = value("name", 1), data = value("data", 2, list()))))
   }
   if (inherits(target, c("Sprite", "StaticSprite")) && method == "destroy") {
     return(list(destroy_sprite = object_name))

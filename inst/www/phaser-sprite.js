@@ -4,6 +4,8 @@ GameBridge.forcedAnimations = GameBridge.forcedAnimations || {};
 GameBridge.pendingCameraFollow = GameBridge.pendingCameraFollow || {};
 GameBridge.pendingScrollFactor = GameBridge.pendingScrollFactor || {};
 GameBridge.pendingSpriteActions = GameBridge.pendingSpriteActions || {};
+GameBridge.browserState = GameBridge.browserState || {};
+GameBridge.cooldowns = GameBridge.cooldowns || {};
 
 
 
@@ -226,7 +228,63 @@ function normalizeBrowserActions(actions) {
   return Array.isArray(actions) ? actions : [actions];
 }
 
+function setBrowserState(key, value) { GameBridge.browserState[key] = value; }
+function resolveBrowserValue(value) {
+  return value && typeof value === "object" && value.state !== undefined
+    ? GameBridge.browserState[value.state]
+    : value;
+}
+function browserObject(name) { return scene && scene.children.getByName(name); }
+function browserCondition(condition) {
+  if (!condition) return true;
+  if (condition.op === "&&") return browserCondition(condition.left) && browserCondition(condition.right);
+  if (condition.op === "||") return browserCondition(condition.left) || browserCondition(condition.right);
+  if (condition.op === "!") return !browserCondition(condition.value);
+  if (condition.op === "exists") return Boolean(browserObject(condition.object)?.active);
+  if (condition.op === "overlaps") {
+    const a = browserObject(condition.objects[0]);
+    const b = browserObject(condition.objects[1]);
+    return Boolean(a && b && Phaser.Geom.Intersects.RectangleToRectangle(a.getBounds(), b.getBounds()));
+  }
+  if (condition.op === "is_true") return Boolean(GameBridge.browserState[condition.state]);
+  if (condition.op === "is_false") return !GameBridge.browserState[condition.state];
+  if (condition.op === "cooldown_ready") {
+    return performance.now() - (GameBridge.cooldowns[condition.key] ?? -Infinity) >= condition.duration;
+  }
+  const left = resolveBrowserValue(condition.left);
+  const right = resolveBrowserValue(condition.right);
+  if (condition.op === "==") return left === right;
+  if (condition.op === "!=") return left !== right;
+  if (condition.op === "<") return left < right;
+  if (condition.op === "<=") return left <= right;
+  if (condition.op === ">") return left > right;
+  if (condition.op === ">=") return left >= right;
+  return false;
+}
+
 function runBrowserAction(action, overlapObjectOne, overlapObjectTwo) {
+  if (action.after) {
+    window.setTimeout(() => runBrowserActionList(
+      action.after.actions, overlapObjectOne, overlapObjectTwo
+    ), Number(resolveBrowserValue(action.after.delay)));
+    return;
+  }
+  if (action.if) {
+    runBrowserActionList(
+      browserCondition(action.if.condition) ? action.if.then : action.if.else,
+      overlapObjectOne, overlapObjectTwo
+    );
+    return;
+  }
+  if (action.state_action) {
+    const state = action.state_action;
+    const current = GameBridge.browserState[state.key];
+    const value = resolveBrowserValue(state.value);
+    if (state.op === "set") GameBridge.browserState[state.key] = value;
+    else if (state.op === "increment" || state.op === "add") GameBridge.browserState[state.key] = Number(current || 0) + Number(value);
+    else GameBridge.browserState[state.key] = Number(current || 0) - Number(value);
+  }
+  if (action.cooldown_trigger) GameBridge.cooldowns[action.cooldown_trigger] = performance.now();
   if (action.play_sound) playSound(action.play_sound, action.volume ?? null, action.loop ?? null);
   if (action.pause_sound) pauseSound(action.pause_sound);
   if (action.resume_sound) resumeSound(action.resume_sound);
@@ -246,14 +304,26 @@ function runBrowserAction(action, overlapObjectOne, overlapObjectTwo) {
     const motion = action.set_in_motion;
     setSpriteInMotion(motion.name, motion.dir_x, motion.dir_y, motion.speed, motion.distance);
   }
+  if (action.set_velocity_x) setVelocityX(action.set_velocity_x.name, action.set_velocity_x.value);
+  if (action.set_velocity_y) setVelocityY(action.set_velocity_y.name, action.set_velocity_y.value);
+  if (action.player_controls) {
+    addPlayerControls(action.player_controls.name, action.player_controls.directions, action.player_controls.speed);
+  }
   if (action.disable_overlap_member && overlapObjectTwo) {
     disableBody(action.disable_overlap_member, overlapObjectTwo.x, overlapObjectTwo.y);
   }
   if (action.set_text && action.set_text.id !== undefined) {
-    setText(action.set_text.text || "", action.set_text.id);
+    setText(String(resolveBrowserValue(action.set_text.text) ?? ""), action.set_text.id);
   }
   if (action.show_text) showText(action.show_text);
   if (action.hide_text) hideText(action.hide_text);
+  if (action.show_alert) {
+    if (typeof swal === "function") swal(action.show_alert);
+    else window.alert(action.show_alert.title || action.show_alert.text || "");
+  }
+  if (action.emit) {
+    Shiny.setInputValue("phaser_" + action.emit.name, action.emit.data || {}, { priority: "event" });
+  }
 }
 
 function runBrowserActionList(actions, overlapObjectOne, overlapObjectTwo) {
@@ -262,16 +332,15 @@ function runBrowserActionList(actions, overlapObjectOne, overlapObjectTwo) {
   });
 }
 
-function addKeyControl(key) {
+function addKeyControl(key, browserActions = [], notifyServer = false) {
   if (GameBridge.keyControlHandlers[key]) return;
 
   const handler = function(e) {
     if (key === e.code) {
-      Shiny.setInputValue(
-        key + "_action",
-        { code: e.code, evt_nonce: Date.now() + Math.random() },
-        { priority: "event" }
-      );
+      runBrowserActionList(browserActions);
+      if (notifyServer) {
+        Shiny.setInputValue(key + "_action", { code: e.code, evt_nonce: Date.now() + Math.random() }, { priority: "event" });
+      }
     }
   };
 
@@ -389,7 +458,8 @@ function startSpriteApproachOnSight(
   speed,
   distance,
   checkInterval = 250,
-  alertDuration = 1200
+  alertDuration = 1200,
+  wanderInterval = 1500
 ) {
   if (!GameBridge.sightApproachIntervals) GameBridge.sightApproachIntervals = {};
   if (GameBridge.sightApproachIntervals[name]) {
@@ -405,6 +475,12 @@ function startSpriteApproachOnSight(
     if (targetDistance <= 0 || targetDistance > sightRange) {
       if (sprite.getData && sprite.getData("sightAlert")) {
         sprite.setData("sightAlert", null);
+      }
+      const lastWander = sprite.getData("lastWander") || 0;
+      if (performance.now() - lastWander >= wanderInterval) {
+        sprite.setData("lastWander", performance.now());
+        const direction = Phaser.Math.RND.pick([[1, 0], [-1, 0], [0, 1], [0, -1]]);
+        setSpriteInMotion(name, direction[0], direction[1], speed, distance);
       }
       return;
     }

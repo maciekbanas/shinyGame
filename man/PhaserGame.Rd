@@ -422,7 +422,7 @@ Adds a collider between two game objects.
   group = NULL,
   action = NULL,
   input,
-  callback_fun = NULL
+  notify_server = FALSE
 )}\if{html}{\out{</div>}}
 }
 
@@ -438,7 +438,7 @@ Adds a collider between two game objects.
 \item{\code{action}}{R code containing supported shinyphaser R6 method calls,
 compiled for immediate browser execution when a collision occurs.}
 
-\item{\code{callback_fun}}{Deprecated server-side collision callback.}
+\item{\code{notify_server}}{Whether to also emit a Shiny input event.}
 
 \item{\code{input}}{Shiny input list.}
 }
@@ -457,7 +457,9 @@ Adds a collider between two game objects.
   group = NULL,
   action = NULL,
   input,
-  callback_fun = NULL
+  mode = c("enter", "stay"),
+  interval = 0,
+  notify_server = FALSE
 )}\if{html}{\out{</div>}}
 }
 
@@ -473,7 +475,11 @@ Adds a collider between two game objects.
 \item{\code{action}}{R code containing supported shinyphaser R6 method calls,
 compiled for immediate browser execution when an overlap occurs.}
 
-\item{\code{callback_fun}}{Optional function to be run on the Shiny server when overlap occurs.}
+\item{\code{mode}}{Whether actions run on overlap entry or remain active while overlapping.}
+
+\item{\code{interval}}{Minimum milliseconds between sustained actions.}
+
+\item{\code{notify_server}}{Whether to also emit a Shiny input event.}
 
 \item{\code{input}}{Shiny input list.}
 
@@ -515,7 +521,7 @@ Register a callback fired when overlap between objects ends.
   action = NULL,
   input,
   session = shiny::getDefaultReactiveDomain(),
-  callback_fun = NULL
+  notify_server = FALSE
 )}\if{html}{\out{</div>}}
 }
 
@@ -531,7 +537,7 @@ Register a callback fired when overlap between objects ends.
 \item{\code{action}}{R code containing supported shinyphaser R6 method calls,
 compiled for immediate browser execution when the overlap ends.}
 
-\item{\code{callback_fun}}{Optional function. Callback executed on the Shiny server when overlap ends.}
+\item{\code{notify_server}}{Whether to also emit a Shiny input event.}
 
 \item{\code{input}}{Shiny input list.}
 
@@ -550,7 +556,8 @@ Register a callback fired when a specific key is pressed.
 \if{html}{\out{<div class="r">}}\preformatted{PhaserGame$add_control(
   key,
   action = NULL,
-  input
+  input,
+  notify_server = FALSE
 )}\if{html}{\out{</div>}}
 }
 
@@ -560,7 +567,9 @@ Register a callback fired when a specific key is pressed.
 \item{\code{key}}{A character, accepts Javascript key events (they need to align with
 event.code).}
 
-\item{\code{action}}{Optional function to be run on the Shiny server after key is pressed.}
+\item{\code{action}}{R code compiled and run immediately in the browser.}
+
+\item{\code{notify_server}}{Whether to also emit a Shiny input event.}
 
 \item{\code{input}}{Shiny input list.}
 

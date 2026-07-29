@@ -84,7 +84,29 @@ game$add_collider(
 An immediate action can use supported methods on `Text`, `Image`, `Rectangle`,
 `Sound`, `Sprite`, `StaticSprite`, and `StaticGroup` objects. Arbitrary R code (for example,
 updating a reactive value or querying a database) cannot run in a browser; keep
-that work in the server-side `callback_fun`.
+that work behind a semantic event emitted with `game$emit()` and observed by
+Shiny. Browser-only actions do not send overlap traffic to the server unless
+`notify_server = TRUE` is requested explicitly.
+
+Browser-resident state, cooldowns, conditions, alerts, and semantic events can
+also be expressed with R-looking calls:
+
+```r
+has_sword <- game$add_state("has_sword", FALSE)
+attack <- game$add_cooldown("attack", 750)
+
+game$add_control("Space", input = input, action = {
+  if (hero$overlaps(sword) && sword$exists()) {
+    sword$destroy()
+    has_sword$set(TRUE)
+    inventory$set("weapon: sword")
+  } else if (attack$ready()) {
+    attack$trigger()
+    attack_sound$play()
+    game$emit("hero_attack")
+  }
+})
+```
 
 ```{r, echo=FALSE}
 knitr::include_graphics("man/hedgehog_example.gif")

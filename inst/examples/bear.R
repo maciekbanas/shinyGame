@@ -64,7 +64,7 @@ server <- function(input, output, session) {
 
   game$add_control(
     "Space",
-    action = function() {
+    action = {
       jump_sound$play()
       bear$set_velocity_y(-600)
       bear$play_animation(
