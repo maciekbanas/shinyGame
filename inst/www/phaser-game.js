@@ -13,7 +13,6 @@ GameBridge.lastHeroOverlapState = GameBridge.lastHeroOverlapState || "";
 GameBridge.nextHeroOverlapSendAt = GameBridge.nextHeroOverlapSendAt || 0;
 GameBridge.sounds = GameBridge.sounds || {};
 GameBridge.pendingSoundActions = GameBridge.pendingSoundActions || {};
-GameBridge.clientState = GameBridge.clientState || {};
 
 function sendPhaserEvent(target, payload) {
   if (typeof target === "string" && (/^https?:/.test(target) || target.includes("/")) && window.fetch) {
@@ -60,7 +59,6 @@ function playTypeAnim(sprite, type, suffix) {
 
 function initPhaserGame(containerId, config) {
   GameBridge.overlapEndWatchers = {};
-  GameBridge.clientState = {};
 
   window.game = new Phaser.Game({
     type: Phaser.AUTO,
@@ -358,23 +356,25 @@ function addPlayerTerrainCollider(spriteName) {
   scene.physics.add.collider(sprite, scene.terrainLayer);
 }
 
-function addCollider(objectOneName, objectTwoName, inputId) {
+function addCollider(objectOneName, objectTwoName, inputId, browserActions = []) {
   const objectOne = scene.children.getByName(objectOneName);
   const objectTwo = scene.children.getByName(objectTwoName);
   scene.physics.add.collider(
     objectOne, objectTwo,
     function(obj1, obj2) {
+      runBrowserActionList(browserActions);
       sendPhaserEvent(inputId, phaserCollisionPayload(obj1, obj2));
     }
   );
 }
 
-function addGroupCollider(objectName, groupName, inputId) {
+function addGroupCollider(objectName, groupName, inputId, browserActions = []) {
   const objectOne = scene.children.getByName(objectName);
   const objectTwo = scene[groupName];
   scene.physics.add.collider(
     objectOne, objectTwo,
     function(obj1, obj2) {
+      runBrowserActionList(browserActions);
       sendPhaserEvent(inputId, phaserCollisionPayload(obj1, obj2));
     }
   );
@@ -388,15 +388,15 @@ function retryWhenMissingObjects(fn, objectNames) {
   return true;
 }
 
-function addOverlap(objectOneName, objectTwoName, inputId, clientActions = []) {
-  if (retryWhenMissingObjects(() => addOverlap(objectOneName, objectTwoName, inputId, clientActions), [objectOneName, objectTwoName])) return;
+function addOverlap(objectOneName, objectTwoName, inputId, browserActions = []) {
+  if (retryWhenMissingObjects(() => addOverlap(objectOneName, objectTwoName, inputId, browserActions), [objectOneName, objectTwoName])) return;
 
   const objectOne = scene.children.getByName(objectOneName);
   const objectTwo = scene.children.getByName(objectTwoName);
   scene.physics.add.overlap(
     objectOne, objectTwo,
     function(obj1, obj2) {
-      runClientActionList(inputId, clientActions);
+      runBrowserActionList(browserActions);
       sendPhaserEvent(inputId, phaserCollisionPayload(obj1, obj2));
     }
   );
@@ -423,8 +423,8 @@ function areOverlap(objectOneName, objectTwoName, inputId) {
   }
 };
 
-function addOverlapEnd(objectOneName, objectTwoName, inputId, clientActions = []) {
-  if (retryWhenMissingObjects(() => addOverlapEnd(objectOneName, objectTwoName, inputId, clientActions), [objectOneName, objectTwoName])) return;
+function addOverlapEnd(objectOneName, objectTwoName, inputId, browserActions = []) {
+  if (retryWhenMissingObjects(() => addOverlapEnd(objectOneName, objectTwoName, inputId, browserActions), [objectOneName, objectTwoName])) return;
 
   const obj1 = scene.children.getByName(objectOneName);
   const obj2 = scene.children.getByName(objectTwoName);
@@ -441,7 +441,7 @@ function addOverlapEnd(objectOneName, objectTwoName, inputId, clientActions = []
     );
 
     if (wasOverlapping && !currentlyOverlapping) {
-      runClientActionList(inputId, clientActions);
+      runBrowserActionList(browserActions);
       sendPhaserEvent(inputId, phaserCollisionPayload(obj1, obj2));
     }
 
@@ -449,9 +449,9 @@ function addOverlapEnd(objectOneName, objectTwoName, inputId, clientActions = []
   });
 }
 
-function addGroupOverlap(objectName, groupName, inputId, clientActions = []) {
+function addGroupOverlap(objectName, groupName, inputId, browserActions = []) {
   if (!scene.children.getByName(objectName) || !scene[groupName]) {
-    window.setTimeout(() => addGroupOverlap(objectName, groupName, inputId, clientActions), 100);
+    window.setTimeout(() => addGroupOverlap(objectName, groupName, inputId, browserActions), 100);
     return;
   }
   const objectOne = scene.children.getByName(objectName);
@@ -459,7 +459,7 @@ function addGroupOverlap(objectName, groupName, inputId, clientActions = []) {
   scene.physics.add.overlap(
     objectOne, objectTwo,
     function(obj1, obj2) {
-      runClientActionList(inputId, clientActions);
+      runBrowserActionList(browserActions);
       sendPhaserEvent(inputId, phaserCollisionPayload(obj1, obj2));
     }
   );

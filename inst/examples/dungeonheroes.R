@@ -451,13 +451,7 @@ server <- function(input, output, session) {
   game$add_control(
     "Space",
     action = NULL,
-    input,
-    client_action = dungeonheroes_space_client_actions(
-      hero_attack_cooldown,
-      enemy_specs,
-      hero_fist_damage,
-      hero_sword_damage
-    )
+    input
   )
 
   inventory_text <- game$add_text(
@@ -562,47 +556,26 @@ server <- function(input, output, session) {
     object_one = "hero",
     object_two = "wizard",
     input = input,
-    client_action = list(
-      show_text = "talk_bubble_text",
-      sprite = "wizard",
-      play_animation = "wizard_talk",
-      duration = 2000,
-      play_sound = "wizard_laugh",
-      cooldown = 5000
-    )
+    action = {
+      talk_bubble_text$show()
+      wizard$play_animation("talk", duration = 2000)
+      wizard_laugh_sound$play()
+    }
   )
   game$add_overlap_end(
     object_one = "hero",
     object_two = "wizard",
     input = input,
-    client_action = list(
-      hide_text = "talk_bubble_text",
-      sprite = "wizard",
-      play_animation = "wizard_idle"
-    )
+    action = {
+      talk_bubble_text$hide()
+      wizard$play_animation("idle")
+    }
   )
 
   game$add_overlap(
     object_one = "hero",
     object_two = "mushroom_spirit",
-    input = input,
-    client_action = list(
-      show_alert = list(
-        title = "Mushroom spirit saved!",
-        text = "The good spirit is safe. You win!",
-        type = "success",
-        closeOnClickOutside = FALSE,
-        showCancelButton = FALSE
-      ),
-      raw_js = paste0(
-        "const state = (window.GameBridge && GameBridge.clientState) || {};",
-        "state.dungeonheroes_game_over = true;",
-        "if (window.GameBridge && GameBridge.playerControls) delete GameBridge.playerControls.hero;",
-        "const hero = scene.children.getByName('hero');",
-        "if (hero && hero.body && typeof hero.body.stop === 'function') hero.body.stop();"
-      ),
-      disable_sprite = "mushroom_spirit"
-    )
+    input = input
   )
 
   add_enemy_handlers <- function(enemy_name) {
@@ -614,32 +587,8 @@ server <- function(input, output, session) {
       callback_fun = function(evt) {
         enemy_in_range <<- enemy_name
       },
-      input = input,
-      client_action = c(
-        list(
-          list(
-            set_state = list(
-              list(key = "hero_life", op = "init", value = max_life_points, min = 0, max = max_life_points),
-              list(key = "hero_life", op = "decrement", amount = enemy_damage[[enemy_name]], min = 0, max = max_life_points)
-            ),
-            set_text = list(
-              id = "combat_status",
-              text = sprintf("%s hits you for %d. Life: {state.hero_life}/%d", format_enemy_label(enemy_name), enemy_damage[[enemy_name]], max_life_points)
-            ),
-            raw_js = sprintf(
-              "const enemy = scene.children.getByName('%s'); if (enemy) { scene.tweens.killTweensOf(enemy); if (enemy.body && typeof enemy.body.stop === 'function') enemy.body.stop(); }",
-              enemy_name
-            ),
-            sprite = enemy_name,
-            play_animation = enemy_animation_key(enemy_name, "attack"),
-            duration = 1000,
-            cooldown = enemy_attack_cooldown * 1000
-          )
-        ),
-        dungeonheroes_life_bar_client_actions(max_life_points, health_bar_segment_count),
-        list(dungeonheroes_game_over_client_action(enemy_name))
-      )
-    )
+      input = input
+  )
 
     game$add_overlap_end(
       object_one = "hero",
@@ -657,168 +606,6 @@ server <- function(input, output, session) {
   }
 
   lapply(enemy_names, add_enemy_handlers)
-}
-
-
-dungeonheroes_life_bar_client_actions <- function(max_life_points, health_bar_segment_count) {
-  lapply(seq_len(health_bar_segment_count), function(segment_index) {
-    threshold <- (segment_index - 1) * max_life_points / health_bar_segment_count
-    list(
-      hide_when_state = list(
-        id = sprintf("life_bar_green_%02d", segment_index),
-        key = "hero_life",
-        op = "lte",
-        value = threshold
-      )
-    )
-  })
-}
-
-dungeonheroes_game_over_client_action <- function(enemy_name) {
-  list(
-    when_state = list(key = "hero_life", op = "lte", value = 0),
-    set_text = list(
-      id = "combat_status",
-      text = sprintf("%s defeated you. Game over.", gsub("_", " ", enemy_name))
-    ),
-    raw_js = paste0(
-      "const state = (window.GameBridge && GameBridge.clientState) || {};",
-      "if (!state.dungeonheroes_game_over) {",
-      "state.dungeonheroes_game_over = true;",
-      "if (window.GameBridge && GameBridge.playerControls) delete GameBridge.playerControls.hero;",
-      "const hero = scene.children.getByName('hero');",
-      "if (hero && hero.body && typeof hero.body.stop === 'function') hero.body.stop();",
-      "if (typeof swal === 'function') swal({ title: 'Game over', text: 'Your life points reached 0.', type: 'error', closeOnClickOutside: false, showCancelButton: false });",
-      "}"
-    )
-  )
-}
-
-
-dungeonheroes_space_client_actions <- function(hero_attack_cooldown, enemy_specs, hero_fist_damage, hero_sword_damage) {
-  enemy_names <- vapply(enemy_specs, `[[`, character(1), "name")
-  enemy_max_hit_points <- stats::setNames(
-    vapply(enemy_specs, `[[`, numeric(1), "hit_points"),
-    enemy_names
-  )
-
-  enemy_hit_feedback <- unlist(lapply(enemy_names, function(enemy_name) {
-    enemy_label <- gsub("_", " ", enemy_name)
-    enemy_state_key <- paste0("enemy_life_", enemy_name)
-    enemy_max_life <- enemy_max_hit_points[[enemy_name]]
-    enemy_destroy_js <- sprintf(
-      paste0(
-        "const state = (window.GameBridge && GameBridge.clientState) || {};",
-        "const enemy = scene.children.getByName(%s);",
-        "if (state[%s] <= 0 && enemy && !enemy.getData('destroying')) {",
-        "enemy.setData('destroying', true);",
-        "scene.tweens.killTweensOf(enemy);",
-        "if (enemy.body) { enemy.body.enable = false; if (typeof enemy.body.stop === 'function') enemy.body.stop(); }",
-        "if (scene.anims.exists(%s)) enemy.play(%s, true);",
-        "setTimeout(function() { disableSprite(%s); }, 750);",
-        "}"
-      ),
-      jsonlite::toJSON(enemy_name, auto_unbox = TRUE),
-      jsonlite::toJSON(enemy_state_key, auto_unbox = TRUE),
-      jsonlite::toJSON(paste0(enemy_name, "_destroy"), auto_unbox = TRUE),
-      jsonlite::toJSON(paste0(enemy_name, "_destroy"), auto_unbox = TRUE),
-      jsonlite::toJSON(enemy_name, auto_unbox = TRUE)
-    )
-
-    list(
-      list(
-        set_state = list(
-          list(key = enemy_state_key, op = "init", value = enemy_max_life, min = 0, max = enemy_max_life),
-          list(key = enemy_state_key, op = "decrement", amount = hero_fist_damage, min = 0, max = enemy_max_life)
-        ),
-        set_text = list(
-          id = "combat_status",
-          text = sprintf("You punch %s for %d. Enemy life: {state.%s}/%d", enemy_label, hero_fist_damage, enemy_state_key, enemy_max_life)
-        ),
-        when_overlap = c("hero", enemy_name),
-        when_exists = list(
-          enemy_name,
-          list(name = "sword", exists = TRUE)
-        ),
-        raw_js = enemy_destroy_js
-      ),
-      list(
-        set_state = list(
-          list(key = enemy_state_key, op = "init", value = enemy_max_life, min = 0, max = enemy_max_life),
-          list(key = enemy_state_key, op = "decrement", amount = hero_sword_damage, min = 0, max = enemy_max_life)
-        ),
-        set_text = list(
-          id = "combat_status",
-          text = sprintf("You slash %s for %d. Enemy life: {state.%s}/%d", enemy_label, hero_sword_damage, enemy_state_key, enemy_max_life)
-        ),
-        when_overlap = c("hero", enemy_name),
-        when_exists = list(
-          enemy_name,
-          list(name = "sword", exists = FALSE)
-        ),
-        raw_js = enemy_destroy_js
-      )
-    )
-  }), recursive = FALSE)
-
-  c(
-    list(
-      list(
-        destroy_sprite = "sword",
-        set_text = list(id = "inventory_weapon", text = "weapon: sword"),
-        sprite = "hero",
-        play_animation = "hero_sword",
-        when_overlap = c("hero", "sword"),
-        when_exists = "sword",
-        stop_after_match = TRUE
-      ),
-      list(
-        show_alert = list(
-          title = "Dear, oh dear. What are you doing here in these dark forests, lad?",
-          text = "",
-          type = "info"
-        ),
-        raw_js = paste0(
-          "setTimeout(function() { ",
-          "if (typeof swal !== 'function') return; ",
-          "if (!document.getElementById('mushroom-spirit-alert-style')) { ",
-          "var style = document.createElement('style'); ",
-          "style.id = 'mushroom-spirit-alert-style'; ",
-          "style.textContent = '@keyframes mushroomSpiritAlert { from { background-position: 0 0; } to { background-position: -448px 0; } } .mushroom-spirit-alert-animation { width: 32px; height: 32px; margin: 0 auto; background-image: url(\"assets/dungeonheroes/sprites/mushroom_spirit.png\"); background-repeat: no-repeat; animation: mushroomSpiritAlert 1s steps(14) infinite; image-rendering: pixelated; }'; ",
-          "document.head.appendChild(style); ",
-          "} ",
-          "swal({ ",
-          "title: 'There is a good spirit waiting to be saved!', ",
-          "text: '<div class=\"mushroom-spirit-alert-animation\"></div>', ",
-          "html: true ",
-          "}); ",
-          "}, 2200);"
-        ),
-        when_overlap = c("hero", "wizard"),
-        cooldown = 1000,
-        stop_after_match = TRUE
-      )
-    ),
-    enemy_hit_feedback,
-    list(
-      list(
-        play_sound = "hero_attack",
-        sprite = "hero",
-        play_animation = "hero_attack",
-        duration = 500,
-        cooldown = hero_attack_cooldown * 1000,
-        when_exists = list(name = "sword", exists = TRUE)
-      ),
-      list(
-        play_sound = "hero_attack",
-        sprite = "hero",
-        play_animation = "hero_sword_attack",
-        duration = 500,
-        cooldown = hero_attack_cooldown * 1000,
-        when_exists = list(name = "sword", exists = FALSE)
-      )
-    )
-  )
 }
 
 

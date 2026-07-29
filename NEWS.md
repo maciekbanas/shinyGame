@@ -2,7 +2,7 @@
 
 ## Performance improvements
 * Optimized Phaser collision and overlap callbacks by routing high-frequency events through Shiny data endpoints backed by `promises`, with a client-side fallback to `Shiny.setInputValue()`.
-* Added a `client_action` parameter to `PhaserGame$add_overlap()`, `PhaserGame$add_overlap_end()`, and `PhaserGame$add_control()` so browser-side Phaser feedback can run immediately before Shiny callbacks are processed.
+* Added R-style `action` blocks for immediate browser-side overlap and collision reactions.
 * Queued sprite physics actions until sprites finish loading so setup calls such as `set_gravity()` are not lost during asynchronous asset initialization.
 
 ## New interface features

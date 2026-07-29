@@ -58,6 +58,34 @@ shinyphaser::run_sample_app()
 
 For a full walkthrough (from static background to movement, animation, overlap, and collision), see [**Build your first shinyphaser game**](https://maciekbanas.github.io/shinyphaser/articles/first-game.html)
 
+### Immediate overlap and collision actions
+
+Use `action` to write browser-speed reactions with the same R6 methods used in
+server code. The expression is captured when the handler is registered and
+compiled to safe browser commands; it is not run in the R session when the
+collision happens.
+
+```r
+game$add_overlap(
+  "hero", "wizard", input = input,
+  action = {
+    prompt$show()
+    greeting$play(volume = 0.5)
+    hero$play_animation("wave", duration = 500)
+  }
+)
+
+game$add_collider(
+  "hero", "rock", input = input,
+  action = warning_sound$play()
+)
+```
+
+An immediate action can use supported methods on `Text`, `Image`, `Rectangle`,
+`Sound`, `Sprite`, and `StaticSprite` objects. Arbitrary R code (for example,
+updating a reactive value or querying a database) cannot run in a browser; keep
+that work in the server-side `callback_fun`.
+
 ```{r, echo=FALSE}
 knitr::include_graphics("man/hedgehog_example.gif")
 ```
