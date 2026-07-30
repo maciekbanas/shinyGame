@@ -152,6 +152,14 @@ test_that("PhaserGame exposes use_phaser UI initializer", {
   expect_null(game$ui)
 })
 
+test_that("PhaserGame passes world gravity to its browser configuration", {
+  game <- PhaserGame$new(gravity_x = 10, gravity_y = 1200)
+  ui <- as.character(game$use_phaser())
+
+  expect_true(any(grepl('"gravity_x":10', ui, fixed = TRUE)))
+  expect_true(any(grepl('"gravity_y":1200', ui, fixed = TRUE)))
+})
+
 test_that("Sound methods send expected JS", {
   session <- make_mock_session()
   sound <- Sound$new("coin", "coin.mp3", volume = 0.5, loop = FALSE, session = session)
@@ -232,6 +240,20 @@ test_that("PhaserGame action blocks compile R6 calls for immediate execution", {
   expect_true(any(grepl('"stop_sound":"hello"', msgs, fixed = TRUE)))
   expect_true(any(grepl('"set_in_motion":{"name":"hero","dir_x":1,"dir_y":0,"speed":100,"distance":50}', msgs, fixed = TRUE)))
   expect_true(any(grepl('"disable_overlap_member":"apples"', msgs, fixed = TRUE)))
+})
+
+test_that("non-notifying physics handlers serialize a JavaScript null target", {
+  session <- make_mock_session()
+  game <- PhaserGame$new()
+  game$set_shiny_session(session)
+
+  game$add_collider("hero", "ground")
+  game$add_overlap("hero", "coin")
+
+  msgs <- vapply(session$get_messages(), function(m) m$message$js, character(1))
+  expect_true(any(grepl("addCollider('hero','ground',null,", msgs, fixed = TRUE)))
+  expect_true(any(grepl('addOverlap("hero", "coin", null,', msgs, fixed = TRUE)))
+  expect_false(any(grepl("[object Object]", msgs, fixed = TRUE)))
 })
 
 test_that("public handlers no longer expose client action lists", {
@@ -334,6 +356,25 @@ test_that("browser feedback is configured for immediate visibility and audio", {
   expect_true(any(grepl("filecomplete-audio-${name}", game_js, fixed = TRUE)))
   expect_true(any(grepl("if (!scene.load.isLoading()) scene.load.start()", game_js, fixed = TRUE)))
   expect_true(any(grepl("() => addCollider(objectOneName", game_js, fixed = TRUE)))
-  expect_true(any(grepl("filecomplete-spritesheet-${name}", sprite_js, fixed = TRUE)))
-  expect_true(any(grepl("filecomplete-image-${name}", sprite_js, fixed = TRUE)))
+  expect_true(any(grepl('typeof target !== "string"', game_js, fixed = TRUE)))
+})
+
+test_that("runtime visual assets initialize when the loader batch completes", {
+  sprite_js <- readLines(system.file("www", "phaser-sprite.js", package = "shinyphaser"), warn = FALSE)
+  group_js <- readLines(system.file("www", "phaser-groups.js", package = "shinyphaser"), warn = FALSE)
+  image_js <- readLines(system.file("www", "phaser-image.js", package = "shinyphaser"), warn = FALSE)
+
+  expect_true(any(grepl("scene.load.once('complete'", sprite_js, fixed = TRUE)))
+  expect_true(any(grepl("scene.load.once('complete'", group_js, fixed = TRUE)))
+  expect_true(any(grepl("scene.load.once('complete'", image_js, fixed = TRUE)))
+  expect_false(any(grepl("if (!scene.load.isLoading())", sprite_js, fixed = TRUE)))
+})
+
+test_that("bear uses Arcade world gravity", {
+  game_js <- readLines(system.file("www", "phaser-game.js", package = "shinyphaser"), warn = FALSE)
+  bear <- readLines(system.file("examples", "bear.R", package = "shinyphaser"), warn = FALSE)
+
+  expect_true(any(grepl("gravity: {", game_js, fixed = TRUE)))
+  expect_true(any(grepl("gravity_y = 1200", bear, fixed = TRUE)))
+  expect_false(any(grepl("$set_gravity", bear, fixed = TRUE)))
 })

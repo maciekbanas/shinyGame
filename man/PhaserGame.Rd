@@ -59,7 +59,7 @@ game <- PhaserGame$new(id = "my_game", width = 1024, height = 768)
 \subsection{Method \code{new()}}{
 Create a PhaserGame object with the given configuration.
 \subsection{Usage}{
-\if{html}{\out{<div class="r">}}\preformatted{PhaserGame$new(id = "phaser_game", width = 800, height = 600)}\if{html}{\out{</div>}}
+\if{html}{\out{<div class="r">}}\preformatted{PhaserGame$new(id = "phaser_game", width = 800, height = 600, gravity_x = 0, gravity_y = 0)}\if{html}{\out{</div>}}
 }
 
 \subsection{Arguments}{
@@ -70,6 +70,10 @@ Create a PhaserGame object with the given configuration.
 \item{\code{width}}{Numeric. Width of the Phaser canvas in pixels (defaults to 800).}
 
 \item{\code{height}}{Numeric. Height of the Phaser canvas in pixels (defaults to 600).}
+
+\item{\code{gravity_x}}{Numeric. Horizontal Arcade Physics world gravity (defaults to 0).}
+
+\item{\code{gravity_y}}{Numeric. Vertical Arcade Physics world gravity (defaults to 0).}
 }
 \if{html}{\out{</div>}}
 }

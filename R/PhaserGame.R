@@ -15,17 +15,23 @@ PhaserGame <- R6::R6Class(
     #' @param id Character. ID of the Game container (defaults to "phaser_game").
     #' @param width Numeric. Width of the Phaser canvas in pixels (defaults to 800).
     #' @param height Numeric. Height of the Phaser canvas in pixels (defaults to 600).
+    #' @param gravity_x Numeric. Horizontal Arcade Physics world gravity (defaults to 0).
+    #' @param gravity_y Numeric. Vertical Arcade Physics world gravity (defaults to 0).
     #' @return A new PhaserGame object.
     #' @examples
     #' game <- PhaserGame$new(id = "my_game", width = 1024, height = 768)
     initialize = function(id = "phaser_game",
                           width = 800,
-                          height = 600) {
+                          height = 600,
+                          gravity_x = 0,
+                          gravity_y = 0) {
       self$id <- id
 
       private$config <- list(
         width = width,
-        height = height
+        height = height,
+        gravity_x = gravity_x,
+        gravity_y = gravity_y
       )
     },
 
@@ -242,12 +248,12 @@ PhaserGame <- R6::R6Class(
       js <- if (!is.null(object_two)) {
         sprintf("addCollider('%s','%s',%s,%s)",
                 object_one, object_two,
-                jsonlite::toJSON(event_target, auto_unbox = TRUE),
+                phaser_event_target_json(event_target),
                 jsonlite::toJSON(browser_actions, auto_unbox = TRUE, null = "null"))
       } else {
         sprintf("addGroupCollider('%s','%s',%s,%s)",
                 object_one, group,
-                jsonlite::toJSON(event_target, auto_unbox = TRUE),
+                phaser_event_target_json(event_target),
                 jsonlite::toJSON(browser_actions, auto_unbox = TRUE, null = "null"))
       }
       send_js(private, js)
@@ -289,14 +295,14 @@ PhaserGame <- R6::R6Class(
         sprintf("addOverlap(%s, %s, %s, %s, %s, %s)",
                 jsonlite::toJSON(object_one, auto_unbox = TRUE),
                 jsonlite::toJSON(object_two, auto_unbox = TRUE),
-                jsonlite::toJSON(event_endpoint, auto_unbox = TRUE),
+                phaser_event_target_json(event_endpoint),
                 jsonlite::toJSON(browser_actions, auto_unbox = TRUE, null = "null"),
                 jsonlite::toJSON(mode, auto_unbox = TRUE), interval)
       } else {
         sprintf("addGroupOverlap(%s, %s, %s, %s, %s, %s)",
                 jsonlite::toJSON(object_one, auto_unbox = TRUE),
                 jsonlite::toJSON(group, auto_unbox = TRUE),
-                jsonlite::toJSON(event_endpoint, auto_unbox = TRUE),
+                phaser_event_target_json(event_endpoint),
                 jsonlite::toJSON(browser_actions, auto_unbox = TRUE, null = "null"),
                 jsonlite::toJSON(mode, auto_unbox = TRUE), interval)
       }
@@ -352,7 +358,7 @@ PhaserGame <- R6::R6Class(
      js <- sprintf("addOverlapEnd(%s, %s, %s, %s);",
                    jsonlite::toJSON(object_one, auto_unbox = TRUE),
                    jsonlite::toJSON(object_two, auto_unbox = TRUE),
-                   jsonlite::toJSON(event_endpoint, auto_unbox = TRUE),
+                   phaser_event_target_json(event_endpoint),
                    jsonlite::toJSON(browser_actions, auto_unbox = TRUE, null = "null"))
      session$sendCustomMessage("phaser", list(js = js))
    },
