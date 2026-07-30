@@ -9,8 +9,6 @@ GameBridge.pendingCameraFollow = GameBridge.pendingCameraFollow || {};
 GameBridge.pendingScrollFactor = GameBridge.pendingScrollFactor || {};
 GameBridge.pendingWorldBounds = GameBridge.pendingWorldBounds || null;
 GameBridge.pendingTerrainColliders = GameBridge.pendingTerrainColliders || [];
-GameBridge.pendingColliderNames = GameBridge.pendingColliderNames || new Set();
-GameBridge.frozenColliderBodies = GameBridge.frozenColliderBodies || new Map();
 GameBridge.lastHeroOverlapState = GameBridge.lastHeroOverlapState || "";
 GameBridge.nextHeroOverlapSendAt = GameBridge.nextHeroOverlapSendAt || 0;
 GameBridge.sounds = GameBridge.sounds || {};
@@ -62,30 +60,12 @@ function playTypeAnim(sprite, type, suffix) {
 
 function initPhaserGame(containerId, config) {
   GameBridge.overlapEndWatchers = {};
-  GameBridge.playerControls = {};
-  GameBridge.forcedAnimations = {};
-  GameBridge.pendingColliderNames = new Set();
-  GameBridge.frozenColliderBodies = new Map();
-
-  // A Shiny reconnect can initialize a new Phaser scene without reloading the
-  // page. Remove controls which still point at the previous scene before the
-  // new game registers its own controls.
-  Object.values(GameBridge.keyControlHandlers || {}).forEach((handler) => {
-    document.removeEventListener("keydown", handler);
-  });
-  GameBridge.keyControlHandlers = {};
 
   window.game = new Phaser.Game({
     type: Phaser.AUTO,
     width: config.width,
     height: config.height,
     parent: containerId,
-    // Shiny commonly runs games inside RStudio's Viewer pane or another
-    // iframe. Phaser pauses its entire game loop on a visibility/focus change
-    // by default, even though DOM key handlers can continue to receive input.
-    // That leaves sounds working while physics, movement, and jumps appear
-    // frozen. Keep the loop alive in embedded views.
-    disableVisibilityChange: true,
     physics: { default: 'arcade' },
     scene: {
       preload: preload,
@@ -118,7 +98,7 @@ function initPhaserGame(containerId, config) {
 
       Object.entries(GameBridge.playerControls).forEach(([name, opts]) => {
           const sprite = this.children.getByName(name);
-          if (!sprite || !sprite.active || !sprite.body || !sprite.body.enable) return;
+          if (!sprite) return;
 
           const { speed, directionMap } = opts;
 
@@ -274,14 +254,6 @@ function addPlayerControls(name, directions, speed) {
       down: directions.includes("down")
     }
   };
-
-  // Cursor keys otherwise retain the browser's default scrolling behavior in
-  // some embedding contexts, which can move focus away from the game canvas.
-  if (scene && scene.input && scene.input.keyboard) {
-    scene.input.keyboard.addCapture(
-      directions.map((direction) => direction.toUpperCase())
-    );
-  }
 };
 
 function applyWorldBounds(bounds) {
@@ -399,8 +371,7 @@ function addPlayerTerrainCollider(spriteName) {
 function addCollider(objectOneName, objectTwoName, inputId, browserActions = []) {
   if (retryWhenMissingObjects(
     () => addCollider(objectOneName, objectTwoName, inputId, browserActions),
-    [objectOneName, objectTwoName],
-    true
+    [objectOneName, objectTwoName]
   )) return;
   const objectOne = scene.children.getByName(objectOneName);
   const objectTwo = scene.children.getByName(objectTwoName);
@@ -411,7 +382,6 @@ function addCollider(objectOneName, objectTwoName, inputId, browserActions = [])
       sendPhaserEvent(inputId, phaserCollisionPayload(obj1, obj2));
     }
   );
-  releasePendingColliderBodies([objectOneName, objectTwoName]);
 }
 
 function addGroupCollider(objectName, groupName, inputId, browserActions = []) {
@@ -430,41 +400,12 @@ function addGroupCollider(objectName, groupName, inputId, browserActions = []) {
   );
 }
 
-function retryWhenMissingObjects(fn, objectNames, freezeBodies = false) {
+function retryWhenMissingObjects(fn, objectNames) {
   const missingObject = objectNames.some((name) => !scene.children.getByName(name));
   if (!missingObject) return false;
 
-  // Objects loaded at runtime start participating in Arcade Physics as soon as
-  // their individual texture finishes. A falling object can therefore pass
-  // through a platform whose texture is still loading before the collider is
-  // registered. Freeze dynamic participants until all collider objects exist.
-  if (freezeBodies) {
-    objectNames.forEach((name) => {
-      GameBridge.pendingColliderNames.add(name);
-      freezePendingColliderBody(name);
-    });
-  }
   window.setTimeout(fn, 100);
   return true;
-}
-
-function freezePendingColliderBody(name) {
-  if (!GameBridge.pendingColliderNames.has(name) || !scene) return;
-  const object = scene.children.getByName(name);
-  const body = object && object.body;
-  if (!body || !body.moves || GameBridge.frozenColliderBodies.has(name)) return;
-
-  GameBridge.frozenColliderBodies.set(name, body);
-  body.moves = false;
-}
-
-function releasePendingColliderBodies(objectNames) {
-  objectNames.forEach((name) => {
-    GameBridge.pendingColliderNames.delete(name);
-    const body = GameBridge.frozenColliderBodies.get(name);
-    if (body) body.moves = true;
-    GameBridge.frozenColliderBodies.delete(name);
-  });
 }
 
 function addOverlap(objectOneName, objectTwoName, inputId, browserActions = [], mode = "enter", interval = 0) {

@@ -150,18 +150,6 @@ test_that("PhaserGame exposes use_phaser UI initializer", {
 
   expect_true(is.function(game$use_phaser))
   expect_null(game$ui)
-
-  ui <- game$use_phaser()
-  dependency <- Filter(
-    function(item) inherits(item, "html_dependency") &&
-      identical(item$name, "shinyphaser-assets"),
-    unclass(ui)
-  )
-  expect_length(dependency, 1)
-  expect_identical(
-    dependency[[1]]$version,
-    as.character(utils::packageVersion("shinyphaser"))
-  )
 })
 
 test_that("Sound methods send expected JS", {
@@ -335,6 +323,19 @@ test_that("dungeonheroes Space action retains interactions and combat", {
   expect_false(any(grepl("client_action", example, fixed = TRUE)))
 })
 
+test_that("bear starts on its platform and handles jumping on the server", {
+  example <- readLines(
+    system.file("examples", "bear.R", package = "shinyphaser"),
+    warn = FALSE
+  )
+
+  expect_true(any(grepl("y = 660", example, fixed = TRUE)))
+  expect_true(any(grepl("y = 670", example, fixed = TRUE)))
+  expect_true(any(grepl("frame_count = 10", example, fixed = TRUE)))
+  expect_true(any(grepl("notify_server = TRUE", example, fixed = TRUE)))
+  expect_true(any(grepl("input$Space_action", example, fixed = TRUE)))
+})
+
 test_that("browser feedback is configured for immediate visibility and audio", {
   game_js <- readLines(system.file("www", "phaser-game.js", package = "shinyphaser"), warn = FALSE)
   sprite_js <- readLines(system.file("www", "phaser-sprite.js", package = "shinyphaser"), warn = FALSE)
@@ -348,23 +349,4 @@ test_that("browser feedback is configured for immediate visibility and audio", {
   expect_true(any(grepl("() => addCollider(objectOneName", game_js, fixed = TRUE)))
   expect_true(any(grepl("filecomplete-spritesheet-${name}", sprite_js, fixed = TRUE)))
   expect_true(any(grepl("filecomplete-image-${name}", sprite_js, fixed = TRUE)))
-  expect_true(any(grepl("disableVisibilityChange: true", game_js, fixed = TRUE)))
-  expect_true(any(grepl("!sprite.body || !sprite.body.enable", game_js, fixed = TRUE)))
-  expect_true(any(grepl("scene.input.keyboard.addCapture", game_js, fixed = TRUE)))
-  expect_true(any(grepl('withSprite(name, (sprite) => {', sprite_js, fixed = TRUE)))
-  expect_true(any(grepl("e.preventDefault()", sprite_js, fixed = TRUE)))
-  expect_true(any(grepl("freezePendingColliderBody(name)", game_js, fixed = TRUE)))
-  expect_true(any(grepl("releasePendingColliderBodies", game_js, fixed = TRUE)))
-  expect_true(any(grepl('typeof freezePendingColliderBody === "function"', sprite_js, fixed = TRUE)))
-})
-
-test_that("bear controls compile movement and jump as browser actions", {
-  example <- readLines(
-    system.file("examples", "bear.R", package = "shinyphaser"),
-    warn = FALSE
-  )
-
-  expect_true(any(grepl('directions = c("left", "right")', example, fixed = TRUE)))
-  expect_true(any(grepl('"Space"', example, fixed = TRUE)))
-  expect_true(any(grepl("bear$set_velocity_y(-600)", example, fixed = TRUE)))
 })

@@ -73,9 +73,6 @@ function addSprite(name, url, x, y, frameWidth, frameHeight, frameCount, frameRa
     sprite.play(name + '_idle');
 
     scene[name] = sprite;
-    if (typeof freezePendingColliderBody === "function") {
-      freezePendingColliderBody(name);
-    }
     applyPendingSpriteActions(name);
 
     if (typeof applyPendingCameraFollows === "function") {
@@ -100,9 +97,6 @@ function addStaticSprite(name, url, x, y) {
       scene.physics.add.collider(staticSprite, scene.terrainLayer);
     }
     scene[name] = staticSprite;
-    if (typeof freezePendingColliderBody === "function") {
-      freezePendingColliderBody(name);
-    }
 
     if (typeof applyPendingCameraFollows === "function") {
       applyPendingCameraFollows();
@@ -192,15 +186,13 @@ function setGravity(name, x, y) {
 }
 
 function setVelocityX(name, x) {
-  withSprite(name, (sprite) => {
-    if (sprite.body && sprite.body.enable) sprite.body.setVelocityX(x);
-  }, "setVelocityX()");
+  const sprite = scene[name];
+  sprite.body.setVelocityX(x);
 }
 
 function setVelocityY(name, x) {
-  withSprite(name, (sprite) => {
-    if (sprite.body && sprite.body.enable) sprite.body.setVelocityY(x);
-  }, "setVelocityY()");
+  const sprite = scene[name];
+  sprite.body.setVelocityY(x);
 }
 
 function setBounce(name, x) {
@@ -345,7 +337,6 @@ function addKeyControl(key, browserActions = [], notifyServer = false) {
 
   const handler = function(e) {
     if (key === e.code) {
-      e.preventDefault();
       runBrowserActionList(browserActions);
       if (notifyServer) {
         Shiny.setInputValue(key + "_action", { code: e.code, evt_nonce: Date.now() + Math.random() }, { priority: "event" });

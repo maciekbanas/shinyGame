@@ -46,11 +46,7 @@ PhaserGame <- R6::R6Class(
         htmltools::tags$div(id = self$id, style = "width:100vw; height:100vh;"),
         htmltools::htmlDependency(
           name = "shinyphaser-assets",
-          # Use the package version as the asset cache key. A fixed dependency
-          # version made browsers keep serving old Phaser bridge scripts after
-          # package updates, so fixes appeared to have no effect until the
-          # browser cache was manually cleared.
-          version = as.character(utils::packageVersion("shinyphaser")),
+          version = "0.1",
           package = "shinyphaser",
           src = "www",
           script = c("phaser-game.js", "phaser-groups.js",
