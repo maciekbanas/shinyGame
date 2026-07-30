@@ -73,9 +73,6 @@ function addSprite(name, url, x, y, frameWidth, frameHeight, frameCount, frameRa
     sprite.play(name + '_idle');
 
     scene[name] = sprite;
-    if (typeof applyPendingObjectColliders === "function") {
-      applyPendingObjectColliders();
-    }
     applyPendingSpriteActions(name);
 
     if (typeof applyPendingCameraFollows === "function") {
@@ -100,9 +97,6 @@ function addStaticSprite(name, url, x, y) {
       scene.physics.add.collider(staticSprite, scene.terrainLayer);
     }
     scene[name] = staticSprite;
-    if (typeof applyPendingObjectColliders === "function") {
-      applyPendingObjectColliders();
-    }
 
     if (typeof applyPendingCameraFollows === "function") {
       applyPendingCameraFollows();
@@ -186,12 +180,12 @@ function playAnimationForDuration(name, animName, duration) {
 }
 
 function setGravity(name, x, y) {
-  if (typeof hasPendingObjectCollider === "function" && hasPendingObjectCollider(name)) {
-    GameBridge.pendingGravity[name] = { x, y };
-    return;
-  }
   withSprite(name, (sprite) => {
-    if (sprite.body) sprite.body.setGravity(x, y);
+    if (typeof sprite.setGravity === "function") {
+      sprite.setGravity(x, y);
+    } else if (sprite.body && typeof sprite.body.setGravity === "function") {
+      sprite.body.setGravity(x, y);
+    }
   }, "setGravity()");
 }
 
