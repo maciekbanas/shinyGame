@@ -26,23 +26,13 @@ server <- function(input, output, session) {
     y = 400
   )
 
-  # Load the platform before any gravity-enabled actors so their initial
-  # physics step cannot occur without the ground object being available.
-  grass <- game$add_static_sprite(
-    name = "grass",
-    url = "assets/bear/terrain/grass.png",
-    x = 800,
-    y = 755
-  )
-
   bear <- game$add_sprite(
     name = "bear",
     url = "assets/bear/player_sprites/bear_idle.png",
     x = 100,
-    y = 660,
+    y = 550,
     frame_width = 100,
     frame_height = 100,
-    frame_count = 10,
     frame_rate = 4
   )
   bear$add_animation(
@@ -50,7 +40,6 @@ server <- function(input, output, session) {
     url = "assets/bear/player_sprites/bear_move_right.png",
     frame_width = 100,
     frame_height = 100,
-    frame_count = 2,
     frame_rate = 6
   )
   bear$add_animation(
@@ -58,7 +47,6 @@ server <- function(input, output, session) {
     url = "assets/bear/player_sprites/bear_move_left.png",
     frame_width = 100,
     frame_height = 100,
-    frame_count = 2,
     frame_rate = 6
   )
   bear$add_animation(
@@ -66,7 +54,6 @@ server <- function(input, output, session) {
     url = "assets/bear/player_sprites/bear_jump.png",
     frame_width = 100,
     frame_height = 100,
-    frame_count = 2,
     frame_rate = 6
   )
   bear$add_player_controls(
@@ -79,21 +66,14 @@ server <- function(input, output, session) {
     "Space",
     action = {
       jump_sound$play()
+      bear$set_velocity_y(-600)
+      bear$play_animation(
+        anim_name = "bear_jump",
+        duration = 250
+      )
     },
-    input = input,
-    notify_server = TRUE
+    input
   )
-
-  shiny::observeEvent(input$Space_action, {
-    # Keep physics mutations in the Shiny observer. This uses the same
-    # established command path as the rest of the Sprite API rather than
-    # depending on action-block compilation for the platforming controls.
-    bear$set_velocity_y(-600)
-    bear$play_animation(
-      anim_name = "bear_jump",
-      duration = 250
-    )
-  })
   bear$set_gravity(
     x = 0,
     y = 1200
@@ -116,11 +96,18 @@ server <- function(input, output, session) {
     y = 600
   )
 
+  grass <- game$add_static_sprite(
+    name = "grass",
+    url = "assets/bear/terrain/grass.png",
+    x = 800,
+    y = 755
+  )
+
   wooden_box <- game$add_sprite(
     name = "wooden_box",
     url = "assets/bear/obstacles/wooden_box.png",
     x = 300,
-    y = 670,
+    y = 600,
     frame_width = 80,
     frame_height = 80
   )

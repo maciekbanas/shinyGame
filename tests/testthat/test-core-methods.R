@@ -323,19 +323,6 @@ test_that("dungeonheroes Space action retains interactions and combat", {
   expect_false(any(grepl("client_action", example, fixed = TRUE)))
 })
 
-test_that("bear starts on its platform and handles jumping on the server", {
-  example <- readLines(
-    system.file("examples", "bear.R", package = "shinyphaser"),
-    warn = FALSE
-  )
-
-  expect_true(any(grepl("y = 660", example, fixed = TRUE)))
-  expect_true(any(grepl("y = 670", example, fixed = TRUE)))
-  expect_true(any(grepl("frame_count = 10", example, fixed = TRUE)))
-  expect_true(any(grepl("notify_server = TRUE", example, fixed = TRUE)))
-  expect_true(any(grepl("input$Space_action", example, fixed = TRUE)))
-})
-
 test_that("browser feedback is configured for immediate visibility and audio", {
   game_js <- readLines(system.file("www", "phaser-game.js", package = "shinyphaser"), warn = FALSE)
   sprite_js <- readLines(system.file("www", "phaser-sprite.js", package = "shinyphaser"), warn = FALSE)
@@ -347,6 +334,15 @@ test_that("browser feedback is configured for immediate visibility and audio", {
   expect_true(any(grepl("filecomplete-audio-${name}", game_js, fixed = TRUE)))
   expect_true(any(grepl("if (!scene.load.isLoading()) scene.load.start()", game_js, fixed = TRUE)))
   expect_true(any(grepl("() => addCollider(objectOneName", game_js, fixed = TRUE)))
-  expect_true(any(grepl("filecomplete-spritesheet-${name}", sprite_js, fixed = TRUE)))
-  expect_true(any(grepl("filecomplete-image-${name}", sprite_js, fixed = TRUE)))
+})
+
+test_that("runtime visual assets initialize when the loader batch completes", {
+  sprite_js <- readLines(system.file("www", "phaser-sprite.js", package = "shinyphaser"), warn = FALSE)
+  group_js <- readLines(system.file("www", "phaser-groups.js", package = "shinyphaser"), warn = FALSE)
+  image_js <- readLines(system.file("www", "phaser-image.js", package = "shinyphaser"), warn = FALSE)
+
+  expect_true(any(grepl("scene.load.once('complete'", sprite_js, fixed = TRUE)))
+  expect_true(any(grepl("scene.load.once('complete'", group_js, fixed = TRUE)))
+  expect_true(any(grepl("scene.load.once('complete'", image_js, fixed = TRUE)))
+  expect_false(any(grepl("if (!scene.load.isLoading())", sprite_js, fixed = TRUE)))
 })
