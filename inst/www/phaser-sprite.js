@@ -186,13 +186,15 @@ function setGravity(name, x, y) {
 }
 
 function setVelocityX(name, x) {
-  const sprite = scene[name];
-  sprite.body.setVelocityX(x);
+  withSprite(name, (sprite) => {
+    if (sprite.body && sprite.body.enable) sprite.body.setVelocityX(x);
+  }, "setVelocityX()");
 }
 
 function setVelocityY(name, x) {
-  const sprite = scene[name];
-  sprite.body.setVelocityY(x);
+  withSprite(name, (sprite) => {
+    if (sprite.body && sprite.body.enable) sprite.body.setVelocityY(x);
+  }, "setVelocityY()");
 }
 
 function setBounce(name, x) {
@@ -337,6 +339,7 @@ function addKeyControl(key, browserActions = [], notifyServer = false) {
 
   const handler = function(e) {
     if (key === e.code) {
+      e.preventDefault();
       runBrowserActionList(browserActions);
       if (notifyServer) {
         Shiny.setInputValue(key + "_action", { code: e.code, evt_nonce: Date.now() + Math.random() }, { priority: "event" });

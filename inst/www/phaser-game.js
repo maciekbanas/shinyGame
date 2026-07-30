@@ -60,6 +60,16 @@ function playTypeAnim(sprite, type, suffix) {
 
 function initPhaserGame(containerId, config) {
   GameBridge.overlapEndWatchers = {};
+  GameBridge.playerControls = {};
+  GameBridge.forcedAnimations = {};
+
+  // A Shiny reconnect can initialize a new Phaser scene without reloading the
+  // page. Remove controls which still point at the previous scene before the
+  // new game registers its own controls.
+  Object.values(GameBridge.keyControlHandlers || {}).forEach((handler) => {
+    document.removeEventListener("keydown", handler);
+  });
+  GameBridge.keyControlHandlers = {};
 
   window.game = new Phaser.Game({
     type: Phaser.AUTO,
@@ -98,7 +108,7 @@ function initPhaserGame(containerId, config) {
 
       Object.entries(GameBridge.playerControls).forEach(([name, opts]) => {
           const sprite = this.children.getByName(name);
-          if (!sprite) return;
+          if (!sprite || !sprite.active || !sprite.body || !sprite.body.enable) return;
 
           const { speed, directionMap } = opts;
 
@@ -254,6 +264,14 @@ function addPlayerControls(name, directions, speed) {
       down: directions.includes("down")
     }
   };
+
+  // Cursor keys otherwise retain the browser's default scrolling behavior in
+  // some embedding contexts, which can move focus away from the game canvas.
+  if (scene && scene.input && scene.input.keyboard) {
+    scene.input.keyboard.addCapture(
+      directions.map((direction) => direction.toUpperCase())
+    );
+  }
 };
 
 function applyWorldBounds(bounds) {
