@@ -9,6 +9,8 @@ GameBridge.pendingCameraFollow = GameBridge.pendingCameraFollow || {};
 GameBridge.pendingScrollFactor = GameBridge.pendingScrollFactor || {};
 GameBridge.pendingWorldBounds = GameBridge.pendingWorldBounds || null;
 GameBridge.pendingTerrainColliders = GameBridge.pendingTerrainColliders || [];
+GameBridge.pendingObjectColliders = GameBridge.pendingObjectColliders || [];
+GameBridge.pendingGravity = GameBridge.pendingGravity || {};
 GameBridge.lastHeroOverlapState = GameBridge.lastHeroOverlapState || "";
 GameBridge.nextHeroOverlapSendAt = GameBridge.nextHeroOverlapSendAt || 0;
 GameBridge.sounds = GameBridge.sounds || {};
@@ -60,6 +62,8 @@ function playTypeAnim(sprite, type, suffix) {
 
 function initPhaserGame(containerId, config) {
   GameBridge.overlapEndWatchers = {};
+  GameBridge.pendingObjectColliders = [];
+  GameBridge.pendingGravity = {};
 
   window.game = new Phaser.Game({
     type: Phaser.AUTO,
@@ -369,12 +373,21 @@ function addPlayerTerrainCollider(spriteName) {
 }
 
 function addCollider(objectOneName, objectTwoName, inputId, browserActions = []) {
-  if (retryWhenMissingObjects(
-    () => addCollider(objectOneName, objectTwoName, inputId, browserActions),
-    [objectOneName, objectTwoName]
-  )) return;
+  const pending = { objectOneName, objectTwoName, inputId, browserActions };
+  if (!addObjectColliderWhenReady(pending)) {
+    GameBridge.pendingObjectColliders.push(pending);
+  } else {
+    applyPendingGravity(objectOneName);
+    applyPendingGravity(objectTwoName);
+  }
+}
+
+function addObjectColliderWhenReady(pending) {
+  const { objectOneName, objectTwoName, inputId, browserActions } = pending;
   const objectOne = scene.children.getByName(objectOneName);
   const objectTwo = scene.children.getByName(objectTwoName);
+  if (!objectOne || !objectTwo) return false;
+
   scene.physics.add.collider(
     objectOne, objectTwo,
     function(obj1, obj2) {
@@ -382,6 +395,32 @@ function addCollider(objectOneName, objectTwoName, inputId, browserActions = [])
       sendPhaserEvent(inputId, phaserCollisionPayload(obj1, obj2));
     }
   );
+  return true;
+}
+
+function applyPendingObjectColliders() {
+  const completedNames = [];
+  GameBridge.pendingObjectColliders = GameBridge.pendingObjectColliders.filter(
+    (pending) => {
+      if (!addObjectColliderWhenReady(pending)) return true;
+      completedNames.push(pending.objectOneName, pending.objectTwoName);
+      return false;
+    }
+  );
+  completedNames.forEach(applyPendingGravity);
+}
+
+function hasPendingObjectCollider(name) {
+  return GameBridge.pendingObjectColliders.some((pending) =>
+    pending.objectOneName === name || pending.objectTwoName === name
+  );
+}
+
+function applyPendingGravity(name) {
+  const gravity = GameBridge.pendingGravity[name];
+  if (!gravity || hasPendingObjectCollider(name)) return;
+  delete GameBridge.pendingGravity[name];
+  setGravity(name, gravity.x, gravity.y);
 }
 
 function addGroupCollider(objectName, groupName, inputId, browserActions = []) {

@@ -74,11 +74,6 @@ server <- function(input, output, session) {
     },
     input
   )
-  bear$set_gravity(
-    x = 0,
-    y = 1200
-  )
-
   apples <- game$add_static_group(
     name = "apples",
     url = "assets/bear/perks/apple.png"
@@ -111,11 +106,6 @@ server <- function(input, output, session) {
     frame_width = 80,
     frame_height = 80
   )
-  wooden_box$set_gravity(
-    x = 0,
-    y = 500
-  )
-
   points_text <- game$add_text(
     text = "apples gathered: 0",
     id = "points_text",
@@ -133,6 +123,16 @@ server <- function(input, output, session) {
     object_one = "wooden_box",
     object_two = "grass",
     input = input
+  )
+  # Register the platform colliders before enabling gravity. The browser holds
+  # these gravity values until both objects in each collider are ready.
+  bear$set_gravity(
+    x = 0,
+    y = 1200
+  )
+  wooden_box$set_gravity(
+    x = 0,
+    y = 500
   )
   game$add_overlap(
     object_one = "bear",

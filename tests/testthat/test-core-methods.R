@@ -346,3 +346,16 @@ test_that("runtime visual assets initialize when the loader batch completes", {
   expect_true(any(grepl("scene.load.once('complete'", image_js, fixed = TRUE)))
   expect_false(any(grepl("if (!scene.load.isLoading())", sprite_js, fixed = TRUE)))
 })
+
+test_that("gravity waits for pending object colliders", {
+  game_js <- readLines(system.file("www", "phaser-game.js", package = "shinyphaser"), warn = FALSE)
+  sprite_js <- readLines(system.file("www", "phaser-sprite.js", package = "shinyphaser"), warn = FALSE)
+  bear <- readLines(system.file("examples", "bear.R", package = "shinyphaser"), warn = FALSE)
+
+  expect_true(any(grepl("pendingObjectColliders", game_js, fixed = TRUE)))
+  expect_true(any(grepl("applyPendingObjectColliders()", sprite_js, fixed = TRUE)))
+  expect_true(any(grepl("hasPendingObjectCollider(name)", sprite_js, fixed = TRUE)))
+  expect_gt(which(grepl('object_two = "grass"', bear, fixed = TRUE))[1], 0)
+  expect_gt(which(grepl("bear$set_gravity", bear, fixed = TRUE))[1],
+            which(grepl('object_two = "grass"', bear, fixed = TRUE))[1])
+})
