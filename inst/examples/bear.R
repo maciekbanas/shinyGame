@@ -1,6 +1,6 @@
 devtools::load_all()
 
-game <- PhaserGame$new(width = 800, height = 800)
+game <- PhaserGame$new(width = 800, height = 800, gravity_y = 1200)
 
 ui <- shiny::tagList(
   game$use_phaser()
@@ -74,11 +74,6 @@ server <- function(input, output, session) {
     },
     input
   )
-  bear$set_gravity(
-    x = 0,
-    y = 1200
-  )
-
   apples <- game$add_static_group(
     name = "apples",
     url = "assets/bear/perks/apple.png"
@@ -111,11 +106,6 @@ server <- function(input, output, session) {
     frame_width = 80,
     frame_height = 80
   )
-  wooden_box$set_gravity(
-    x = 0,
-    y = 500
-  )
-
   points_text <- game$add_text(
     text = "apples gathered: 0",
     id = "points_text",

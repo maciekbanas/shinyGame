@@ -15,17 +15,23 @@ PhaserGame <- R6::R6Class(
     #' @param id Character. ID of the Game container (defaults to "phaser_game").
     #' @param width Numeric. Width of the Phaser canvas in pixels (defaults to 800).
     #' @param height Numeric. Height of the Phaser canvas in pixels (defaults to 600).
+    #' @param gravity_x Numeric. Horizontal Arcade Physics world gravity (defaults to 0).
+    #' @param gravity_y Numeric. Vertical Arcade Physics world gravity (defaults to 0).
     #' @return A new PhaserGame object.
     #' @examples
     #' game <- PhaserGame$new(id = "my_game", width = 1024, height = 768)
     initialize = function(id = "phaser_game",
                           width = 800,
-                          height = 600) {
+                          height = 600,
+                          gravity_x = 0,
+                          gravity_y = 0) {
       self$id <- id
 
       private$config <- list(
         width = width,
-        height = height
+        height = height,
+        gravity_x = gravity_x,
+        gravity_y = gravity_y
       )
     },
 

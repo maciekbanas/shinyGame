@@ -152,6 +152,14 @@ test_that("PhaserGame exposes use_phaser UI initializer", {
   expect_null(game$ui)
 })
 
+test_that("PhaserGame passes world gravity to its browser configuration", {
+  game <- PhaserGame$new(gravity_x = 10, gravity_y = 1200)
+  ui <- as.character(game$use_phaser())
+
+  expect_true(any(grepl('"gravity_x":10', ui, fixed = TRUE)))
+  expect_true(any(grepl('"gravity_y":1200', ui, fixed = TRUE)))
+})
+
 test_that("Sound methods send expected JS", {
   session <- make_mock_session()
   sound <- Sound$new("coin", "coin.mp3", volume = 0.5, loop = FALSE, session = session)
@@ -347,11 +355,11 @@ test_that("runtime visual assets initialize when the loader batch completes", {
   expect_false(any(grepl("if (!scene.load.isLoading())", sprite_js, fixed = TRUE)))
 })
 
-test_that("gravity uses the Arcade Sprite API and passive colliders have no callback", {
+test_that("bear uses Arcade world gravity", {
   game_js <- readLines(system.file("www", "phaser-game.js", package = "shinyphaser"), warn = FALSE)
-  sprite_js <- readLines(system.file("www", "phaser-sprite.js", package = "shinyphaser"), warn = FALSE)
+  bear <- readLines(system.file("examples", "bear.R", package = "shinyphaser"), warn = FALSE)
 
-  expect_true(any(grepl('typeof sprite.setGravity === "function"', sprite_js, fixed = TRUE)))
-  expect_true(any(grepl("const collisionCallback = (inputId || hasBrowserActions)", game_js, fixed = TRUE)))
-  expect_true(any(grepl(": null;", game_js, fixed = TRUE)))
+  expect_true(any(grepl("gravity: {", game_js, fixed = TRUE)))
+  expect_true(any(grepl("gravity_y = 1200", bear, fixed = TRUE)))
+  expect_false(any(grepl("$set_gravity", bear, fixed = TRUE)))
 })

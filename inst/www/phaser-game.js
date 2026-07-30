@@ -66,7 +66,15 @@ function initPhaserGame(containerId, config) {
     width: config.width,
     height: config.height,
     parent: containerId,
-    physics: { default: 'arcade' },
+    physics: {
+      default: 'arcade',
+      arcade: {
+        gravity: {
+          x: Number(config.gravity_x) || 0,
+          y: Number(config.gravity_y) || 0
+        }
+      }
+    },
     scene: {
       preload: preload,
       create: create,
@@ -375,17 +383,12 @@ function addCollider(objectOneName, objectTwoName, inputId, browserActions = [])
   )) return;
   const objectOne = scene.children.getByName(objectOneName);
   const objectTwo = scene.children.getByName(objectTwoName);
-  const hasBrowserActions = Array.isArray(browserActions)
-    ? browserActions.length > 0
-    : Boolean(browserActions && Object.keys(browserActions).length);
-  const collisionCallback = (inputId || hasBrowserActions)
-    ? function(obj1, obj2) {
-        runBrowserActionList(browserActions, obj1, obj2);
-        sendPhaserEvent(inputId, phaserCollisionPayload(obj1, obj2));
-      }
-    : null;
   scene.physics.add.collider(
-    objectOne, objectTwo, collisionCallback
+    objectOne, objectTwo,
+    function(obj1, obj2) {
+      runBrowserActionList(browserActions, obj1, obj2);
+      sendPhaserEvent(inputId, phaserCollisionPayload(obj1, obj2));
+    }
   );
 }
 

@@ -181,11 +181,7 @@ function playAnimationForDuration(name, animName, duration) {
 
 function setGravity(name, x, y) {
   withSprite(name, (sprite) => {
-    if (typeof sprite.setGravity === "function") {
-      sprite.setGravity(x, y);
-    } else if (sprite.body && typeof sprite.body.setGravity === "function") {
-      sprite.body.setGravity(x, y);
-    }
+    if (sprite.body) sprite.body.setGravity(x, y);
   }, "setGravity()");
 }
 
