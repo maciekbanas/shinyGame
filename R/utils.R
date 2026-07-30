@@ -2,6 +2,11 @@ send_js <- function(private, js) {
   private$session$sendCustomMessage("phaser", list(js = js))
 }
 
+phaser_event_target_json <- function(target) {
+  if (is.null(target)) return("null")
+  jsonlite::toJSON(target, auto_unbox = TRUE)
+}
+
 # Translate a deliberately small, R-looking action block into the declarative
 # commands understood by the browser.  The expression is never evaluated: doing
 # so would send the R6 commands to Shiny, which is precisely the round trip this

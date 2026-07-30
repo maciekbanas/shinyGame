@@ -15,8 +15,12 @@ GameBridge.sounds = GameBridge.sounds || {};
 GameBridge.pendingSoundActions = GameBridge.pendingSoundActions || {};
 
 function sendPhaserEvent(target, payload) {
-  if (!target) return;
-  if (typeof target === "string" && (/^https?:/.test(target) || target.includes("/")) && window.fetch) {
+  // jsonlite represented an absent R event target as an empty object in older
+  // messages. Shiny input names must be strings; passing that object reaches
+  // Shiny's input-name splitter and throws `e.split is not a function`, which
+  // aborts Phaser's game loop on the first collision.
+  if (typeof target !== "string" || target.length === 0) return;
+  if ((/^https?:/.test(target) || target.includes("/")) && window.fetch) {
     window.fetch(target, {
       method: "POST",
       headers: { "Content-Type": "application/json" },

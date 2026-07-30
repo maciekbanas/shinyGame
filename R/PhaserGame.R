@@ -248,12 +248,12 @@ PhaserGame <- R6::R6Class(
       js <- if (!is.null(object_two)) {
         sprintf("addCollider('%s','%s',%s,%s)",
                 object_one, object_two,
-                jsonlite::toJSON(event_target, auto_unbox = TRUE),
+                phaser_event_target_json(event_target),
                 jsonlite::toJSON(browser_actions, auto_unbox = TRUE, null = "null"))
       } else {
         sprintf("addGroupCollider('%s','%s',%s,%s)",
                 object_one, group,
-                jsonlite::toJSON(event_target, auto_unbox = TRUE),
+                phaser_event_target_json(event_target),
                 jsonlite::toJSON(browser_actions, auto_unbox = TRUE, null = "null"))
       }
       send_js(private, js)
@@ -295,14 +295,14 @@ PhaserGame <- R6::R6Class(
         sprintf("addOverlap(%s, %s, %s, %s, %s, %s)",
                 jsonlite::toJSON(object_one, auto_unbox = TRUE),
                 jsonlite::toJSON(object_two, auto_unbox = TRUE),
-                jsonlite::toJSON(event_endpoint, auto_unbox = TRUE),
+                phaser_event_target_json(event_endpoint),
                 jsonlite::toJSON(browser_actions, auto_unbox = TRUE, null = "null"),
                 jsonlite::toJSON(mode, auto_unbox = TRUE), interval)
       } else {
         sprintf("addGroupOverlap(%s, %s, %s, %s, %s, %s)",
                 jsonlite::toJSON(object_one, auto_unbox = TRUE),
                 jsonlite::toJSON(group, auto_unbox = TRUE),
-                jsonlite::toJSON(event_endpoint, auto_unbox = TRUE),
+                phaser_event_target_json(event_endpoint),
                 jsonlite::toJSON(browser_actions, auto_unbox = TRUE, null = "null"),
                 jsonlite::toJSON(mode, auto_unbox = TRUE), interval)
       }
@@ -358,7 +358,7 @@ PhaserGame <- R6::R6Class(
      js <- sprintf("addOverlapEnd(%s, %s, %s, %s);",
                    jsonlite::toJSON(object_one, auto_unbox = TRUE),
                    jsonlite::toJSON(object_two, auto_unbox = TRUE),
-                   jsonlite::toJSON(event_endpoint, auto_unbox = TRUE),
+                   phaser_event_target_json(event_endpoint),
                    jsonlite::toJSON(browser_actions, auto_unbox = TRUE, null = "null"))
      session$sendCustomMessage("phaser", list(js = js))
    },

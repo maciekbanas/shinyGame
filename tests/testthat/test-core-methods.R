@@ -242,6 +242,20 @@ test_that("PhaserGame action blocks compile R6 calls for immediate execution", {
   expect_true(any(grepl('"disable_overlap_member":"apples"', msgs, fixed = TRUE)))
 })
 
+test_that("non-notifying physics handlers serialize a JavaScript null target", {
+  session <- make_mock_session()
+  game <- PhaserGame$new()
+  game$set_shiny_session(session)
+
+  game$add_collider("hero", "ground")
+  game$add_overlap("hero", "coin")
+
+  msgs <- vapply(session$get_messages(), function(m) m$message$js, character(1))
+  expect_true(any(grepl("addCollider('hero','ground',null,", msgs, fixed = TRUE)))
+  expect_true(any(grepl('addOverlap("hero", "coin", null,', msgs, fixed = TRUE)))
+  expect_false(any(grepl("[object Object]", msgs, fixed = TRUE)))
+})
+
 test_that("public handlers no longer expose client action lists", {
   game <- PhaserGame$new()
 
@@ -342,6 +356,7 @@ test_that("browser feedback is configured for immediate visibility and audio", {
   expect_true(any(grepl("filecomplete-audio-${name}", game_js, fixed = TRUE)))
   expect_true(any(grepl("if (!scene.load.isLoading()) scene.load.start()", game_js, fixed = TRUE)))
   expect_true(any(grepl("() => addCollider(objectOneName", game_js, fixed = TRUE)))
+  expect_true(any(grepl('typeof target !== "string"', game_js, fixed = TRUE)))
 })
 
 test_that("runtime visual assets initialize when the loader batch completes", {
