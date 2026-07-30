@@ -76,6 +76,12 @@ function initPhaserGame(containerId, config) {
     width: config.width,
     height: config.height,
     parent: containerId,
+    // Shiny commonly runs games inside RStudio's Viewer pane or another
+    // iframe. Phaser pauses its entire game loop on a visibility/focus change
+    // by default, even though DOM key handlers can continue to receive input.
+    // That leaves sounds working while physics, movement, and jumps appear
+    // frozen. Keep the loop alive in embedded views.
+    disableVisibilityChange: true,
     physics: { default: 'arcade' },
     scene: {
       preload: preload,

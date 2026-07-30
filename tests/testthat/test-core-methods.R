@@ -336,6 +336,7 @@ test_that("browser feedback is configured for immediate visibility and audio", {
   expect_true(any(grepl("() => addCollider(objectOneName", game_js, fixed = TRUE)))
   expect_true(any(grepl("filecomplete-spritesheet-${name}", sprite_js, fixed = TRUE)))
   expect_true(any(grepl("filecomplete-image-${name}", sprite_js, fixed = TRUE)))
+  expect_true(any(grepl("disableVisibilityChange: true", game_js, fixed = TRUE)))
   expect_true(any(grepl("!sprite.body || !sprite.body.enable", game_js, fixed = TRUE)))
   expect_true(any(grepl("scene.input.keyboard.addCapture", game_js, fixed = TRUE)))
   expect_true(any(grepl('withSprite(name, (sprite) => {', sprite_js, fixed = TRUE)))
