@@ -150,6 +150,18 @@ test_that("PhaserGame exposes use_phaser UI initializer", {
 
   expect_true(is.function(game$use_phaser))
   expect_null(game$ui)
+
+  ui <- game$use_phaser()
+  dependency <- Filter(
+    function(item) inherits(item, "html_dependency") &&
+      identical(item$name, "shinyphaser-assets"),
+    unclass(ui)
+  )
+  expect_length(dependency, 1)
+  expect_identical(
+    dependency[[1]]$version,
+    as.character(utils::packageVersion("shinyphaser"))
+  )
 })
 
 test_that("Sound methods send expected JS", {
