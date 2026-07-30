@@ -73,6 +73,9 @@ function addSprite(name, url, x, y, frameWidth, frameHeight, frameCount, frameRa
     sprite.play(name + '_idle');
 
     scene[name] = sprite;
+    if (typeof freezePendingColliderBody === "function") {
+      freezePendingColliderBody(name);
+    }
     applyPendingSpriteActions(name);
 
     if (typeof applyPendingCameraFollows === "function") {
@@ -97,6 +100,9 @@ function addStaticSprite(name, url, x, y) {
       scene.physics.add.collider(staticSprite, scene.terrainLayer);
     }
     scene[name] = staticSprite;
+    if (typeof freezePendingColliderBody === "function") {
+      freezePendingColliderBody(name);
+    }
 
     if (typeof applyPendingCameraFollows === "function") {
       applyPendingCameraFollows();

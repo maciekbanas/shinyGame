@@ -341,6 +341,9 @@ test_that("browser feedback is configured for immediate visibility and audio", {
   expect_true(any(grepl("scene.input.keyboard.addCapture", game_js, fixed = TRUE)))
   expect_true(any(grepl('withSprite(name, (sprite) => {', sprite_js, fixed = TRUE)))
   expect_true(any(grepl("e.preventDefault()", sprite_js, fixed = TRUE)))
+  expect_true(any(grepl("freezePendingColliderBody(name)", game_js, fixed = TRUE)))
+  expect_true(any(grepl("releasePendingColliderBodies", game_js, fixed = TRUE)))
+  expect_true(any(grepl('typeof freezePendingColliderBody === "function"', sprite_js, fixed = TRUE)))
 })
 
 test_that("bear controls compile movement and jump as browser actions", {
