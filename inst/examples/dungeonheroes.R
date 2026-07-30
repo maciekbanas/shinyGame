@@ -425,7 +425,7 @@ server <- function(input, output, session) {
     )
   })
 
-  shiny::observeEvent(input$Space_action, {
+  handle_space <- function(event) {
       if (life_points <= 0) return(invisible(NULL))
 
       if (sword_in_range && !has_sword) {
@@ -479,13 +479,12 @@ server <- function(input, output, session) {
         play_hero_timed_animation(if (has_sword) "hero_sword_attack" else "hero_attack")
       }
 
-  }, ignoreInit = TRUE)
+  }
 
   game$add_control(
     "Space",
-    action = NULL,
-    input = input,
-    notify_server = TRUE
+    server_action = handle_space,
+    input = input
   )
 
   inventory_text <- game$add_text(
@@ -549,14 +548,14 @@ server <- function(input, output, session) {
     x = 300,
     y = 300
   )
-  game$add_overlap("hero", "sword", input = input, notify_server = TRUE)
-  game$add_overlap_end("hero", "sword", input = input, session = session, notify_server = TRUE)
-  shiny::observeEvent(input$overlap_hero_sword, {
-    sword_in_range <<- TRUE
-  }, ignoreInit = TRUE)
-  shiny::observeEvent(input$overlap_end_hero_sword, {
-    sword_in_range <<- FALSE
-  }, ignoreInit = TRUE)
+  game$add_overlap(
+    "hero", "sword", input = input,
+    server_action = function(event) sword_in_range <<- TRUE
+  )
+  game$add_overlap_end(
+    "hero", "sword", input = input, session = session,
+    server_action = function(event) sword_in_range <<- FALSE
+  )
 
 
   wizard <- game$add_sprite(
@@ -598,46 +597,39 @@ server <- function(input, output, session) {
     object_one = "hero",
     object_two = "wizard",
     input = input,
-    notify_server = TRUE,
-    action = {
+    browser_action = browser_actions({
       talk_bubble_text$show()
       wizard$play_animation("talk", duration = 2000)
       wizard_laugh_sound$play()
-    }
+    }),
+    server_action = function(event) wizard_in_range <<- TRUE
   )
   game$add_overlap_end(
     object_one = "hero",
     object_two = "wizard",
     input = input,
-    notify_server = TRUE,
-    action = {
+    browser_action = browser_actions({
       talk_bubble_text$hide()
       wizard$play_animation("idle")
-    }
+    }),
+    server_action = function(event) wizard_in_range <<- FALSE
   )
-  shiny::observeEvent(input$overlap_hero_wizard, {
-    wizard_in_range <<- TRUE
-  }, ignoreInit = TRUE)
-  shiny::observeEvent(input$overlap_end_hero_wizard, {
-    wizard_in_range <<- FALSE
-  }, ignoreInit = TRUE)
 
   game$add_overlap(
     object_one = "hero",
     object_two = "mushroom_spirit",
     input = input,
-    notify_server = TRUE,
-    action = mushroom_spirit$destroy()
+    browser_action = browser_actions(mushroom_spirit$destroy()),
+    server_action = function(event) {
+      shinyalert::shinyalert(
+        title = "Mushroom spirit saved!",
+        text = "The good spirit is safe. You win!",
+        type = "success",
+        closeOnClickOutside = FALSE,
+        showCancelButton = FALSE
+      )
+    }
   )
-  shiny::observeEvent(input$overlap_hero_mushroom_spirit, {
-    shinyalert::shinyalert(
-      title = "Mushroom spirit saved!",
-      text = "The good spirit is safe. You win!",
-      type = "success",
-      closeOnClickOutside = FALSE,
-      showCancelButton = FALSE
-    )
-  }, ignoreInit = TRUE, once = TRUE)
 
   add_enemy_handlers <- function(enemy_name) {
     force(enemy_name)
@@ -646,58 +638,52 @@ server <- function(input, output, session) {
       object_one = "hero",
       object_two = enemy_name,
       input = input,
-      notify_server = TRUE
-    )
-    overlap_event <- paste("overlap", "hero", enemy_name, sep = "_")
-    shiny::observeEvent(input[[overlap_event]], {
-      enemy_in_range <<- enemy_name
-      now <- as.numeric(Sys.time())
-      if (life_points <= 0 || !isTRUE(enemy_is_alive[[enemy_name]]) ||
-          now - enemy_last_attack_time[[enemy_name]] < enemy_attack_cooldown) {
-        return(invisible(NULL))
-      }
+      server_action = function(event) {
+        enemy_in_range <<- enemy_name
+        now <- as.numeric(Sys.time())
+        if (life_points <= 0 || !isTRUE(enemy_is_alive[[enemy_name]]) ||
+            now - enemy_last_attack_time[[enemy_name]] < enemy_attack_cooldown) {
+          return(invisible(NULL))
+        }
 
-      enemy_last_attack_time[[enemy_name]] <<- now
-      life_points <<- max(0, life_points - enemy_damage[[enemy_name]])
-      enemies[[enemy_name]]$play_animation(
-        enemy_animation_key(enemy_name, "attack"),
-        duration = 1000
-      )
-      set_combat_status(sprintf(
-        "%s hits you for %d. Life: %d/%d",
-        format_enemy_label(enemy_name), enemy_damage[[enemy_name]],
-        life_points, max_life_points
-      ))
-      update_life_points()
-
-      if (life_points <= 0 && !game_over_shown) {
-        game_over_shown <<- TRUE
-        shinyalert::shinyalert(
-          title = "Game over",
-          text = "Your life points reached 0.",
-          type = "error",
-          closeOnClickOutside = FALSE,
-          showCancelButton = FALSE
+        enemy_last_attack_time[[enemy_name]] <<- now
+        life_points <<- max(0, life_points - enemy_damage[[enemy_name]])
+        enemies[[enemy_name]]$play_animation(
+          enemy_animation_key(enemy_name, "attack"),
+          duration = 1000
         )
+        set_combat_status(sprintf(
+          "%s hits you for %d. Life: %d/%d",
+          format_enemy_label(enemy_name), enemy_damage[[enemy_name]],
+          life_points, max_life_points
+        ))
+        update_life_points()
+
+        if (life_points <= 0 && !game_over_shown) {
+          game_over_shown <<- TRUE
+          shinyalert::shinyalert(
+            title = "Game over",
+            text = "Your life points reached 0.",
+            type = "error",
+            closeOnClickOutside = FALSE,
+            showCancelButton = FALSE
+          )
+        }
       }
-    }, ignoreInit = TRUE)
+    )
 
     game$add_overlap_end(
       object_one = "hero",
       object_two = enemy_name,
-      action = enemies[[enemy_name]]$play_animation(
+      browser_action = browser_actions(enemies[[enemy_name]]$play_animation(
         enemy_animation_key(enemy_name, "idle")
-      ),
+      )),
       input = input,
       session = session,
-      notify_server = TRUE
+      server_action = function(event) {
+        if (identical(enemy_in_range, enemy_name)) enemy_in_range <<- NULL
+      }
     )
-    overlap_end_event <- paste("overlap_end", "hero", enemy_name, sep = "_")
-    shiny::observeEvent(input[[overlap_end_event]], {
-        if (identical(enemy_in_range, enemy_name)) {
-          enemy_in_range <<- NULL
-        }
-    }, ignoreInit = TRUE)
   }
 
   lapply(enemy_names, add_enemy_handlers)

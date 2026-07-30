@@ -64,14 +64,14 @@ server <- function(input, output, session) {
 
   game$add_control(
     "Space",
-    action = {
+    browser_action = browser_actions({
       jump_sound$play()
       bear$set_velocity_y(-600)
       bear$play_animation(
         anim_name = "bear_jump",
         duration = 250
       )
-    },
+    }),
     input
   )
   apples <- game$add_static_group(
@@ -127,7 +127,7 @@ server <- function(input, output, session) {
   game$add_overlap(
     object_one = "bear",
     object_two = "wooden_box",
-    action = {
+    browser_action = browser_actions({
       wooden_box$set_in_motion(
         dir_x = 1,
         dir_y = 0,
@@ -135,16 +135,16 @@ server <- function(input, output, session) {
         distance = 50,
         lag = 0
       )
-    },
+    }),
     input = input
   )
   game$add_overlap(
     object_one = "bear",
     group = "apples",
-    action = {
+    browser_action = browser_actions({
       points_text$set("apple gathered!")
       apples$disable()
-    },
+    }),
     input = input
   )
 }
