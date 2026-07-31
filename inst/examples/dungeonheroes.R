@@ -642,9 +642,11 @@ server <- function(input, output, session) {
         enemies[[enemy_name]]$stop_motion()
         enemies[[enemy_name]]$play_animation(
           enemy_animation_key(enemy_name, "attack"),
-          duration = 1000
+          duration = enemy_attack_cooldown * 1000
         )
       }),
+      mode = "stay",
+      interval = enemy_attack_cooldown * 1000,
       server_action = function(event) {
         enemy_in_range <<- enemy_name
         now <- as.numeric(Sys.time())
@@ -678,8 +680,10 @@ server <- function(input, output, session) {
     game$add_overlap_end(
       object_one = "hero",
       object_two = enemy_name,
+      # Release the forced attack without leaving a permanent forced-idle state.
       browser_action = browser_actions(enemies[[enemy_name]]$play_animation(
-        enemy_animation_key(enemy_name, "idle")
+        enemy_animation_key(enemy_name, "idle"),
+        duration = 1
       )),
       input = input,
       session = session,
