@@ -402,10 +402,12 @@ test_that("sight approach does not restart active movement or hide alerts", {
   alert_creation <- grep('scene.add.text(sprite.x, sprite.y - sprite.displayHeight * 0.6, "!"', sight_code, fixed = TRUE)
   movement_guard <- grep("if (scene.tweens.isTweening(sprite)) return;", sight_code, fixed = TRUE)
   approach_move <- grep("setSpriteInMotion(", sight_code, fixed = TRUE)
+  delayed_approach <- grep('setData("sightAlertUntil", now + alertDuration)', sight_code, fixed = TRUE)
 
   expect_length(forced_guard, 1)
   expect_length(alert_creation, 1)
   expect_length(movement_guard, 1)
+  expect_length(delayed_approach, 0)
   expect_lt(alert_creation, forced_guard)
   expect_lt(forced_guard, movement_guard)
   expect_lt(movement_guard, approach_move[[length(approach_move)]])

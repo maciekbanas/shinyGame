@@ -370,12 +370,6 @@ function setSpriteInMotion(name, dirX, dirY, speed, distance) {
   }
 
   matches.forEach(sprite => {
-    const sightAlertUntil = sprite.getData && sprite.getData("sightAlertUntil");
-    if (Number.isFinite(sightAlertUntil) && performance.now() < sightAlertUntil) {
-      if (sprite.body && typeof sprite.body.stop === "function") sprite.body.stop();
-      return;
-    }
-
     scene.tweens.killTweensOf(sprite);
 
     const originX = sprite.x;
@@ -494,10 +488,8 @@ function startSpriteApproachOnSight(
       return;
     }
 
-    const now = performance.now();
     if (!sprite.getData("sightAlert")) {
       sprite.setData("sightAlert", true);
-      sprite.setData("sightAlertUntil", now + alertDuration);
       scene.tweens.killTweensOf(sprite);
       if (sprite.body && typeof sprite.body.stop === "function") sprite.body.stop();
 
@@ -518,11 +510,8 @@ function startSpriteApproachOnSight(
         },
         onComplete: () => alertText.destroy()
       });
-      return;
     }
 
-    const sightAlertUntil = sprite.getData("sightAlertUntil");
-    if (Number.isFinite(sightAlertUntil) && now < sightAlertUntil) return;
     if (GameBridge.forcedAnimations[name]) return;
     if (scene.tweens.isTweening(sprite)) return;
 
