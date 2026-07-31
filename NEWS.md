@@ -1,12 +1,20 @@
 # shinyphaser (development version)
 
+* Split event handling into explicit `browser_action` and `server_action`
+  parameters. Browser-side calls must now be declared with `browser_actions()`,
+  while arbitrary R logic belongs in a server action.
+* Removed `action` and `notify_server` from controls, overlaps, overlap-end
+  handlers, and colliders.
+* Added a vignette explaining when to use browser actions, server actions, or
+  both together.
+
 ## Performance improvements
-* Reduced high-frequency overlap traffic by keeping immediate actions in the browser and making server notification opt-in.
-* Added R-style `action` blocks for immediate browser-side overlap and collision reactions.
-* Extended action blocks with browser state, cooldowns, restricted conditionals,
+* Reduced high-frequency overlap traffic by keeping immediate actions in the browser and registering server events only when a `server_action` is supplied.
+* Added explicit `browser_action` declarations for immediate browser-side overlap and collision reactions.
+* Extended browser actions with browser state, cooldowns, restricted conditionals,
   overlap/existence predicates, alerts, semantic events, and immediate key controls.
-* Overlaps are edge-triggered by default and notify Shiny only when
-  `notify_server = TRUE`; sustained handlers can use `mode = "stay"` and
+* Overlaps are edge-triggered by default and notify Shiny only when a
+  `server_action` is supplied; sustained handlers can use `mode = "stay"` and
   `interval` throttling.
 * Moved sprite movement delays from blocking R sleeps to browser timers.
 * Queued sprite physics actions until sprites finish loading so setup calls such as `set_gravity()` are not lost during asynchronous asset initialization.

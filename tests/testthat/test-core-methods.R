@@ -193,7 +193,7 @@ test_that("PhaserGame can create Sound objects", {
   expect_true(any(grepl("addSound\\(\\\"jump\\\", \\\"jump.wav\\\", 0.400000, true\\);", msgs)))
 })
 
-test_that("PhaserGame action blocks compile R6 calls for immediate execution", {
+test_that("browser_actions compile R6 calls for immediate execution", {
   session <- make_mock_session()
   game <- PhaserGame$new()
   game$set_shiny_session(session)
@@ -207,26 +207,26 @@ test_that("PhaserGame action blocks compile R6 calls for immediate execution", {
     object_one = "hero",
     object_two = "wizard",
     input = input,
-    action = {
+    browser_action = browser_actions({
       prompt$show()
       sound$play(volume = 0.5)
       hero$play_animation("wave", duration = 250)
-    }
+    })
   )
   game$add_overlap_end(
     object_one = "hero",
     object_two = "wizard",
     input = input,
     session = session,
-    action = prompt$hide()
+    browser_action = browser_actions(prompt$hide())
   )
-  game$add_collider("hero", "rock", input = input, action = sound$stop())
+  game$add_collider("hero", "rock", input = input, browser_action = browser_actions(sound$stop()))
   game$add_overlap(
     "hero", group = "apples", input = input,
-    action = {
+    browser_action = browser_actions({
       hero$set_in_motion(1, 0, 100, 50, lag = 0)
       apples$disable()
-    }
+    })
   )
 
   msgs <- vapply(session$get_messages(), function(m) m$message$js, character(1))
@@ -256,15 +256,49 @@ test_that("non-notifying physics handlers serialize a JavaScript null target", {
   expect_false(any(grepl("[object Object]", msgs, fixed = TRUE)))
 })
 
-test_that("public handlers no longer expose client action lists", {
+test_that("public handlers expose separate browser and server actions", {
   game <- PhaserGame$new()
 
   expect_false("client_action" %in% names(formals(game$add_overlap)))
   expect_false("client_action" %in% names(formals(game$add_overlap_end)))
   expect_false("client_action" %in% names(formals(game$add_control)))
+  expect_true("browser_action" %in% names(formals(game$add_control)))
+  expect_true("server_action" %in% names(formals(game$add_control)))
+  expect_false("action" %in% names(formals(game$add_control)))
+  expect_false("notify_server" %in% names(formals(game$add_control)))
   expect_false("callback_fun" %in% names(formals(game$add_collider)))
   expect_false("callback_fun" %in% names(formals(game$add_overlap)))
   expect_false("callback_fun" %in% names(formals(game$add_overlap_end)))
+
+  for (handler in list(
+    game$add_collider,
+    game$add_overlap,
+    game$add_overlap_end,
+    game$add_control
+  )) {
+    arguments <- names(formals(handler))
+    expect_true(all(c("browser_action", "server_action") %in% arguments))
+    expect_false(any(c("action", "notify_server") %in% arguments))
+  }
+})
+
+test_that("browser and server action declarations are validated", {
+  session <- make_mock_session()
+  game <- PhaserGame$new()
+  game$set_shiny_session(session)
+
+  expect_error(
+    game$add_control("Space", browser_action = list()),
+    "must be created with browser_actions"
+  )
+  expect_error(
+    game$add_control("Space", server_action = function(event) NULL),
+    "input is required"
+  )
+  expect_error(
+    game$add_control("Space", server_action = "not a function"),
+    "must be a function"
+  )
 })
 
 test_that("browser state, cooldowns, conditions, and semantic events compile", {
@@ -276,7 +310,7 @@ test_that("browser state, cooldowns, conditions, and semantic events compile", {
   has_sword <- game$add_state("has_sword", FALSE)
   attack <- game$add_cooldown("attack", 750)
 
-  game$add_control("Space", action = {
+  game$add_control("Space", browser_action = browser_actions({
     if (hero$overlaps(sword) && sword$exists()) {
       sword$destroy()
       has_sword$set(TRUE)
@@ -285,7 +319,7 @@ test_that("browser state, cooldowns, conditions, and semantic events compile", {
       game$alert(title = "Attack")
       game$emit("attack")
     }
-  })
+  }))
 
   msgs <- vapply(session$get_messages(), function(m) m$message$js, character(1))
   expect_true(any(grepl('setBrowserState("has_sword", false)', msgs, fixed = TRUE)))
@@ -298,7 +332,7 @@ test_that("browser state, cooldowns, conditions, and semantic events compile", {
   expect_true(grepl('"emit":{"name":"attack","data":[]}', control, fixed = TRUE))
 })
 
-test_that("action blocks reject unsupported R code instead of running it", {
+test_that("browser actions reject unsupported R code instead of running it", {
   session <- make_mock_session()
   game <- PhaserGame$new()
   game$set_shiny_session(session)
@@ -309,10 +343,10 @@ test_that("action blocks reject unsupported R code instead of running it", {
     game$add_overlap(
       object_one = "hero",
       object_two = "wizard",
-      action = { ran <- TRUE },
+      browser_action = browser_actions({ ran <- TRUE }),
       input = input
     ),
-    "action must contain calls"
+    "browser_action must contain calls"
   )
   expect_false(ran)
 })
@@ -338,11 +372,34 @@ test_that("dungeonheroes Space action retains interactions and combat", {
   expect_true(any(grepl("if (sword_in_range && !has_sword)", example, fixed = TRUE)))
   expect_true(any(grepl('inventory_text$set("weapon: sword")', example, fixed = TRUE)))
   expect_true(any(grepl("if (wizard_in_range)", example, fixed = TRUE)))
-  expect_true(any(grepl("input$Space_action", example, fixed = TRUE)))
-  expect_true(any(grepl("notify_server = TRUE", example, fixed = TRUE)))
+  expect_true(any(grepl("server_action = handle_space", example, fixed = TRUE)))
+  expect_true(any(grepl("server_action", example, fixed = TRUE)))
   expect_true(any(grepl("enemy_hit_points[[enemy_in_range]]", example, fixed = TRUE)))
   expect_true(any(grepl('title = "Game over"', example, fixed = TRUE)))
   expect_false(any(grepl("client_action", example, fixed = TRUE)))
+  expect_false(any(grepl("dungeonheroes_version", example, fixed = TRUE)))
+  expect_false(any(grepl("dungeonheroes v", example, fixed = TRUE)))
+  expect_true(any(grepl('text = sprintf("shinyphaser v%s"', example, fixed = TRUE)))
+})
+
+test_that("bear Space control names its input argument", {
+  example <- readLines(
+    system.file("examples", "bear.R", package = "shinyphaser"),
+    warn = FALSE
+  )
+
+  space_control <- grep('game\\$add_control\\(', example)[1]
+  expect_true(any(grepl(
+    "input = input",
+    example[space_control:min(space_control + 15, length(example))],
+    fixed = TRUE
+  )))
+  expect_true(any(grepl('name = "wooden_box"', example, fixed = TRUE)))
+  expect_true(any(grepl('name = "apples"', example, fixed = TRUE)))
+
+  game <- PhaserGame$new()
+  control_arguments <- names(formals(game$add_control))
+  expect_lt(match("input", control_arguments), match("server_action", control_arguments))
 })
 
 test_that("browser feedback is configured for immediate visibility and audio", {

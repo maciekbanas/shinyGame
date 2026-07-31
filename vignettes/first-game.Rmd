@@ -297,7 +297,7 @@ knitr::include_graphics("assets/first_game_5_move_animation.gif")
 ## 6) Add overlap with other objects (collect apples)
 
 Use overlap when two objects can share space and trigger events.
-In this step, apples act like collectibles: the hedgehog can move through them, and each touch runs an immediate action instead of blocking movement. We first create an `apples` static group and place a few apples on the map, then register `add_overlap()` between `"hedgehog"` and `"apples"`. The immediate `action` block can hide the collected apple and update browser-resident state without waiting for Shiny. In short: hedgehog meets apple, apple disappears, score goes up — because every hedgehog knows apples are the true quest objective.
+In this step, apples act like collectibles: the hedgehog can move through them, and each touch runs an immediate browser action instead of blocking movement. We first create an `apples` static group and place a few apples on the map, then register `add_overlap()` between `"hedgehog"` and `"apples"`. The `browser_actions()` declaration can hide the collected apple and update browser-resident state without waiting for Shiny. In short: hedgehog meets apple, apple disappears, score goes up — because every hedgehog knows apples are the true quest objective.
 
 ```{r eval=FALSE}
 apples <- game$add_static_group("apples", "assets/hedgehog/perks/apple_20.png")
@@ -312,11 +312,11 @@ score <- game$add_state("score", 0)
 game$add_overlap(
   object_one = "hedgehog",
   group = "apples",
-  action = {
+  browser_action = browser_actions({
     apples$disable()
     score$increment()
     score_text$set(score$value())
-  },
+  }),
   input = input
 )
 ```

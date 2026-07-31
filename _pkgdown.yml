@@ -12,12 +12,14 @@ reference:
       - Image
       - Rectangle
       - Sprite
+      - Sound
       - StaticSprite
       - Group
       - StaticGroup
 
   - title: Utilities
     contents:
+      - browser_actions
       - run_sample_app
 
 articles:
@@ -25,3 +27,4 @@ articles:
     navbar: ~
     contents:
       - first-game
+      - browser-server-actions

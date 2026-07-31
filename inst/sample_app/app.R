@@ -68,11 +68,11 @@ server <- function(input, output, session) {
   game$add_overlap(
     object_one = "hedgehog",
     group = "apples",
-    action = {
+    browser_action = browser_actions({
       apples$disable()
       browser_score$increment()
       score_text$set(browser_score$value())
-    },
+    }),
     input = input
   )
 
@@ -95,9 +95,9 @@ server <- function(input, output, session) {
   game$add_overlap(
     object_one = "hedgehog",
     object_two = "badger",
-    action = {
+    browser_action = browser_actions({
       game$alert(title = "Game over", type = "error")
-    },
+    }),
     input = input
   )
 

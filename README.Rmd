@@ -60,33 +60,32 @@ For a full walkthrough (from static background to movement, animation, overlap, 
 
 ### Immediate overlap and collision actions
 
-Use `action` to write browser-speed reactions with the same R6 methods used in
-server code. The expression is captured when the handler is registered and
-compiled to safe browser commands; it is not run in the R session when the
-collision happens.
+Use `browser_action = browser_actions(...)` to declare browser-speed reactions
+with supported R6 methods. The constructor captures its calls and compiles them
+to safe browser commands; they are not run in the R session when the collision
+happens.
 
 ```r
 game$add_overlap(
   "hero", "wizard", input = input,
-  action = {
+  browser_action = browser_actions({
     prompt$show()
     greeting$play(volume = 0.5)
     hero$play_animation("wave", duration = 500)
-  }
+  })
 )
 
 game$add_collider(
   "hero", "rock", input = input,
-  action = warning_sound$play()
+  browser_action = browser_actions(warning_sound$play())
 )
 ```
 
 An immediate action can use supported methods on `Text`, `Image`, `Rectangle`,
 `Sound`, `Sprite`, `StaticSprite`, and `StaticGroup` objects. Arbitrary R code (for example,
-updating a reactive value or querying a database) cannot run in a browser; keep
-that work behind a semantic event emitted with `game$emit()` and observed by
-Shiny. Browser-only actions do not send overlap traffic to the server unless
-`notify_server = TRUE` is requested explicitly.
+updating a reactive value or querying a database) cannot run in a browser. Put
+arbitrary R logic in `server_action = function(event) { ... }`; supplying a
+server action automatically enables the corresponding Shiny event.
 
 Browser-resident state, cooldowns, conditions, alerts, and semantic events can
 also be expressed with R-looking calls:
@@ -95,7 +94,7 @@ also be expressed with R-looking calls:
 has_sword <- game$add_state("has_sword", FALSE)
 attack <- game$add_cooldown("attack", 750)
 
-game$add_control("Space", input = input, action = {
+game$add_control("Space", input = input, browser_action = browser_actions({
   if (hero$overlaps(sword) && sword$exists()) {
     sword$destroy()
     has_sword$set(TRUE)
@@ -105,7 +104,7 @@ game$add_control("Space", input = input, action = {
     attack_sound$play()
     game$emit("hero_attack")
   }
-})
+}))
 ```
 
 ```{r, echo=FALSE}

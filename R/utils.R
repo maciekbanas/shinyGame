@@ -23,6 +23,55 @@ compile_phaser_action <- function(expr, env) {
   lapply(expressions, compile_phaser_action_call, env = env)
 }
 
+#' Define actions that run immediately in the browser
+#'
+#' Captures supported shinyphaser method calls without evaluating them in R.
+#' Browser actions are compiled when passed to an event registration method.
+#' Arbitrary R code belongs in the corresponding `server_action` function.
+#'
+#' @param ... Supported shinyphaser browser action calls.
+#' @return A browser action specification.
+#' @export
+browser_actions <- function(...) {
+  structure(
+    list(
+      expressions = as.list(substitute(list(...)))[-1],
+      env = parent.frame()
+    ),
+    class = "shinyphaser_browser_actions"
+  )
+}
+
+compile_browser_actions <- function(expr, env) {
+  specification <- eval(expr, envir = env)
+  if (!inherits(specification, "shinyphaser_browser_actions")) {
+    stop(
+      "browser_action must be created with browser_actions().",
+      call. = FALSE
+    )
+  }
+
+  unlist(lapply(
+    specification$expressions,
+    compile_phaser_action,
+    env = specification$env
+  ), recursive = FALSE)
+}
+
+register_server_action <- function(input, event, server_action) {
+  if (is.null(server_action)) return(NULL)
+  if (!is.function(server_action)) {
+    stop("server_action must be a function.", call. = FALSE)
+  }
+  if (is.null(input)) {
+    stop("input is required when server_action is supplied.", call. = FALSE)
+  }
+
+  shiny::observeEvent(input[[event]], {
+    server_action(input[[event]])
+  }, ignoreInit = TRUE)
+}
+
 compile_phaser_value <- function(expr, env) {
   if (is.call(expr) && is.call(expr[[1]]) && identical(expr[[1]][[1]], as.name("$"))) {
     target <- eval(expr[[1]][[2]], env)
@@ -86,7 +135,7 @@ compile_phaser_action_call <- function(expr, env) {
   if (!is.call(expr) || !is.call(expr[[1]]) ||
       !identical(expr[[1]][[1]], as.name("$"))) {
     stop(
-      "action must contain calls to supported shinyphaser R6 object methods.",
+      "browser_action must contain calls to supported shinyphaser R6 object methods.",
       call. = FALSE
     )
   }
@@ -187,7 +236,7 @@ compile_phaser_action_call <- function(expr, env) {
   }
 
   stop(
-    sprintf("%s$%s() is not supported in an immediate action.",
+    sprintf("%s$%s() is not supported in a browser action.",
             class(target)[[1]], method),
     call. = FALSE
   )

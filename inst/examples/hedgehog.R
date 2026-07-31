@@ -121,26 +121,24 @@ server <- function(input, output, session) {
     game$add_overlap(
       object_one = "hedgehog", 
       object_two = name, 
-      notify_server = TRUE,
-      action = {
+      server_action = function(event) {
+        if (!state$started || state$game_over || state$current_level != level_id) {
+          return(invisible(NULL))
+        }
+        state$game_over <- TRUE
+        shinyalert::shinyalert(
+          title = "Game over",
+          text = paste0("A ", enemy_name, " caught the hedgehog. Try again!"),
+          type = "error",
+          closeOnClickOutside = FALSE,
+          showCancelButton = FALSE,
+          callbackR = function(value) session$reload()
+        )
+      },
+      browser_action = browser_actions({
         score_text$set("Game over!")
-      }, input = input
+      }), input = input
     )
-    enemy_event <- paste("overlap", "hedgehog", name, sep = "_")
-    shiny::observeEvent(input[[enemy_event]], {
-      if (!state$started || state$game_over || state$current_level != level_id) {
-        return(invisible(NULL))
-      }
-      state$game_over <- TRUE
-      shinyalert::shinyalert(
-        title = "Game over",
-        text = paste0("A ", enemy_name, " caught the hedgehog. Try again!"),
-        type = "error",
-        closeOnClickOutside = FALSE,
-        showCancelButton = FALSE,
-        callbackR = function(value) session$reload()
-      )
-    }, ignoreInit = TRUE)
   }
 
   pause_gameplay <- function(level_id = state$current_level) {
@@ -197,47 +195,44 @@ server <- function(input, output, session) {
     game$add_overlap(
       object_one = "hedgehog", 
       group = paste0("apples_lvl", level_id), 
-      notify_server = TRUE,
-      action = {
+      server_action = function(evt) {
+        if (!state$started || state$current_level != level_id || state$game_over) {
+          return(invisible(NULL))
+        }
+
+        apple_key <- paste(evt$x2, evt$y2, sep = ":")
+        if (isTRUE(state$collected[[apple_key]])) return(invisible(NULL))
+        state$collected[[apple_key]] <- TRUE
+        state$score <- state$score + 1
+        score_text$set(paste0("Level ", level_id, " score: ", state$score))
+
+        if (state$score >= nrow(cfg$apples)) {
+          pause_gameplay(level_id)
+          if (level_id < length(level_config)) {
+            passed_level_alert(level_id)
+          } else {
+            shinyalert::shinyalert(
+              title = "You won!",
+              text = "Great job! You finished all levels and collected all apples.",
+              type = "success",
+              closeOnClickOutside = FALSE,
+              showCancelButton = FALSE,
+              callbackR = function(value) session$reload()
+            )
+          }
+        }
+      },
+      browser_action = browser_actions({
         score_text$set(paste0("Level ", level_id, ": apple collected!"))
         apples_group$disable()
-    }, input = input)
-    apple_event <- paste("overlap", "hedgehog", paste0("apples_lvl", level_id), sep = "_")
-    shiny::observeEvent(input[[apple_event]], {
-      evt <- input[[apple_event]]
-      if (!state$started || state$current_level != level_id || state$game_over) {
-        return(invisible(NULL))
-      }
-
-      apple_key <- paste(evt$x2, evt$y2, sep = ":")
-      if (isTRUE(state$collected[[apple_key]])) return(invisible(NULL))
-      state$collected[[apple_key]] <- TRUE
-      state$score <- state$score + 1
-      score_text$set(paste0("Level ", level_id, " score: ", state$score))
-
-      if (state$score >= nrow(cfg$apples)) {
-        pause_gameplay(level_id)
-        if (level_id < length(level_config)) {
-          passed_level_alert(level_id)
-        } else {
-          shinyalert::shinyalert(
-            title = "You won!",
-            text = "Great job! You finished all levels and collected all apples.",
-            type = "success",
-            closeOnClickOutside = FALSE,
-            showCancelButton = FALSE,
-            callbackR = function(value) session$reload()
-          )
-        }
-      }
-    }, ignoreInit = TRUE)
+    }), input = input)
 
     list(apples = apples_group, attackers = attackers)
   }
 
 
   boost_cooldown <- game$add_cooldown("hedgehog_boost", boost_duration * 1000)
-  game$add_control("Space", action = {
+  game$add_control("Space", browser_action = browser_actions({
     if (boost_cooldown$ready()) {
       boost_cooldown$trigger()
     hedgehog$play_animation("hedgehog_run", duration = boost_duration * 1000)
@@ -249,7 +244,7 @@ server <- function(input, output, session) {
         )
       })
     }
-  }, input = input)
+  }), input = input)
 
   state$levels[["1"]] <- init_level(1)
 
