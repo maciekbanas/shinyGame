@@ -417,6 +417,24 @@ test_that("sight approach does not restart active movement or hide alerts", {
   expect_lt(movement_guard, approach_move[[length(approach_move)]])
 })
 
+test_that("recent movement selects four-way directional attack animations", {
+  game_js <- readLines(system.file("www", "phaser-game.js", package = "shinyphaser"), warn = FALSE)
+  sprite_js <- readLines(system.file("www", "phaser-sprite.js", package = "shinyphaser"), warn = FALSE)
+  example <- readLines(system.file("examples", "dungeonheroes.R", package = "shinyphaser"), warn = FALSE)
+
+  expect_true(any(grepl("GameBridge.directionalAttackMemory = 1500", game_js, fixed = TRUE)))
+  expect_true(any(grepl('rememberMovementDirection(sprite, "left", time)', game_js, fixed = TRUE)))
+  expect_true(any(grepl('rememberMovementDirection(sprite, "right", time)', game_js, fixed = TRUE)))
+  expect_true(any(grepl('rememberMovementDirection(sprite, "up", time)', game_js, fixed = TRUE)))
+  expect_true(any(grepl('rememberMovementDirection(sprite, "down", time)', game_js, fixed = TRUE)))
+  expect_true(any(grepl('animationKey + "_" + direction', game_js, fixed = TRUE)))
+  expect_true(any(grepl('forcedKey + "_" + movementSuffix', game_js, fixed = TRUE)))
+  expect_true(any(grepl("targetAnim !== name + '_idle'", game_js, fixed = TRUE)))
+  expect_true(any(grepl('rememberMovementDirection(sprite, movementDirection, now)', sprite_js, fixed = TRUE)))
+  expect_true(any(grepl('suffix = paste0("sword_attack_", direction)', example, fixed = TRUE)))
+  expect_true(any(grepl('suffix = paste0("attack_", direction)', example, fixed = TRUE)))
+})
+
 test_that("bear Space control names its input argument", {
   example <- readLines(
     system.file("examples", "bear.R", package = "shinyphaser"),

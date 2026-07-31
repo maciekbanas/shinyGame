@@ -370,6 +370,14 @@ server <- function(input, output, session) {
     frame_width = 100, frame_height = 100,
     frame_count = 2, frame_rate = 4
   )
+  lapply(c("left", "right"), function(direction) {
+    hero$add_animation(
+      suffix = paste0("sword_attack_", direction),
+      url = sprintf("assets/dungeonheroes/sprites/hero_sword_attack_%s.png", direction),
+      frame_width = 100, frame_height = 100,
+      frame_count = 2, frame_rate = 4
+    )
+  })
 
   enemies <- stats::setNames(lapply(enemy_specs, function(spec) {
     enemy <- game$add_sprite(
@@ -398,6 +406,14 @@ server <- function(input, output, session) {
       frame_width = 100, frame_height = 100,
       frame_count = 6, frame_rate = 6
     )
+    lapply(c("left", "right"), function(direction) {
+      enemy$add_animation(
+        suffix = paste0("attack_", direction),
+        url = sprintf("assets/dungeonheroes/sprites/mushroom_man_attack_%s.png", direction),
+        frame_width = 100, frame_height = 100,
+        frame_count = 6, frame_rate = 6
+      )
+    })
     enemy$add_animation(
       suffix = "destroy",
       url = "assets/dungeonheroes/sprites/mushroom_man_destroy.png",
