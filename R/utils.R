@@ -208,6 +208,9 @@ compile_phaser_action_call <- function(expr, env) {
   if (inherits(target, "Sprite") && method %in% c("set_velocity_x", "set_velocity_y")) {
     return(setNames(list(list(name = object_name, value = value("x", 1, 100))), method))
   }
+  if (inherits(target, "Sprite") && method == "stop_motion") {
+    return(list(stop_motion = object_name))
+  }
   if (inherits(target, "Sprite") && method == "add_player_controls") {
     return(list(player_controls = list(
       name = object_name,

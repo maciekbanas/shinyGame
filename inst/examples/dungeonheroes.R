@@ -149,7 +149,8 @@ server <- function(input, output, session) {
   mushroom_sight_range <- 500
   mushroom_approach_speed_multiplier <- 1.35
   mushroom_approach_distance_multiplier <- 2
-  mushroom_reaction_check_interval <- 250
+  # Check every frame so noticing the hero never waits on the movement timer.
+  mushroom_reaction_check_interval <- 16
   mushroom_alert_duration <- 1200
   mushroom_motion_specs <- list(
     mushroom_man_1 = list(speed = 42, distance = 70, lag = 0.0, interval = 1300),
@@ -637,6 +638,13 @@ server <- function(input, output, session) {
       object_one = "hero",
       object_two = enemy_name,
       input = input,
+      browser_action = browser_actions({
+        enemies[[enemy_name]]$stop_motion()
+        enemies[[enemy_name]]$play_animation(
+          enemy_animation_key(enemy_name, "attack"),
+          duration = 1000
+        )
+      }),
       server_action = function(event) {
         enemy_in_range <<- enemy_name
         now <- as.numeric(Sys.time())
@@ -647,10 +655,6 @@ server <- function(input, output, session) {
 
         enemy_last_attack_time[[enemy_name]] <<- now
         life_points <<- max(0, life_points - enemy_damage[[enemy_name]])
-        enemies[[enemy_name]]$play_animation(
-          enemy_animation_key(enemy_name, "attack"),
-          duration = 1000
-        )
         set_combat_status(sprintf(
           "%s hits you for %d. Life: %d/%d",
           format_enemy_label(enemy_name), enemy_damage[[enemy_name]],

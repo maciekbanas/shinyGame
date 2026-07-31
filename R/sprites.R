@@ -73,6 +73,12 @@ Sprite <- R6::R6Class(
       send_js(private, js)
     },
 
+    #' @description Stop this sprite's current scripted movement.
+    #' @return Invisible; sends a custom message to the client.
+    stop_motion = function() {
+      send_js(private, sprintf("stopSpriteMotion('%s');", private$name))
+    },
+
     #' @description Enable movement controls (arrow keys) for a player sprite.
     #' @param directions Character vector. Directions to enable (defaults to c("left","right","down","up")).
     #' @param speed Numeric. Movement speed in pixels/second (default: 200).
