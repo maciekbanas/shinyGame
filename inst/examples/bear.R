@@ -72,7 +72,7 @@ server <- function(input, output, session) {
         duration = 250
       )
     }),
-    input
+    input = input
   )
   apples <- game$add_static_group(
     name = "apples",

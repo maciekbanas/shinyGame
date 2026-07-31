@@ -391,6 +391,26 @@ test_that("dungeonheroes Space action retains interactions and combat", {
   expect_false(any(grepl("client_action", example, fixed = TRUE)))
 })
 
+test_that("bear Space control names its input argument", {
+  example <- readLines(
+    system.file("examples", "bear.R", package = "shinyphaser"),
+    warn = FALSE
+  )
+
+  space_control <- grep('game\\$add_control\\(', example)[1]
+  expect_true(any(grepl(
+    "input = input",
+    example[space_control:min(space_control + 15, length(example))],
+    fixed = TRUE
+  )))
+  expect_true(any(grepl('name = "wooden_box"', example, fixed = TRUE)))
+  expect_true(any(grepl('name = "apples"', example, fixed = TRUE)))
+
+  game <- PhaserGame$new()
+  control_arguments <- names(formals(game$add_control))
+  expect_lt(match("input", control_arguments), match("server_action", control_arguments))
+})
+
 test_that("browser feedback is configured for immediate visibility and audio", {
   game_js <- readLines(system.file("www", "phaser-game.js", package = "shinyphaser"), warn = FALSE)
   sprite_js <- readLines(system.file("www", "phaser-sprite.js", package = "shinyphaser"), warn = FALSE)

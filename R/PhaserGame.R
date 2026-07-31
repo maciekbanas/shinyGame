@@ -226,14 +226,14 @@ PhaserGame <- R6::R6Class(
     #' @param group Character. Name of the group to compare against.
     #' @param browser_action Actions created with [browser_actions()] that run
     #'   immediately in the browser.
-    #' @param server_action Function called in R with the collision event.
     #' @param input Shiny input list.
+    #' @param server_action Function called in R with the collision event.
     add_collider = function(object_one,
                             object_two = NULL,
                             group = NULL,
                             browser_action = browser_actions(),
-                            server_action = NULL,
-                            input = NULL) {
+                            input = NULL,
+                            server_action = NULL) {
       browser_spec <- compile_browser_actions(substitute(browser_action), parent.frame())
       input_id <- paste(
         c("collide", object_one,
@@ -264,8 +264,8 @@ PhaserGame <- R6::R6Class(
     #' @param group Character. Name of the group.
     #' @param browser_action Actions created with [browser_actions()] that run
     #'   immediately in the browser.
-    #' @param server_action Function called in R with the overlap event.
     #' @param input Shiny input list.
+    #' @param server_action Function called in R with the overlap event.
     #' @param mode Character. `"enter"` (default) runs once per contact;
     #'   `"stay"` repeats while overlapping.
     #' @param interval Numeric. Minimum milliseconds between `"stay"` actions.
@@ -273,8 +273,8 @@ PhaserGame <- R6::R6Class(
                            object_two = NULL,
                            group = NULL,
                            browser_action = browser_actions(),
-                           server_action = NULL,
                            input = NULL,
+                           server_action = NULL,
                            mode = c("enter", "stay"),
                            interval = 0) {
       browser_spec <- compile_browser_actions(substitute(browser_action), parent.frame())
@@ -333,15 +333,15 @@ PhaserGame <- R6::R6Class(
    #' @param group Character. Name of the group to compare against.
    #' @param browser_action Actions created with [browser_actions()] that run
    #'   immediately in the browser.
-   #' @param server_action Function called in R with the overlap-end event.
    #' @param input Shiny input list.
+   #' @param server_action Function called in R with the overlap-end event.
    #' @param session Shiny session object.
    add_overlap_end = function(object_one,
                               object_two = NULL,
                               group = NULL,
                               browser_action = browser_actions(),
-                              server_action = NULL,
                               input = NULL,
+                              server_action = NULL,
                               session = shiny::getDefaultReactiveDomain()) {
      browser_spec <- compile_browser_actions(substitute(browser_action), parent.frame())
 
@@ -365,12 +365,12 @@ PhaserGame <- R6::R6Class(
    #'   event.code).
    #' @param browser_action Actions created with [browser_actions()] that run
    #'   immediately in the browser.
-   #' @param server_action Function called in R with the keyboard event.
    #' @param input Shiny input list.
+   #' @param server_action Function called in R with the keyboard event.
    add_control = function(key,
                           browser_action = browser_actions(),
-                          server_action = NULL,
-                          input = NULL) {
+                          input = NULL,
+                          server_action = NULL) {
      browser_spec <- compile_browser_actions(substitute(browser_action), parent.frame())
      register_server_action(input, paste0(key, "_action"), server_action)
      js <- sprintf(

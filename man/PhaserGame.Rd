@@ -425,8 +425,8 @@ Adds a collider between two game objects.
   object_two = NULL,
   group = NULL,
   browser_action = browser_actions(),
-  server_action = NULL,
-  input = NULL
+  input = NULL,
+  server_action = NULL
 )}\if{html}{\out{</div>}}
 }
 
@@ -460,8 +460,8 @@ Adds a collider between two game objects.
   object_two = NULL,
   group = NULL,
   browser_action = browser_actions(),
-  server_action = NULL,
   input = NULL,
+  server_action = NULL,
   mode = c("enter", "stay"),
   interval = 0
 )}\if{html}{\out{</div>}}
@@ -523,8 +523,8 @@ Register a callback fired when overlap between objects ends.
   object_two = NULL,
   group = NULL,
   browser_action = browser_actions(),
-  server_action = NULL,
   input = NULL,
+  server_action = NULL,
   session = shiny::getDefaultReactiveDomain()
 )}\if{html}{\out{</div>}}
 }
@@ -560,8 +560,8 @@ Register a callback fired when a specific key is pressed.
 \if{html}{\out{<div class="r">}}\preformatted{PhaserGame$add_control(
   key,
   browser_action = browser_actions(),
-  server_action = NULL,
-  input = NULL
+  input = NULL,
+  server_action = NULL
 )}\if{html}{\out{</div>}}
 }
 
