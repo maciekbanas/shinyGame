@@ -12,6 +12,7 @@ reference:
       - Image
       - Rectangle
       - Sprite
+      - Sound
       - StaticSprite
       - Group
       - StaticGroup

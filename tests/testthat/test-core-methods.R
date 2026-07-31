@@ -313,6 +313,15 @@ test_that("browser and server action guidance is included", {
   expect_true(any(grepl("Use both", vignette, fixed = TRUE)))
 })
 
+test_that("exported Sound documentation is included in pkgdown reference", {
+  pkgdown_config <- readLines(
+    testthat::test_path("..", "..", "_pkgdown.yml"),
+    warn = FALSE
+  )
+
+  expect_true(any(grepl("- Sound", pkgdown_config, fixed = TRUE)))
+})
+
 test_that("browser state, cooldowns, conditions, and semantic events compile", {
   session <- make_mock_session()
   game <- PhaserGame$new()
