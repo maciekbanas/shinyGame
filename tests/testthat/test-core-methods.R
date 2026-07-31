@@ -389,6 +389,28 @@ test_that("dungeonheroes Space action retains interactions and combat", {
   expect_true(any(grepl('text = sprintf("shinyphaser v%s"', example, fixed = TRUE)))
 })
 
+test_that("sight approach does not restart active movement or hide alerts", {
+  sprite_js <- readLines(
+    system.file("www", "phaser-sprite.js", package = "shinyphaser"),
+    warn = FALSE
+  )
+  sight_start <- grep("function startSpriteApproachOnSight", sprite_js, fixed = TRUE)
+  sight_end <- grep("function constrainedTerrainMotionEnd", sprite_js, fixed = TRUE)
+  sight_code <- sprite_js[sight_start:(sight_end - 1)]
+
+  forced_guard <- grep("if (GameBridge.forcedAnimations[name]) return;", sight_code, fixed = TRUE)
+  alert_creation <- grep('scene.add.text(sprite.x, sprite.y - sprite.displayHeight * 0.6, "!"', sight_code, fixed = TRUE)
+  movement_guard <- grep("if (scene.tweens.isTweening(sprite)) return;", sight_code, fixed = TRUE)
+  approach_move <- grep("setSpriteInMotion(", sight_code, fixed = TRUE)
+
+  expect_length(forced_guard, 1)
+  expect_length(alert_creation, 1)
+  expect_length(movement_guard, 1)
+  expect_lt(alert_creation, forced_guard)
+  expect_lt(forced_guard, movement_guard)
+  expect_lt(movement_guard, approach_move[[length(approach_move)]])
+})
+
 test_that("bear Space control names its input argument", {
   example <- readLines(
     system.file("examples", "bear.R", package = "shinyphaser"),

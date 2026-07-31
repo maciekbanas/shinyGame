@@ -479,7 +479,6 @@ function startSpriteApproachOnSight(
     const sprite = scene.children.getByName(name);
     const target = scene.children.getByName(targetName);
     if (!sprite || !sprite.active || !target || !target.active) return;
-    if (GameBridge.forcedAnimations[name]) return;
 
     const targetDistance = Phaser.Math.Distance.Between(sprite.x, sprite.y, target.x, target.y);
     if (targetDistance <= 0 || targetDistance > sightRange) {
@@ -524,6 +523,8 @@ function startSpriteApproachOnSight(
 
     const sightAlertUntil = sprite.getData("sightAlertUntil");
     if (Number.isFinite(sightAlertUntil) && now < sightAlertUntil) return;
+    if (GameBridge.forcedAnimations[name]) return;
+    if (scene.tweens.isTweening(sprite)) return;
 
     setSpriteInMotion(
       name,
