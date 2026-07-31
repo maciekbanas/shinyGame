@@ -13,6 +13,28 @@ GameBridge.lastHeroOverlapState = GameBridge.lastHeroOverlapState || "";
 GameBridge.nextHeroOverlapSendAt = GameBridge.nextHeroOverlapSendAt || 0;
 GameBridge.sounds = GameBridge.sounds || {};
 GameBridge.pendingSoundActions = GameBridge.pendingSoundActions || {};
+GameBridge.directionalAttackMemory = 1500;
+
+function rememberMovementDirection(sprite, direction, time) {
+  if (!sprite || !["left", "right", "up", "down"].includes(direction)) return;
+  sprite.setData("lastMovementDirection", direction);
+  sprite.setData("lastMovedAt", time);
+}
+
+function recentDirectionalAnimation(sprite, animationKey, time) {
+  if (!sprite || !animationKey || !scene) return animationKey;
+
+  const direction = sprite.getData("lastMovementDirection");
+  const movedAt = sprite.getData("lastMovedAt");
+  const movedRecently = ["left", "right", "up", "down"].includes(direction) &&
+    Number.isFinite(movedAt) &&
+    time - movedAt <= GameBridge.directionalAttackMemory;
+  const directionalKey = animationKey + "_" + direction;
+
+  return movedRecently && scene.anims.exists(directionalKey)
+    ? directionalKey
+    : animationKey;
+}
 
 function sendPhaserEvent(target, payload) {
   // jsonlite represented an absent R event target as an empty object in older
@@ -126,29 +148,25 @@ function initPhaserGame(containerId, config) {
           if (cursors.left.isDown && directionMap.left) {
             sprite.body.setVelocityX(-speed);
             targetAnim = name + '_move_left';
+            rememberMovementDirection(sprite, "left", time);
           } else if (cursors.right.isDown && directionMap.right) {
             sprite.body.setVelocityX(speed);
             targetAnim = name + '_move_right';
+            rememberMovementDirection(sprite, "right", time);
           } else if (cursors.up.isDown && directionMap.up) {
             sprite.body.setVelocityY(-speed);
             targetAnim = name + '_move_up';
+            rememberMovementDirection(sprite, "up", time);
           } else if (cursors.down.isDown && directionMap.down) {
             sprite.body.setVelocityY(speed);
             targetAnim = name + '_move_down';
+            rememberMovementDirection(sprite, "down", time);
           }
 
           const forced = GameBridge.forcedAnimations[name];
           if (forced) {
             if (forced.until === null || time <= forced.until) {
-              const directionSuffix = targetAnim.startsWith(name + '_')
-                ? targetAnim.slice((name + '_').length)
-                : 'idle';
-
-              const directionalForcedKey = forced.key + '_' + directionSuffix;
-              const forcedAnimKey = scene.anims.exists(directionalForcedKey)
-                ? directionalForcedKey
-                : forced.key;
-
+              const forcedAnimKey = recentDirectionalAnimation(sprite, forced.key, time);
               playIfChanged(sprite, forcedAnimKey);
               return;
             }

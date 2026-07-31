@@ -155,7 +155,8 @@ function playAnimation(name, animName) {
     return;
   }
   GameBridge.forcedAnimations[name] = { key: animName, until: null };
-  sprite.play(animName, true);
+  const now = scene && scene.time ? scene.time.now : 0;
+  sprite.play(recentDirectionalAnimation(sprite, animName, now), true);
 }
 
 function playAnimationForDuration(name, animName, duration) {
@@ -167,7 +168,8 @@ function playAnimationForDuration(name, animName, duration) {
   }
   const until = scene && scene.time ? scene.time.now + duration : null;
   GameBridge.forcedAnimations[name] = { key: animName, until };
-  sprite.play(animName, true);
+  const now = scene && scene.time ? scene.time.now : 0;
+  sprite.play(recentDirectionalAnimation(sprite, animName, now), true);
   scene.time.delayedCall(duration, () => {
     delete GameBridge.forcedAnimations[name];
     if (!sprite || !sprite.active || !sprite.play || !sprite.anims) return;
@@ -395,15 +397,12 @@ function setSpriteInMotion(name, dirX, dirY, speed, distance) {
       ease: 'Linear',
       onStart: () => {
         if (!sprite || !sprite.active || !sprite.play) return;
-        const directionalAnim = dirX < 0
-          ? name + "_move_left"
-          : dirX > 0
-            ? name + "_move_right"
-            : dirY < 0
-              ? name + "_move_up"
-              : dirY > 0
-                ? name + "_move_down"
-                : null;
+        const now = scene && scene.time ? scene.time.now : 0;
+        const movementDirection = Math.abs(dirX) >= Math.abs(dirY)
+          ? (dirX < 0 ? "left" : "right")
+          : (dirY < 0 ? "up" : "down");
+        rememberMovementDirection(sprite, movementDirection, now);
+        const directionalAnim = name + "_move_" + movementDirection;
 
         if (directionalAnim && scene.anims.exists(directionalAnim)) {
           sprite.play(directionalAnim, true);
