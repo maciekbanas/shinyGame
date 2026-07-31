@@ -301,6 +301,18 @@ test_that("browser and server action declarations are validated", {
   )
 })
 
+test_that("browser and server action guidance is included", {
+  vignette <- readLines(
+    testthat::test_path("..", "..", "vignettes", "browser-server-actions.Rmd"),
+    warn = FALSE
+  )
+
+  expect_true(any(grepl("Quick decision guide", vignette, fixed = TRUE)))
+  expect_true(any(grepl("browser_action = browser_actions", vignette, fixed = TRUE)))
+  expect_true(any(grepl("server_action = function(event)", vignette, fixed = TRUE)))
+  expect_true(any(grepl("Use both", vignette, fixed = TRUE)))
+})
+
 test_that("browser state, cooldowns, conditions, and semantic events compile", {
   session <- make_mock_session()
   game <- PhaserGame$new()

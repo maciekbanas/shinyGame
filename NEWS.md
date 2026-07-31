@@ -5,6 +5,8 @@
   while arbitrary R logic belongs in a server action.
 * Removed `action` and `notify_server` from controls, overlaps, overlap-end
   handlers, and colliders.
+* Added a vignette explaining when to use browser actions, server actions, or
+  both together.
 
 ## Performance improvements
 * Reduced high-frequency overlap traffic by keeping immediate actions in the browser and registering server events only when a `server_action` is supplied.
