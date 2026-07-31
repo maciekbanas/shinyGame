@@ -179,6 +179,13 @@ function playAnimationForDuration(name, animName, duration) {
   });
 }
 
+function stopSpriteMotion(name) {
+  const sprite = getSpriteByName(name, "stopSpriteMotion()");
+  if (!sprite) return;
+  scene.tweens.killTweensOf(sprite);
+  if (sprite.body && typeof sprite.body.stop === "function") sprite.body.stop();
+}
+
 function setGravity(name, x, y) {
   withSprite(name, (sprite) => {
     if (sprite.body) sprite.body.setGravity(x, y);
@@ -299,6 +306,8 @@ function runBrowserAction(action, overlapObjectOne, overlapObjectTwo) {
     }
   }
 
+  if (action.stop_motion) stopSpriteMotion(action.stop_motion);
+
   if (action.destroy_sprite) destroySprite(action.destroy_sprite);
   if (action.set_in_motion) {
     const motion = action.set_in_motion;
@@ -361,12 +370,6 @@ function setSpriteInMotion(name, dirX, dirY, speed, distance) {
   }
 
   matches.forEach(sprite => {
-    const sightAlertUntil = sprite.getData && sprite.getData("sightAlertUntil");
-    if (Number.isFinite(sightAlertUntil) && performance.now() < sightAlertUntil) {
-      if (sprite.body && typeof sprite.body.stop === "function") sprite.body.stop();
-      return;
-    }
-
     scene.tweens.killTweensOf(sprite);
 
     const originX = sprite.x;
@@ -485,10 +488,8 @@ function startSpriteApproachOnSight(
       return;
     }
 
-    const now = performance.now();
     if (!sprite.getData("sightAlert")) {
       sprite.setData("sightAlert", true);
-      sprite.setData("sightAlertUntil", now + alertDuration);
       scene.tweens.killTweensOf(sprite);
       if (sprite.body && typeof sprite.body.stop === "function") sprite.body.stop();
 
@@ -509,11 +510,10 @@ function startSpriteApproachOnSight(
         },
         onComplete: () => alertText.destroy()
       });
-      return;
     }
 
-    const sightAlertUntil = sprite.getData("sightAlertUntil");
-    if (Number.isFinite(sightAlertUntil) && now < sightAlertUntil) return;
+    if (GameBridge.forcedAnimations[name]) return;
+    if (scene.tweens.isTweening(sprite)) return;
 
     setSpriteInMotion(
       name,

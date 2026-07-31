@@ -73,6 +73,12 @@ Sprite <- R6::R6Class(
       send_js(private, js)
     },
 
+    #' @description Stop this sprite's current scripted movement.
+    #' @return Invisible; sends a custom message to the client.
+    stop_motion = function() {
+      send_js(private, sprintf("stopSpriteMotion('%s');", private$name))
+    },
+
     #' @description Enable movement controls (arrow keys) for a player sprite.
     #' @param directions Character vector. Directions to enable (defaults to c("left","right","down","up")).
     #' @param speed Numeric. Movement speed in pixels/second (default: 200).
@@ -210,7 +216,7 @@ Sprite <- R6::R6Class(
     #' @param speed Numeric. Approach speed in pixels/second.
     #' @param distance Numeric. Distance in pixels to travel for each approach step.
     #' @param check_interval Numeric. Milliseconds between sight checks.
-    #' @param alert_duration Numeric. Milliseconds to show the alert before approaching.
+    #' @param alert_duration Numeric. Milliseconds to show the alert while approaching.
     #' @param wander_interval Numeric. Milliseconds between random movements while the target is out of sight.
     start_approach_on_sight = function(target_name,
                                        sight_range,

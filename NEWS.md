@@ -26,6 +26,8 @@
 * Added camera follow helpers for sprites, images, rectangles, static sprites, and text scene objects so the Phaser camera can move with scene objects.
 * Added `PhaserGame$set_world_bounds()` for configuring Phaser physics world and camera bounds from R.
 * Added `StaticSprite$destroy()` for removing static sprites from the Phaser scene.
+* Added `Sprite$stop_motion()` for immediately cancelling scripted sprite
+  movement, including from `browser_actions()`.
 * Added initial visibility control for text objects via `PhaserGame$add_text(..., visible = FALSE)` and `Text$new(..., visible = FALSE)`.
 * Added `Text$show()` and `Text$hide()` helpers for toggling text objects after creation.
 

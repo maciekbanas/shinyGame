@@ -78,6 +78,7 @@ test_that("Sprite utility methods send expected JS", {
   s <- Sprite$new("hero", "hero.png", 0, 0, 32, 32, frame_count = 4, frame_rate = 12, session = session)
   s$play_animation("idle")
   s$play_animation("run", duration = 300)
+  s$stop_motion()
   s$add_player_controls(c("left", "right"), speed = 180)
   s$follow_camera(lerp_x = 0.5, lerp_y = 0.75, round_pixels = FALSE)
   s$stop_camera_follow()
@@ -94,6 +95,7 @@ test_that("Sprite utility methods send expected JS", {
   msgs <- vapply(session$get_messages(), function(m) m$message$js, character(1))
   expect_true(any(grepl("playAnimation\\('hero','idle'\\);", msgs)))
   expect_true(any(grepl("playAnimationForDuration\\('hero','run', 300\\);", msgs)))
+  expect_true(any(grepl("stopSpriteMotion\\('hero'\\);", msgs)))
   expect_true(any(grepl("addPlayerControls\\('hero',", msgs)))
   expect_true(any(grepl("followSpriteWithCamera\\('hero', 0.500000, 0.750000, false\\);", msgs)))
   expect_true(any(grepl("stopCameraFollow\\('hero'\\);", msgs)))
@@ -210,6 +212,7 @@ test_that("browser_actions compile R6 calls for immediate execution", {
     browser_action = browser_actions({
       prompt$show()
       sound$play(volume = 0.5)
+      hero$stop_motion()
       hero$play_animation("wave", duration = 250)
     })
   )
@@ -233,6 +236,7 @@ test_that("browser_actions compile R6 calls for immediate execution", {
   expect_true(any(grepl('addOverlap("hero", "wizard"', msgs, fixed = TRUE)))
   expect_true(any(grepl('"show_text":"prompt"', msgs, fixed = TRUE)))
   expect_true(any(grepl('"play_sound":"hello","volume":0.5', msgs, fixed = TRUE)))
+  expect_true(any(grepl('"stop_motion":"hero"', msgs, fixed = TRUE)))
   expect_true(any(grepl('"play_animation":"wave","sprite":"hero","duration":250', msgs, fixed = TRUE)))
   expect_true(any(grepl('addOverlapEnd("hero", "wizard"', msgs, fixed = TRUE)))
   expect_true(any(grepl('"hide_text":"prompt"', msgs, fixed = TRUE)))
@@ -375,11 +379,42 @@ test_that("dungeonheroes Space action retains interactions and combat", {
   expect_true(any(grepl("server_action = handle_space", example, fixed = TRUE)))
   expect_true(any(grepl("server_action", example, fixed = TRUE)))
   expect_true(any(grepl("enemy_hit_points[[enemy_in_range]]", example, fixed = TRUE)))
+  expect_true(any(grepl("mushroom_reaction_check_interval <- 16", example, fixed = TRUE)))
+  expect_true(any(grepl("enemies[[enemy_name]]$stop_motion()", example, fixed = TRUE)))
+  expect_true(any(grepl("browser_action = browser_actions", example, fixed = TRUE)))
+  expect_true(any(grepl('duration = enemy_attack_cooldown * 1000', example, fixed = TRUE)))
+  expect_true(any(grepl('mode = "stay"', example, fixed = TRUE)))
+  expect_true(any(grepl('interval = enemy_attack_cooldown * 1000', example, fixed = TRUE)))
+  expect_true(any(grepl('duration = 1', example, fixed = TRUE)))
   expect_true(any(grepl('title = "Game over"', example, fixed = TRUE)))
   expect_false(any(grepl("client_action", example, fixed = TRUE)))
   expect_false(any(grepl("dungeonheroes_version", example, fixed = TRUE)))
   expect_false(any(grepl("dungeonheroes v", example, fixed = TRUE)))
   expect_true(any(grepl('text = sprintf("shinyphaser v%s"', example, fixed = TRUE)))
+})
+
+test_that("sight approach does not restart active movement or hide alerts", {
+  sprite_js <- readLines(
+    system.file("www", "phaser-sprite.js", package = "shinyphaser"),
+    warn = FALSE
+  )
+  sight_start <- grep("function startSpriteApproachOnSight", sprite_js, fixed = TRUE)
+  sight_end <- grep("function constrainedTerrainMotionEnd", sprite_js, fixed = TRUE)
+  sight_code <- sprite_js[sight_start:(sight_end - 1)]
+
+  forced_guard <- grep("if (GameBridge.forcedAnimations[name]) return;", sight_code, fixed = TRUE)
+  alert_creation <- grep('scene.add.text(sprite.x, sprite.y - sprite.displayHeight * 0.6, "!"', sight_code, fixed = TRUE)
+  movement_guard <- grep("if (scene.tweens.isTweening(sprite)) return;", sight_code, fixed = TRUE)
+  approach_move <- grep("setSpriteInMotion(", sight_code, fixed = TRUE)
+  delayed_approach <- grep('setData("sightAlertUntil", now + alertDuration)', sight_code, fixed = TRUE)
+
+  expect_length(forced_guard, 1)
+  expect_length(alert_creation, 1)
+  expect_length(movement_guard, 1)
+  expect_length(delayed_approach, 0)
+  expect_lt(alert_creation, forced_guard)
+  expect_lt(forced_guard, movement_guard)
+  expect_lt(movement_guard, approach_move[[length(approach_move)]])
 })
 
 test_that("bear Space control names its input argument", {
