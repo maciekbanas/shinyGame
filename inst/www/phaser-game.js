@@ -36,6 +36,15 @@ function recentDirectionalAnimation(sprite, animationKey, time) {
     : animationKey;
 }
 
+function forcedAnimationForMovement(sprite, forcedKey, movementKey, time) {
+  const directionalKey = recentDirectionalAnimation(sprite, forcedKey, time);
+  if (directionalKey !== forcedKey || !movementKey) return directionalKey;
+
+  const movementSuffix = movementKey.slice((sprite.name + "_").length);
+  const forcedMovementKey = forcedKey + "_" + movementSuffix;
+  return scene.anims.exists(forcedMovementKey) ? forcedMovementKey : forcedKey;
+}
+
 function sendPhaserEvent(target, payload) {
   // jsonlite represented an absent R event target as an empty object in older
   // messages. Shiny input names must be strings; passing that object reaches
@@ -166,7 +175,10 @@ function initPhaserGame(containerId, config) {
           const forced = GameBridge.forcedAnimations[name];
           if (forced) {
             if (forced.until === null || time <= forced.until) {
-              const forcedAnimKey = recentDirectionalAnimation(sprite, forced.key, time);
+              const movementKey = targetAnim !== name + '_idle' ? targetAnim : null;
+              const forcedAnimKey = forcedAnimationForMovement(
+                sprite, forced.key, movementKey, time
+              );
               playIfChanged(sprite, forcedAnimKey);
               return;
             }
