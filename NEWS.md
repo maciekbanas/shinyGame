@@ -26,12 +26,16 @@
 * Added camera follow helpers for sprites, images, rectangles, static sprites, and text scene objects so the Phaser camera can move with scene objects.
 * Added `PhaserGame$set_world_bounds()` for configuring Phaser physics world and camera bounds from R.
 * Added `StaticSprite$destroy()` for removing static sprites from the Phaser scene.
+* Added `Sprite$stop_motion()` for immediately cancelling scripted sprite
+  movement, including from `browser_actions()`.
 * Added initial visibility control for text objects via `PhaserGame$add_text(..., visible = FALSE)` and `Text$new(..., visible = FALSE)`.
 * Added `Text$show()` and `Text$hide()` helpers for toggling text objects after creation.
 
 ## Updates in examples
 * Added new arcade example game (bear).
 * Added new RPG game example (dungeonheroes).
+* Updated dungeonheroes mushroom enemies to react immediately on sight and keep
+  their movement, alert, and attack animations synchronized with combat.
 * Updated the hedgehog examples so acknowledging a game-over dialog reloads the Shiny session and starts a fresh game instead of stopping the app.
 
 ## README
