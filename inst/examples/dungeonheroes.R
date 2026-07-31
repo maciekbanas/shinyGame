@@ -110,6 +110,7 @@ server <- function(input, output, session) {
   enemy_in_range <- NULL
   sword_in_range <- FALSE
   wizard_in_range <- FALSE
+  berry_in_range <- NULL
   has_sword <- FALSE
   hero_last_attack_time <- as.numeric(Sys.time()) - 1
   hero_attack_cooldown <- 0.75
@@ -444,6 +445,21 @@ server <- function(input, output, session) {
   handle_space <- function(event) {
       if (life_points <= 0) return(invisible(NULL))
 
+      if (!is.null(berry_in_range) && isTRUE(berry_is_available[[berry_in_range]])) {
+        consumed_berry <- berry_in_range
+        restored_life <- min(10, max_life_points - life_points)
+        life_points <<- min(max_life_points, life_points + 10)
+        berry_is_available[[consumed_berry]] <<- FALSE
+        berry_in_range <<- NULL
+        berries[[consumed_berry]]$destroy()
+        update_life_points()
+        set_combat_status(sprintf(
+          "You ate berries and restored %d life. Life: %d/%d",
+          restored_life, life_points, max_life_points
+        ))
+        return(invisible(NULL))
+      }
+
       if (sword_in_range && !has_sword) {
         has_sword <<- TRUE
         sword_in_range <<- FALSE
@@ -572,6 +588,49 @@ server <- function(input, output, session) {
     "hero", "sword", input = input, session = session,
     server_action = function(event) sword_in_range <<- FALSE
   )
+
+  berry_specs <- list(
+    berries_1 = c(x = 650, y = 650),
+    berries_2 = c(x = 1450, y = 1650),
+    berries_3 = c(x = 2550, y = 2250),
+    berries_4 = c(x = 1150, y = 3150),
+    berries_5 = c(x = 2050, y = 3850),
+    berries_6 = c(x = 2850, y = 4750),
+    berries_7 = c(x = 450, y = 5450),
+    berries_8 = c(x = 1550, y = 5550),
+    berries_9 = c(x = 2450, y = 5850),
+    berries_10 = c(x = 2950, y = 6350)
+  )
+  berry_is_available <- stats::setNames(
+    rep(TRUE, length(berry_specs)),
+    names(berry_specs)
+  )
+  berries <- lapply(names(berry_specs), function(berry_name) {
+    position <- berry_specs[[berry_name]]
+    game$add_static_sprite(
+      name = berry_name,
+      url = "assets/dungeonheroes/perks/berries.png",
+      x = position[["x"]],
+      y = position[["y"]]
+    )
+  })
+  names(berries) <- names(berry_specs)
+
+  lapply(names(berries), function(berry_name) {
+    force(berry_name)
+    game$add_overlap(
+      "hero", berry_name, input = input,
+      server_action = function(event) {
+        if (isTRUE(berry_is_available[[berry_name]])) berry_in_range <<- berry_name
+      }
+    )
+    game$add_overlap_end(
+      "hero", berry_name, input = input, session = session,
+      server_action = function(event) {
+        if (identical(berry_in_range, berry_name)) berry_in_range <<- NULL
+      }
+    )
+  })
 
 
   wizard <- game$add_sprite(
