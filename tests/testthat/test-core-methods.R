@@ -415,6 +415,29 @@ test_that("dungeonheroes tree has a collidable base and foreground top", {
   expect_true(any(grepl("dead_tree_top$set_depth(20)", example, fixed = TRUE)))
 })
 
+test_that("dungeonheroes can travel between mushroom swamps and magma hills", {
+  example <- readLines(
+    system.file("examples", "dungeonheroes.R", package = "shinyphaser"),
+    warn = FALSE
+  )
+  magma_map <- jsonlite::read_json(
+    system.file("assets", "dungeonheroes", "maps", "magma_hills.json",
+                package = "shinyphaser"),
+    simplifyVector = FALSE
+  )
+
+  expect_true(any(grepl('"leave_realm", "Leave realm"', example, fixed = TRUE)))
+  expect_true(any(grepl('"choose_mushroom_swamps", "Mushroom swamps"', example, fixed = TRUE)))
+  expect_true(any(grepl('"choose_magma_hills", "Magma hills"', example, fixed = TRUE)))
+  expect_true(any(grepl('map_key = "magma_hills"', example, fixed = TRUE)))
+  expect_true(any(grepl('game$activate_map(', example, fixed = TRUE)))
+  expect_identical(magma_map$layers[[1]]$name, "terrain")
+  expect_identical(vapply(magma_map$tilesets, `[[`, character(1), "name"),
+                   c("hill_1", "lava_1"))
+  expect_true(magma_map$tilesets[[2]]$tiles[[1]]$properties[[1]]$value)
+  expect_true(all(unlist(magma_map$layers[[1]]$data) %in% c(1L, 2L)))
+})
+
 test_that("sight approach does not restart active movement or hide alerts", {
   sprite_js <- readLines(
     system.file("www", "phaser-sprite.js", package = "shinyphaser"),
