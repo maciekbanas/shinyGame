@@ -577,17 +577,17 @@ server <- function(input, output, session) {
 
   dead_tree_bottom <- game$add_static_sprite(
     name = "dead_tree_1_bottom",
-    url = "assets/dungeonheroes/terrain/dead_tree_1_bottom.png",
+    url = "assets/dungeonheroes/terrain/ms/dead_tree_1_bottom.png",
     x = 550,
-    y = 750
+    y = 650
   )
   dead_tree_bottom$set_depth(10)
 
   dead_tree_top <- game$add_image(
     name = "dead_tree_1_top",
-    url = "assets/dungeonheroes/terrain/dead_tree_1_top.png",
+    url = "assets/dungeonheroes/terrain/ms/dead_tree_1_top.png",
     x = 550,
-    y = 750 - map_tile_size
+    y = 650 - map_tile_size
   )
   dead_tree_top$set_depth(20)
 

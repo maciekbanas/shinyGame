@@ -407,6 +407,9 @@ test_that("dungeonheroes tree has a collidable base and foreground top", {
 
   expect_true(any(grepl('name = "dead_tree_1_bottom"', example, fixed = TRUE)))
   expect_true(any(grepl('name = "dead_tree_1_top"', example, fixed = TRUE)))
+  expect_true(any(grepl('url = "assets/dungeonheroes/terrain/ms/dead_tree_1_bottom.png"', example, fixed = TRUE)))
+  expect_true(any(grepl('url = "assets/dungeonheroes/terrain/ms/dead_tree_1_top.png"', example, fixed = TRUE)))
+  expect_true(any(grepl("y = 650", example, fixed = TRUE)))
   expect_true(any(grepl('game$add_collider("hero", "dead_tree_1_bottom")', example, fixed = TRUE)))
   expect_false(any(grepl('game$add_collider("hero", "dead_tree_1_top")', example, fixed = TRUE)))
   expect_true(any(grepl("dead_tree_top$set_depth(20)", example, fixed = TRUE)))
@@ -495,6 +498,7 @@ test_that("runtime visual assets initialize when the loader batch completes", {
 
   expect_true(any(grepl("scene.load.once('complete'", sprite_js, fixed = TRUE)))
   expect_true(any(grepl("scene.load.once('complete'", group_js, fixed = TRUE)))
+  expect_true(any(grepl("applyPendingSpriteActions(imageName)", image_js, fixed = TRUE)))
   expect_true(any(grepl("scene.load.once('complete'", image_js, fixed = TRUE)))
   expect_false(any(grepl("if (!scene.load.isLoading())", sprite_js, fixed = TRUE)))
 })

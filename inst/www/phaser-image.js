@@ -10,6 +10,7 @@ function addImage(imageName, imageUrl, x = null, y = null, visible = true, click
       : scene.cameras.main.height / 2;
 
     scene[imageName] = scene.add.image(px, py, imageName).setName(imageName);
+    applyPendingSpriteActions(imageName);
     if (clickable) {
       scene[imageName].setInteractive();
     }
