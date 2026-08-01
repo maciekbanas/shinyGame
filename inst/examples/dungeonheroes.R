@@ -40,6 +40,7 @@ ui <- shiny::tagList(
 
     #leave_realm {
       position: fixed;
+      display: none;
       top: 18px;
       left: 50%;
       z-index: 9000;
@@ -367,6 +368,8 @@ server <- function(input, output, session) {
   hero$add_player_controls()
   hero$follow_camera()
   hero$set_depth(10)
+  game$set_map_exit("mushroom_swamps", "hero", x = 100, y = 100)
+  game$set_map_exit("magma_hills", "hero", x = 1550, y = 650)
   Sys.sleep(0.1)
   game$enable_terrain_collision("hero")
   hero$add_animation(

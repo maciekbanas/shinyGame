@@ -16,6 +16,8 @@ GameBridge.activeMapKey = GameBridge.activeMapKey || null;
 GameBridge.pendingActiveMap = GameBridge.pendingActiveMap || null;
 GameBridge.mapLoadQueue = GameBridge.mapLoadQueue || [];
 GameBridge.mapLoading = GameBridge.mapLoading || false;
+GameBridge.mapExits = GameBridge.mapExits || {};
+GameBridge.realmExitVisible = GameBridge.realmExitVisible || false;
 GameBridge.lastHeroOverlapState = GameBridge.lastHeroOverlapState || "";
 GameBridge.nextHeroOverlapSendAt = GameBridge.nextHeroOverlapSendAt || 0;
 GameBridge.sounds = GameBridge.sounds || {};
@@ -144,6 +146,7 @@ function initPhaserGame(containerId, config) {
   function update(time, delta) {
       applyPendingCameraFollows();
       applyPendingScrollFactors();
+      updateMapExitVisibility();
       sendHeroOverlapState(time);
 
       Object.entries(GameBridge.playerControls).forEach(([name, opts]) => {
@@ -445,6 +448,26 @@ function activateMap(mapKey, playerName = null, x = null, y = null,
   }
 
   applyPendingTerrainColliders();
+  updateMapExitVisibility();
+}
+
+function setMapExit(mapKey, playerName, x, y, radius, elementId) {
+  GameBridge.mapExits[mapKey] = { playerName, x, y, radius, elementId };
+  updateMapExitVisibility();
+}
+
+function updateMapExitVisibility() {
+  const exit = GameBridge.mapExits[GameBridge.activeMapKey];
+  const player = exit && scene && scene.children.getByName(exit.playerName);
+  const nearby = Boolean(player && Phaser.Math.Distance.Between(
+    player.x, player.y, exit.x, exit.y
+  ) <= exit.radius);
+  const element = exit && document.getElementById(exit.elementId);
+
+  if (element && nearby !== GameBridge.realmExitVisible) {
+    element.style.display = nearby ? "block" : "none";
+  }
+  GameBridge.realmExitVisible = nearby;
 }
 
 function applyPendingTerrainColliders() {

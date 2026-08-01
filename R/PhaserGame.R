@@ -172,6 +172,26 @@ PhaserGame <- R6::R6Class(
       send_js(private, js)
     },
 
+    #' @description Show a map's realm-exit element while the player is near it.
+    #' @param map_key Character. Key of a tilemap loaded with `add_map()`.
+    #' @param player_name Character. Player sprite whose position is monitored.
+    #' @param x Numeric. Realm-exit x-coordinate.
+    #' @param y Numeric. Realm-exit y-coordinate.
+    #' @param radius Numeric. Maximum distance at which the exit is available.
+    #' @param element_id Character. ID of the HTML element to show near the exit.
+    #' @return Invisible; sends a custom message to the client.
+    set_map_exit = function(map_key, player_name, x, y, radius = 180,
+                            element_id = "leave_realm") {
+      js <- sprintf(
+        "setMapExit(%s, %s, %f, %f, %f, %s);",
+        jsonlite::toJSON(map_key, auto_unbox = TRUE),
+        jsonlite::toJSON(player_name, auto_unbox = TRUE),
+        x, y, radius,
+        jsonlite::toJSON(element_id, auto_unbox = TRUE)
+      )
+      send_js(private, js)
+    },
+
     #' @description Set the Phaser physics world and camera bounds.
     #' @param width Numeric. World width in pixels.
     #' @param height Numeric. World height in pixels.
