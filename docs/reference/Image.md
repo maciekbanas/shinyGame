@@ -13,6 +13,12 @@ PhaserGame\$add_image() method.
 
 - [`Image$hide()`](#method-Image-hide)
 
+- [`Image$follow_camera()`](#method-Image-follow_camera)
+
+- [`Image$stop_camera_follow()`](#method-Image-stop_camera_follow)
+
+- [`Image$set_scroll_factor()`](#method-Image-set_scroll_factor)
+
 - [`Image$click()`](#method-Image-click)
 
 - [`Image$clone()`](#method-Image-clone)
@@ -84,6 +90,62 @@ Hide a previously added image.
 #### Usage
 
     Image$hide()
+
+------------------------------------------------------------------------
+
+### Method `follow_camera()`
+
+Make the camera follow this image as it moves through the world.
+
+#### Usage
+
+    Image$follow_camera(lerp_x = 1, lerp_y = 1, round_pixels = TRUE)
+
+#### Arguments
+
+- `lerp_x`:
+
+  Numeric. Horizontal interpolation factor from 0 to 1 (default: 1).
+
+- `lerp_y`:
+
+  Numeric. Vertical interpolation factor from 0 to 1 (default: 1).
+
+- `round_pixels`:
+
+  Logical. Whether to round camera pixels to avoid sub-pixel rendering
+  (default: TRUE).
+
+------------------------------------------------------------------------
+
+### Method `stop_camera_follow()`
+
+Stop the camera from following this image.
+
+#### Usage
+
+    Image$stop_camera_follow()
+
+------------------------------------------------------------------------
+
+### Method `set_scroll_factor()`
+
+Set how much this image scrolls with the camera.
+
+#### Usage
+
+    Image$set_scroll_factor(x, y = x)
+
+#### Arguments
+
+- `x`:
+
+  Numeric. Horizontal scroll factor (0 = fixed to viewport, 1 = scrolls
+  with world).
+
+- `y`:
+
+  Numeric. Vertical scroll factor. Defaults to `x`.
 
 ------------------------------------------------------------------------
 

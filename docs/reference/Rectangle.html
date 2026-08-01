@@ -9,7 +9,7 @@ PhaserGame$add_rectangle() method."></head><body>
 
     <a class="navbar-brand me-2" href="../index.html">shinyphaser</a>
 
-    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="">0.1.0</small>
+    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="">0.1.0.9014</small>
 
 
     <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbar" aria-controls="navbar" aria-expanded="false" aria-label="Toggle navigation">
@@ -21,6 +21,7 @@ PhaserGame$add_rectangle() method."></head><body>
 <li class="nav-item dropdown">
   <button class="nav-link dropdown-toggle" type="button" id="dropdown-articles" data-bs-toggle="dropdown" aria-expanded="false" aria-haspopup="true">Articles</button>
   <ul class="dropdown-menu" aria-labelledby="dropdown-articles"><li><a class="dropdown-item" href="../articles/first-game.html">Build your first shinyphaser game</a></li>
+    <li><a class="dropdown-item" href="../articles/browser-server-actions.html">Choose between browser and server actions</a></li>
   </ul></li>
 <li class="nav-item"><a class="nav-link" href="../news/index.html">Changelog</a></li>
       </ul><ul class="navbar-nav"><li class="nav-item"><form class="form-inline" role="search">
@@ -54,6 +55,9 @@ PhaserGame$add_rectangle() method.</p>
 <ul><li><p><a href="#method-Rectangle-new"><code>Rectangle$new()</code></a></p></li>
 <li><p><a href="#method-Rectangle-show"><code>Rectangle$show()</code></a></p></li>
 <li><p><a href="#method-Rectangle-hide"><code>Rectangle$hide()</code></a></p></li>
+<li><p><a href="#method-Rectangle-follow_camera"><code>Rectangle$follow_camera()</code></a></p></li>
+<li><p><a href="#method-Rectangle-stop_camera_follow"><code>Rectangle$stop_camera_follow()</code></a></p></li>
+<li><p><a href="#method-Rectangle-set_scroll_factor"><code>Rectangle$set_scroll_factor()</code></a></p></li>
 <li><p><a href="#method-Rectangle-click"><code>Rectangle$click()</code></a></p></li>
 <li><p><a href="#method-Rectangle-clone"><code>Rectangle$clone()</code></a></p></li>
 </ul></div><p></p><hr><a id="method-Rectangle-new"></a><div class="section">
@@ -130,16 +134,68 @@ PhaserGame$add_rectangle() method.</p>
 </div>
 
 
-</div><p></p><hr><a id="method-Rectangle-click"></a><div class="section">
-<h3 id="method-click-">Method <code>click()</code><a class="anchor" aria-label="anchor" href="#method-click-"></a></h3>
-<p>Add a click event listener to the rectangle that triggers an R
-function when clicked.</p><div class="section">
+</div><p></p><hr><a id="method-Rectangle-follow_camera"></a><div class="section">
+<h3 id="method-follow-camera-">Method <code>follow_camera()</code><a class="anchor" aria-label="anchor" href="#method-follow-camera-"></a></h3>
+<p>Make the camera follow this rectangle as it moves through the world.</p><div class="section">
 <h4 id="usage-3">Usage<a class="anchor" aria-label="anchor" href="#usage-3"></a></h4>
-<p></p><div class="r"><div class="sourceCode"><pre><code><span><span class="va">Rectangle</span><span class="op">$</span><span class="fu">click</span><span class="op">(</span><span class="va">event_fun</span>, <span class="va">input</span><span class="op">)</span></span></code></pre></div><p></p></div>
+<p></p><div class="r"><div class="sourceCode"><pre><code><span><span class="va">Rectangle</span><span class="op">$</span><span class="fu">follow_camera</span><span class="op">(</span>lerp_x <span class="op">=</span> <span class="fl">1</span>, lerp_y <span class="op">=</span> <span class="fl">1</span>, round_pixels <span class="op">=</span> <span class="cn">TRUE</span><span class="op">)</span></span></code></pre></div><p></p></div>
 </div>
 
 <div class="section">
 <h4 id="arguments-1">Arguments<a class="anchor" aria-label="anchor" href="#arguments-1"></a></h4>
+<p></p><div class="arguments"><dl><dt><code>lerp_x</code></dt>
+<dd><p>Numeric. Horizontal interpolation factor from 0 to 1 (default: 1).</p></dd>
+
+
+<dt><code>lerp_y</code></dt>
+<dd><p>Numeric. Vertical interpolation factor from 0 to 1 (default: 1).</p></dd>
+
+
+<dt><code>round_pixels</code></dt>
+<dd><p>Logical. Whether to round camera pixels to avoid sub-pixel rendering (default: TRUE).</p></dd>
+
+
+</dl><p></p></div>
+</div>
+
+</div><p></p><hr><a id="method-Rectangle-stop_camera_follow"></a><div class="section">
+<h3 id="method-stop-camera-follow-">Method <code>stop_camera_follow()</code><a class="anchor" aria-label="anchor" href="#method-stop-camera-follow-"></a></h3>
+<p>Stop the camera from following this rectangle.</p><div class="section">
+<h4 id="usage-4">Usage<a class="anchor" aria-label="anchor" href="#usage-4"></a></h4>
+<p></p><div class="r"><div class="sourceCode"><pre><code><span><span class="va">Rectangle</span><span class="op">$</span><span class="fu">stop_camera_follow</span><span class="op">(</span><span class="op">)</span></span></code></pre></div><p></p></div>
+</div>
+
+
+</div><p></p><hr><a id="method-Rectangle-set_scroll_factor"></a><div class="section">
+<h3 id="method-set-scroll-factor-">Method <code>set_scroll_factor()</code><a class="anchor" aria-label="anchor" href="#method-set-scroll-factor-"></a></h3>
+<p>Set how much this rectangle scrolls with the camera.</p><div class="section">
+<h4 id="usage-5">Usage<a class="anchor" aria-label="anchor" href="#usage-5"></a></h4>
+<p></p><div class="r"><div class="sourceCode"><pre><code><span><span class="va">Rectangle</span><span class="op">$</span><span class="fu">set_scroll_factor</span><span class="op">(</span><span class="va">x</span>, y <span class="op">=</span> <span class="va">x</span><span class="op">)</span></span></code></pre></div><p></p></div>
+</div>
+
+<div class="section">
+<h4 id="arguments-2">Arguments<a class="anchor" aria-label="anchor" href="#arguments-2"></a></h4>
+<p></p><div class="arguments"><dl><dt><code>x</code></dt>
+<dd><p>Numeric. Horizontal scroll factor (0 = fixed to viewport, 1 = scrolls with world).</p></dd>
+
+
+<dt><code>y</code></dt>
+<dd><p>Numeric. Vertical scroll factor. Defaults to <code>x</code>.</p></dd>
+
+
+</dl><p></p></div>
+</div>
+
+</div><p></p><hr><a id="method-Rectangle-click"></a><div class="section">
+<h3 id="method-click-">Method <code>click()</code><a class="anchor" aria-label="anchor" href="#method-click-"></a></h3>
+<p>Add a click event listener to the rectangle that triggers an R
+function when clicked.</p><div class="section">
+<h4 id="usage-6">Usage<a class="anchor" aria-label="anchor" href="#usage-6"></a></h4>
+<p></p><div class="r"><div class="sourceCode"><pre><code><span><span class="va">Rectangle</span><span class="op">$</span><span class="fu">click</span><span class="op">(</span><span class="va">event_fun</span>, <span class="va">input</span><span class="op">)</span></span></code></pre></div><p></p></div>
+</div>
+
+<div class="section">
+<h4 id="arguments-3">Arguments<a class="anchor" aria-label="anchor" href="#arguments-3"></a></h4>
 <p></p><div class="arguments"><dl><dt><code>event_fun</code></dt>
 <dd><p>A function.</p></dd>
 
@@ -154,12 +210,12 @@ function when clicked.</p><div class="section">
 </div><p></p><hr><a id="method-Rectangle-clone"></a><div class="section">
 <h3 id="method-clone-">Method <code>clone()</code><a class="anchor" aria-label="anchor" href="#method-clone-"></a></h3>
 <p>The objects of this class are cloneable with this method.</p><div class="section">
-<h4 id="usage-4">Usage<a class="anchor" aria-label="anchor" href="#usage-4"></a></h4>
+<h4 id="usage-7">Usage<a class="anchor" aria-label="anchor" href="#usage-7"></a></h4>
 <p></p><div class="r"><div class="sourceCode"><pre><code><span><span class="va">Rectangle</span><span class="op">$</span><span class="fu">clone</span><span class="op">(</span>deep <span class="op">=</span> <span class="cn">FALSE</span><span class="op">)</span></span></code></pre></div><p></p></div>
 </div>
 
 <div class="section">
-<h4 id="arguments-2">Arguments<a class="anchor" aria-label="anchor" href="#arguments-2"></a></h4>
+<h4 id="arguments-4">Arguments<a class="anchor" aria-label="anchor" href="#arguments-4"></a></h4>
 <p></p><div class="arguments"><dl><dt><code>deep</code></dt>
 <dd><p>Whether to make a deep clone.</p></dd>
 

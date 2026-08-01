@@ -13,6 +13,12 @@ PhaserGame\$add_rectangle() method.
 
 - [`Rectangle$hide()`](#method-Rectangle-hide)
 
+- [`Rectangle$follow_camera()`](#method-Rectangle-follow_camera)
+
+- [`Rectangle$stop_camera_follow()`](#method-Rectangle-stop_camera_follow)
+
+- [`Rectangle$set_scroll_factor()`](#method-Rectangle-set_scroll_factor)
+
 - [`Rectangle$click()`](#method-Rectangle-click)
 
 - [`Rectangle$clone()`](#method-Rectangle-clone)
@@ -94,6 +100,62 @@ Hide a previously added rectangle.
 #### Usage
 
     Rectangle$hide()
+
+------------------------------------------------------------------------
+
+### Method `follow_camera()`
+
+Make the camera follow this rectangle as it moves through the world.
+
+#### Usage
+
+    Rectangle$follow_camera(lerp_x = 1, lerp_y = 1, round_pixels = TRUE)
+
+#### Arguments
+
+- `lerp_x`:
+
+  Numeric. Horizontal interpolation factor from 0 to 1 (default: 1).
+
+- `lerp_y`:
+
+  Numeric. Vertical interpolation factor from 0 to 1 (default: 1).
+
+- `round_pixels`:
+
+  Logical. Whether to round camera pixels to avoid sub-pixel rendering
+  (default: TRUE).
+
+------------------------------------------------------------------------
+
+### Method `stop_camera_follow()`
+
+Stop the camera from following this rectangle.
+
+#### Usage
+
+    Rectangle$stop_camera_follow()
+
+------------------------------------------------------------------------
+
+### Method `set_scroll_factor()`
+
+Set how much this rectangle scrolls with the camera.
+
+#### Usage
+
+    Rectangle$set_scroll_factor(x, y = x)
+
+#### Arguments
+
+- `x`:
+
+  Numeric. Horizontal scroll factor (0 = fixed to viewport, 1 = scrolls
+  with world).
+
+- `y`:
+
+  Numeric. Vertical scroll factor. Defaults to `x`.
 
 ------------------------------------------------------------------------
 

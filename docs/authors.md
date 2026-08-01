@@ -10,13 +10,13 @@ Source:
 [`DESCRIPTION`](https://github.com/maciekbanas/shinyphaser/blob/HEAD/DESCRIPTION)
 
 Banas M (2026). *shinyphaser: An Interface to the 'Phaser.js' Game
-Framework*. R package version 0.1.0,
+Framework*. R package version 0.1.0.9014,
 <https://github.com/maciekbanas/shinyphaser>.
 
     @Manual{,
       title = {shinyphaser: An Interface to the 'Phaser.js' Game Framework},
       author = {Maciej Banas},
       year = {2026},
-      note = {R package version 0.1.0},
+      note = {R package version 0.1.0.9014},
       url = {https://github.com/maciekbanas/shinyphaser},
     }

@@ -13,7 +13,15 @@ PhaserGame\$add_sprite() method.
 
 - [`Sprite$play_animation()`](#method-Sprite-play_animation)
 
+- [`Sprite$stop_motion()`](#method-Sprite-stop_motion)
+
 - [`Sprite$add_player_controls()`](#method-Sprite-add_player_controls)
+
+- [`Sprite$follow_camera()`](#method-Sprite-follow_camera)
+
+- [`Sprite$stop_camera_follow()`](#method-Sprite-stop_camera_follow)
+
+- [`Sprite$set_scroll_factor()`](#method-Sprite-set_scroll_factor)
 
 - [`Sprite$set_velocity_x()`](#method-Sprite-set_velocity_x)
 
@@ -158,6 +166,20 @@ Play a loaded animation for the sprite.
 
 ------------------------------------------------------------------------
 
+### Method `stop_motion()`
+
+Stop this sprite's current scripted movement.
+
+#### Usage
+
+    Sprite$stop_motion()
+
+#### Returns
+
+Invisible; sends a custom message to the client.
+
+------------------------------------------------------------------------
+
 ### Method `add_player_controls()`
 
 Enable movement controls (arrow keys) for a player sprite.
@@ -179,6 +201,62 @@ Enable movement controls (arrow keys) for a player sprite.
 - `speed`:
 
   Numeric. Movement speed in pixels/second (default: 200).
+
+------------------------------------------------------------------------
+
+### Method `follow_camera()`
+
+Make the camera follow this sprite as it moves through the world.
+
+#### Usage
+
+    Sprite$follow_camera(lerp_x = 1, lerp_y = 1, round_pixels = TRUE)
+
+#### Arguments
+
+- `lerp_x`:
+
+  Numeric. Horizontal interpolation factor from 0 to 1 (default: 1).
+
+- `lerp_y`:
+
+  Numeric. Vertical interpolation factor from 0 to 1 (default: 1).
+
+- `round_pixels`:
+
+  Logical. Whether to round camera pixels to avoid sub-pixel rendering
+  (default: TRUE).
+
+------------------------------------------------------------------------
+
+### Method `stop_camera_follow()`
+
+Stop the camera from following this sprite.
+
+#### Usage
+
+    Sprite$stop_camera_follow()
+
+------------------------------------------------------------------------
+
+### Method `set_scroll_factor()`
+
+Set how much this sprite scrolls with the camera.
+
+#### Usage
+
+    Sprite$set_scroll_factor(x, y = x)
+
+#### Arguments
+
+- `x`:
+
+  Numeric. Horizontal scroll factor (0 = fixed to viewport, 1 = scrolls
+  with world).
+
+- `y`:
+
+  Numeric. Vertical scroll factor. Defaults to `x`.
 
 ------------------------------------------------------------------------
 

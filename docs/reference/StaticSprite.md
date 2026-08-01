@@ -9,6 +9,14 @@ PhaserGame\$add_static_sprite() method.
 
 - [`StaticSprite$new()`](#method-StaticSprite-new)
 
+- [`StaticSprite$destroy()`](#method-StaticSprite-destroy)
+
+- [`StaticSprite$follow_camera()`](#method-StaticSprite-follow_camera)
+
+- [`StaticSprite$stop_camera_follow()`](#method-StaticSprite-stop_camera_follow)
+
+- [`StaticSprite$set_scroll_factor()`](#method-StaticSprite-set_scroll_factor)
+
 - [`StaticSprite$clone()`](#method-StaticSprite-clone)
 
 ------------------------------------------------------------------------
@@ -42,6 +50,72 @@ Add a non-animated static sprite to the scene.
 - `session`:
 
   Shiny session object.
+
+------------------------------------------------------------------------
+
+### Method `destroy()`
+
+Remove static sprite from the scene.
+
+#### Usage
+
+    StaticSprite$destroy()
+
+------------------------------------------------------------------------
+
+### Method `follow_camera()`
+
+Make the camera follow this static sprite as it moves through the world.
+
+#### Usage
+
+    StaticSprite$follow_camera(lerp_x = 1, lerp_y = 1, round_pixels = TRUE)
+
+#### Arguments
+
+- `lerp_x`:
+
+  Numeric. Horizontal interpolation factor from 0 to 1 (default: 1).
+
+- `lerp_y`:
+
+  Numeric. Vertical interpolation factor from 0 to 1 (default: 1).
+
+- `round_pixels`:
+
+  Logical. Whether to round camera pixels to avoid sub-pixel rendering
+  (default: TRUE).
+
+------------------------------------------------------------------------
+
+### Method `stop_camera_follow()`
+
+Stop the camera from following this static sprite.
+
+#### Usage
+
+    StaticSprite$stop_camera_follow()
+
+------------------------------------------------------------------------
+
+### Method `set_scroll_factor()`
+
+Set how much this static sprite scrolls with the camera.
+
+#### Usage
+
+    StaticSprite$set_scroll_factor(x, y = x)
+
+#### Arguments
+
+- `x`:
+
+  Numeric. Horizontal scroll factor (0 = fixed to viewport, 1 = scrolls
+  with world).
+
+- `y`:
+
+  Numeric. Vertical scroll factor. Defaults to `x`.
 
 ------------------------------------------------------------------------
 

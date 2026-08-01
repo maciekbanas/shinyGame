@@ -43,6 +43,8 @@ For a full walkthrough (from static background to movement, animation,
 overlap, and collision), see [**Build your first shinyphaser
 game**](https://maciekbanas.github.io/shinyphaser/articles/first-game.html)
 
+![](man/hedgehog_example.gif)
+
 ## Example games created with `shinyphaser`
 
 - [hedgehog](https://maciekbanas.shinyapps.io/hedgehog)
@@ -59,12 +61,15 @@ game**](https://maciekbanas.github.io/shinyphaser/articles/first-game.html)
 - [`Image`](Image.md) : Image
 - [`Rectangle`](Rectangle.md) : Rectangle
 - [`Sprite`](Sprite.md) : Sprite
+- [`Sound`](Sound.md) : Sound
 - [`StaticSprite`](StaticSprite.md) : Static Sprite
 - [`Group`](Group.md) : Group
 - [`StaticGroup`](StaticGroup.md) : Static Group
 
 ## Utilities
 
+- [`browser_actions()`](browser_actions.md) : Define actions that run
+  immediately in the browser
 - [`run_sample_app()`](run_sample_app.md) : Run the packaged shinyphaser
   sample app
 
@@ -73,3 +78,5 @@ game**](https://maciekbanas.github.io/shinyphaser/articles/first-game.html)
 ### Getting started
 
 - [Build your first shinyphaser game](first-game.md):
+- [Choose between browser and server
+  actions](browser-server-actions.md):

@@ -1,8 +1,8 @@
 # PhaserGame
 
 R6 class to create and manage a Phaser game within a Shiny application.
-Provides methods for adding sprites, animations, images, backgrounds,
-controls, and collision handling.
+Provides methods for adding sprites, animations, images, sounds,
+backgrounds, controls, and collision handling.
 
 ## Public fields
 
@@ -27,7 +27,11 @@ controls, and collision handling.
 
 - [`PhaserGame$add_image()`](#method-PhaserGame-add_image)
 
+- [`PhaserGame$add_sound()`](#method-PhaserGame-add_sound)
+
 - [`PhaserGame$add_map()`](#method-PhaserGame-add_map)
+
+- [`PhaserGame$set_world_bounds()`](#method-PhaserGame-set_world_bounds)
 
 - [`PhaserGame$enable_terrain_collision()`](#method-PhaserGame-enable_terrain_collision)
 
@@ -59,7 +63,7 @@ Create a PhaserGame object with the given configuration.
 
 #### Usage
 
-    PhaserGame$new(id = "phaser_game", width = 800, height = 600)
+    PhaserGame$new(id = "phaser_game", width = 800, height = 600, gravity_x = 0, gravity_y = 0)
 
 #### Arguments
 
@@ -74,6 +78,14 @@ Create a PhaserGame object with the given configuration.
 - `height`:
 
   Numeric. Height of the Phaser canvas in pixels (defaults to 600).
+
+- `gravity_x`:
+
+  Numeric. Horizontal Arcade Physics world gravity (defaults to 0).
+
+- `gravity_y`:
+
+  Numeric. Vertical Arcade Physics world gravity (defaults to 0).
 
 #### Returns
 
@@ -125,7 +137,14 @@ Add a text object to the Phaser scene.
 
 #### Usage
 
-    PhaserGame$add_text(text, id, x, y, style = list(font_size = "22px"))
+    PhaserGame$add_text(
+      text,
+      id,
+      x,
+      y,
+      style = list(font_size = "22px"),
+      visible = TRUE
+    )
 
 #### Arguments
 
@@ -148,6 +167,10 @@ Add a text object to the Phaser scene.
 - `style`:
 
   Named list. Styling options passed to Phaser text rendering.
+
+- `visible`:
+
+  Logical. Whether text is initially visible.
 
 ------------------------------------------------------------------------
 
@@ -240,6 +263,34 @@ Adds a static image to the Phaser scene.
 
 ------------------------------------------------------------------------
 
+### Method `add_sound()`
+
+Adds a sound to the Phaser scene.
+
+#### Usage
+
+    PhaserGame$add_sound(name, url, volume = 1, loop = FALSE)
+
+#### Arguments
+
+- `name`:
+
+  Character. Unique key to reference this sound.
+
+- `url`:
+
+  Character. URL or path to the audio file.
+
+- `volume`:
+
+  Numeric. Initial playback volume from 0 to 1 (default: 1).
+
+- `loop`:
+
+  Logical. Whether the sound should loop by default (default: FALSE).
+
+------------------------------------------------------------------------
+
 ### Method `add_map()`
 
 Add a background (tilemap) layer from Tiled JSON + tileset image(s).
@@ -269,6 +320,30 @@ Add a background (tilemap) layer from Tiled JSON + tileset image(s).
 - `layer_name`:
 
   Character. Name of the layer to render from Tiled.
+
+#### Returns
+
+Invisible; sends a custom message to the client.
+
+------------------------------------------------------------------------
+
+### Method `set_world_bounds()`
+
+Set the Phaser physics world and camera bounds.
+
+#### Usage
+
+    PhaserGame$set_world_bounds(width, height)
+
+#### Arguments
+
+- `width`:
+
+  Numeric. World width in pixels.
+
+- `height`:
+
+  Numeric. World height in pixels.
 
 #### Returns
 
@@ -419,8 +494,9 @@ Adds a collider between two game objects.
       object_one,
       object_two = NULL,
       group = NULL,
-      callback_fun = NULL,
-      input
+      browser_action = browser_actions(),
+      input = NULL,
+      server_action = NULL
     )
 
 #### Arguments
@@ -437,9 +513,14 @@ Adds a collider between two game objects.
 
   Character. Name of the group to compare against.
 
-- `callback_fun`:
+- `browser_action`:
 
-  A function to be run when collision occurs.
+  Actions created with [`browser_actions()`](browser_actions.md) that
+  run immediately in the browser.
+
+- `server_action`:
+
+  Function called in R with the collision event.
 
 - `input`:
 
@@ -457,9 +538,11 @@ Adds a collider between two game objects.
       object_one,
       object_two = NULL,
       group = NULL,
-      callback_fun = NULL,
-      input,
-      client_action = NULL
+      browser_action = browser_actions(),
+      input = NULL,
+      server_action = NULL,
+      mode = c("enter", "stay"),
+      interval = 0
     )
 
 #### Arguments
@@ -476,17 +559,27 @@ Adds a collider between two game objects.
 
   Character. Name of the group.
 
-- `callback_fun`:
+- `browser_action`:
 
-  Optional function to be run on the Shiny server when overlap occurs.
+  Actions created with [`browser_actions()`](browser_actions.md) that
+  run immediately in the browser.
+
+- `server_action`:
+
+  Function called in R with the overlap event.
+
+- `mode`:
+
+  Whether actions run on overlap entry or remain active while
+  overlapping.
+
+- `interval`:
+
+  Minimum milliseconds between sustained actions.
 
 - `input`:
 
   Shiny input list.
-
-- `client_action`:
-
-  Optional list or list of lists describing immediate browser-side Phaser feedback to run when overlap occurs.
 
 ------------------------------------------------------------------------
 
@@ -524,10 +617,10 @@ Register a callback fired when overlap between objects ends.
       object_one,
       object_two = NULL,
       group = NULL,
-      callback_fun = NULL,
-      input,
-      session = shiny::getDefaultReactiveDomain(),
-      client_action = NULL
+      browser_action = browser_actions(),
+      input = NULL,
+      server_action = NULL,
+      session = shiny::getDefaultReactiveDomain()
     )
 
 #### Arguments
@@ -544,9 +637,14 @@ Register a callback fired when overlap between objects ends.
 
   Character. Name of the group to compare against.
 
-- `callback_fun`:
+- `browser_action`:
 
-  Function. Callback executed when overlap ends.
+  Actions created with [`browser_actions()`](browser_actions.md) that
+  run immediately in the browser.
+
+- `server_action`:
+
+  Function called in R with the overlap-end event.
 
 - `input`:
 
@@ -555,10 +653,6 @@ Register a callback fired when overlap between objects ends.
 - `session`:
 
   Shiny session object.
-
-- `client_action`:
-
-  Optional list or list of lists describing immediate browser-side Phaser feedback to run when overlap ends.
 
 ------------------------------------------------------------------------
 
@@ -570,9 +664,9 @@ Register a callback fired when a specific key is pressed.
 
     PhaserGame$add_control(
       key,
-      action = NULL,
-      input,
-      client_action = NULL
+      browser_action = browser_actions(),
+      input = NULL,
+      server_action = NULL
     )
 
 #### Arguments
@@ -582,17 +676,18 @@ Register a callback fired when a specific key is pressed.
   A character, accepts Javascript key events (they need to align with
   event.code).
 
-- `action`:
+- `browser_action`:
 
-  A function to be run after key is pressed.
+  Actions created with [`browser_actions()`](browser_actions.md) that
+  run immediately in the browser.
+
+- `server_action`:
+
+  Function called in R with the keyboard event.
 
 - `input`:
 
   Shiny input list.
-
-- `client_action`:
-
-  Optional list or list of lists describing immediate browser-side Phaser feedback to run on keydown before Shiny receives the event.
 
 ------------------------------------------------------------------------
 
