@@ -18,11 +18,15 @@
   `interval` throttling.
 * Moved sprite movement delays from blocking R sleeps to browser timers.
 * Queued sprite physics actions until sprites finish loading so setup calls such as `set_gravity()` are not lost during asynchronous asset initialization.
+* Applied queued sprite actions to images and static sprites after asynchronous
+  asset loading completes.
 
 ## New interface features
 * Added `gravity_x` and `gravity_y` parameters to `PhaserGame$new()` for configuring Arcade Physics world gravity when a game is created.
 * Added sound support with `PhaserGame$add_sound()` and a new `Sound` API for loading, playing, pausing, resuming, stopping, and configuring audio.
 * Added `set_scroll_factor()` helpers for scene objects so HUD-style elements can stay fixed while the camera follows another target.
+* Added `set_depth()` helpers for sprites, static sprites, and images to control
+  their rendering order.
 * Added camera follow helpers for sprites, images, rectangles, static sprites, and text scene objects so the Phaser camera can move with scene objects.
 * Added `PhaserGame$set_world_bounds()` for configuring Phaser physics world and camera bounds from R.
 * Added `StaticSprite$destroy()` for removing static sprites from the Phaser scene.
@@ -34,6 +38,8 @@
 ## Updates in examples
 * Added new arcade example game (bear).
 * Added new RPG game example (dungeonheroes).
+* Added a layered dead tree to dungeonheroes with a collidable base and a
+  passable foreground top that renders above the hero.
 * Updated the hedgehog examples so acknowledging a game-over dialog reloads the Shiny session and starts a fresh game instead of stopping the app.
 
 ## README
