@@ -32,6 +32,10 @@ function withSprite(name, action, caller) {
   }
 }
 
+function setSpriteDepth(name, depth) {
+  withSprite(name, (sprite) => sprite.setDepth(depth), "setSpriteDepth()");
+}
+
 function resolveFrameCount(textureKey, frameWidth, frameHeight, frameCount) {
   if (Number.isFinite(frameCount) && frameCount > 0) {
     return Math.floor(frameCount);
@@ -97,6 +101,7 @@ function addStaticSprite(name, url, x, y) {
       scene.physics.add.collider(staticSprite, scene.terrainLayer);
     }
     scene[name] = staticSprite;
+    applyPendingSpriteActions(name);
 
     if (typeof applyPendingCameraFollows === "function") {
       applyPendingCameraFollows();
@@ -155,7 +160,8 @@ function playAnimation(name, animName) {
     return;
   }
   GameBridge.forcedAnimations[name] = { key: animName, until: null };
-  sprite.play(animName, true);
+  const now = scene && scene.time ? scene.time.now : 0;
+  sprite.play(recentDirectionalAnimation(sprite, animName, now), true);
 }
 
 function playAnimationForDuration(name, animName, duration) {
@@ -167,7 +173,8 @@ function playAnimationForDuration(name, animName, duration) {
   }
   const until = scene && scene.time ? scene.time.now + duration : null;
   GameBridge.forcedAnimations[name] = { key: animName, until };
-  sprite.play(animName, true);
+  const now = scene && scene.time ? scene.time.now : 0;
+  sprite.play(recentDirectionalAnimation(sprite, animName, now), true);
   scene.time.delayedCall(duration, () => {
     delete GameBridge.forcedAnimations[name];
     if (!sprite || !sprite.active || !sprite.play || !sprite.anims) return;
@@ -177,6 +184,13 @@ function playAnimationForDuration(name, animName, duration) {
       sprite.anims.stop();
     }
   });
+}
+
+function stopSpriteMotion(name) {
+  const sprite = getSpriteByName(name, "stopSpriteMotion()");
+  if (!sprite) return;
+  scene.tweens.killTweensOf(sprite);
+  if (sprite.body && typeof sprite.body.stop === "function") sprite.body.stop();
 }
 
 function setGravity(name, x, y) {
@@ -299,6 +313,8 @@ function runBrowserAction(action, overlapObjectOne, overlapObjectTwo) {
     }
   }
 
+  if (action.stop_motion) stopSpriteMotion(action.stop_motion);
+
   if (action.destroy_sprite) destroySprite(action.destroy_sprite);
   if (action.set_in_motion) {
     const motion = action.set_in_motion;
@@ -361,12 +377,6 @@ function setSpriteInMotion(name, dirX, dirY, speed, distance) {
   }
 
   matches.forEach(sprite => {
-    const sightAlertUntil = sprite.getData && sprite.getData("sightAlertUntil");
-    if (Number.isFinite(sightAlertUntil) && performance.now() < sightAlertUntil) {
-      if (sprite.body && typeof sprite.body.stop === "function") sprite.body.stop();
-      return;
-    }
-
     scene.tweens.killTweensOf(sprite);
 
     const originX = sprite.x;
@@ -392,15 +402,12 @@ function setSpriteInMotion(name, dirX, dirY, speed, distance) {
       ease: 'Linear',
       onStart: () => {
         if (!sprite || !sprite.active || !sprite.play) return;
-        const directionalAnim = dirX < 0
-          ? name + "_move_left"
-          : dirX > 0
-            ? name + "_move_right"
-            : dirY < 0
-              ? name + "_move_up"
-              : dirY > 0
-                ? name + "_move_down"
-                : null;
+        const now = scene && scene.time ? scene.time.now : 0;
+        const movementDirection = Math.abs(dirX) >= Math.abs(dirY)
+          ? (dirX < 0 ? "left" : "right")
+          : (dirY < 0 ? "up" : "down");
+        rememberMovementDirection(sprite, movementDirection, now);
+        const directionalAnim = name + "_move_" + movementDirection;
 
         if (directionalAnim && scene.anims.exists(directionalAnim)) {
           sprite.play(directionalAnim, true);
@@ -485,10 +492,8 @@ function startSpriteApproachOnSight(
       return;
     }
 
-    const now = performance.now();
     if (!sprite.getData("sightAlert")) {
       sprite.setData("sightAlert", true);
-      sprite.setData("sightAlertUntil", now + alertDuration);
       scene.tweens.killTweensOf(sprite);
       if (sprite.body && typeof sprite.body.stop === "function") sprite.body.stop();
 
@@ -509,11 +514,10 @@ function startSpriteApproachOnSight(
         },
         onComplete: () => alertText.destroy()
       });
-      return;
     }
 
-    const sightAlertUntil = sprite.getData("sightAlertUntil");
-    if (Number.isFinite(sightAlertUntil) && now < sightAlertUntil) return;
+    if (GameBridge.forcedAnimations[name]) return;
+    if (scene.tweens.isTweening(sprite)) return;
 
     setSpriteInMotion(
       name,

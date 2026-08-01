@@ -43,6 +43,8 @@ For a full walkthrough (from static background to movement, animation,
 overlap, and collision), see [**Build your first shinyphaser
 game**](https://maciekbanas.github.io/shinyphaser/articles/first-game.html)
 
+![](man/hedgehog_example.gif)
+
 ## Example games created with `shinyphaser`
 
 - [hedgehog](https://maciekbanas.shinyapps.io/hedgehog)

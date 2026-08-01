@@ -7,7 +7,7 @@
 
     <a class="navbar-brand me-2" href="../index.html">shinyphaser</a>
 
-    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="">0.1.0</small>
+    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="">0.1.0.9014</small>
 
 
     <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbar" aria-controls="navbar" aria-expanded="false" aria-label="Toggle navigation">
@@ -19,6 +19,7 @@
 <li class="nav-item dropdown">
   <button class="nav-link dropdown-toggle" type="button" id="dropdown-articles" data-bs-toggle="dropdown" aria-expanded="false" aria-haspopup="true">Articles</button>
   <ul class="dropdown-menu" aria-labelledby="dropdown-articles"><li><a class="dropdown-item" href="../articles/first-game.html">Build your first shinyphaser game</a></li>
+    <li><a class="dropdown-item" href="../articles/browser-server-actions.html">Choose between browser and server actions</a></li>
   </ul></li>
 <li class="active nav-item"><a class="nav-link" href="../news/index.html">Changelog</a></li>
       </ul><ul class="navbar-nav"><li class="nav-item"><form class="form-inline" role="search">
@@ -37,13 +38,53 @@
     </div>
 
     <div class="section level2">
-<h2 class="pkg-version" data-toc-text="0.1.0" id="shinyphaser-010">shinyphaser 0.1.0<a class="anchor" aria-label="anchor" href="#shinyphaser-010"></a></h2>
+<h2 class="pkg-version" data-toc-text="development version" id="shinyphaser-development-version">shinyphaser (development version)<a class="anchor" aria-label="anchor" href="#shinyphaser-development-version"></a></h2>
+<ul><li>Split event handling into explicit <code>browser_action</code> and <code>server_action</code> parameters. Browser-side calls must now be declared with <code><a href="../reference/browser_actions.html">browser_actions()</a></code>, while arbitrary R logic belongs in a server action.</li>
+<li>Removed <code>action</code> and <code>notify_server</code> from controls, overlaps, overlap-end handlers, and colliders.</li>
+<li>Added a vignette explaining when to use browser actions, server actions, or both together.</li>
+</ul><div class="section level3">
+<h3 id="performance-improvements-development-version">Performance improvements<a class="anchor" aria-label="anchor" href="#performance-improvements-development-version"></a></h3>
+<ul><li>Reduced high-frequency overlap traffic by keeping immediate actions in the browser and registering server events only when a <code>server_action</code> is supplied.</li>
+<li>Added explicit <code>browser_action</code> declarations for immediate browser-side overlap and collision reactions.</li>
+<li>Extended browser actions with browser state, cooldowns, restricted conditionals, overlap/existence predicates, alerts, semantic events, and immediate key controls.</li>
+<li>Overlaps are edge-triggered by default and notify Shiny only when a <code>server_action</code> is supplied; sustained handlers can use <code>mode = "stay"</code> and <code>interval</code> throttling.</li>
+<li>Moved sprite movement delays from blocking R sleeps to browser timers.</li>
+<li>Queued sprite physics actions until sprites finish loading so setup calls such as <code>set_gravity()</code> are not lost during asynchronous asset initialization.</li>
+</ul></div>
+<div class="section level3">
+<h3 id="new-interface-features-development-version">New interface features<a class="anchor" aria-label="anchor" href="#new-interface-features-development-version"></a></h3>
+<ul><li>Added <code>gravity_x</code> and <code>gravity_y</code> parameters to <code>PhaserGame$new()</code> for configuring Arcade Physics world gravity when a game is created.</li>
+<li>Added sound support with <code>PhaserGame$add_sound()</code> and a new <code>Sound</code> API for loading, playing, pausing, resuming, stopping, and configuring audio.</li>
+<li>Added <code>set_scroll_factor()</code> helpers for scene objects so HUD-style elements can stay fixed while the camera follows another target.</li>
+<li>Added <code>set_depth()</code> helpers for sprites, static sprites, and images to control their rendering order, including when depth is set before an asset finishes loading.</li>
+<li>Added camera follow helpers for sprites, images, rectangles, static sprites, and text scene objects so the Phaser camera can move with scene objects.</li>
+<li>Added <code>PhaserGame$set_world_bounds()</code> for configuring Phaser physics world and camera bounds from R.</li>
+<li>Added <code>StaticSprite$destroy()</code> for removing static sprites from the Phaser scene.</li>
+<li>Added <code>Sprite$stop_motion()</code> for immediately cancelling scripted sprite movement, including from <code><a href="../reference/browser_actions.html">browser_actions()</a></code>.</li>
+<li>Added initial visibility control for text objects via <code>PhaserGame$add_text(..., visible = FALSE)</code> and <code>Text$new(..., visible = FALSE)</code>.</li>
+<li>Added <code>Text$show()</code> and <code>Text$hide()</code> helpers for toggling text objects after creation.</li>
+</ul></div>
+<div class="section level3">
+<h3 id="updates-in-examples-development-version">Updates in examples<a class="anchor" aria-label="anchor" href="#updates-in-examples-development-version"></a></h3>
+<ul><li>Added new arcade example game (bear).</li>
+<li>Added new RPG game example (dungeonheroes).</li>
+<li>Updated the hedgehog examples so acknowledging a game-over dialog reloads the Shiny session and starts a fresh game instead of stopping the app.</li>
+</ul></div>
+<div class="section level3">
+<h3 id="readme-development-version">README<a class="anchor" aria-label="anchor" href="#readme-development-version"></a></h3>
+<ul><li>Added CRAN downloads badge to README.</li>
+<li>Added animated gif example to README.</li>
+</ul></div>
+</div>
+    <div class="section level2">
+<h2 class="pkg-version" data-toc-text="0.1.0" id="shinyphaser-010">shinyphaser 0.1.0<a class="anchor" aria-label="anchor" href="#shinyphaser-010"></a></h2><p class="text-muted">CRAN release: 2026-06-07</p>
 <p>Initial CRAN release.</p>
 <ul><li>Added an R6-based <code>PhaserGame</code> API to define <code>Phaser.js</code> scenes, sprites, image assets, groups, and rectangle helpers from R.</li>
 <li>Added Shiny/htmltools bindings that render Phaser games in Shiny apps and synchronize game actions from R to JavaScript.</li>
 <li>Added a sample Shiny app, an end-to-end hedgehog example, package documentation, and test coverage for core methods and sprite behavior.</li>
 </ul></div>
-  </main></div>
+  </main><aside class="col-md-3"><nav id="toc" aria-label="Table of contents"><h2>On this page</h2>
+    </nav></aside></div>
 
 
     <footer><div class="pkgdown-footer-left">

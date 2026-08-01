@@ -13,6 +13,7 @@ with PhaserGame$add_sprite() method.
 \item \href{#method-Sprite-new}{\code{Sprite$new()}}
 \item \href{#method-Sprite-add_animation}{\code{Sprite$add_animation()}}
 \item \href{#method-Sprite-play_animation}{\code{Sprite$play_animation()}}
+\item \href{#method-Sprite-stop_motion}{\code{Sprite$stop_motion()}}
 \item \href{#method-Sprite-add_player_controls}{\code{Sprite$add_player_controls()}}
 \item \href{#method-Sprite-follow_camera}{\code{Sprite$follow_camera()}}
 \item \href{#method-Sprite-stop_camera_follow}{\code{Sprite$stop_camera_follow()}}
@@ -124,6 +125,19 @@ move_left").}
 before reverting to idle (defaults to Inf, which loops indefinitely until another animation is played).}
 }
 \if{html}{\out{</div>}}
+}
+}
+\if{html}{\out{<hr>}}
+\if{html}{\out{<a id="method-Sprite-stop_motion"></a>}}
+\if{latex}{\out{\hypertarget{method-Sprite-stop_motion}{}}}
+\subsection{Method \code{stop_motion()}}{
+Stop this sprite's current scripted movement.
+\subsection{Usage}{
+\if{html}{\out{<div class="r">}}\preformatted{Sprite$stop_motion()}\if{html}{\out{</div>}}
+}
+
+\subsection{Returns}{
+Invisible; sends a custom message to the client.
 }
 }
 \if{html}{\out{<hr>}}

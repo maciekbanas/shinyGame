@@ -9,7 +9,7 @@ with PhaserGame$add_sprite() method."></head><body>
 
     <a class="navbar-brand me-2" href="../index.html">shinyphaser</a>
 
-    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="">0.1.0</small>
+    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="">0.1.0.9014</small>
 
 
     <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbar" aria-controls="navbar" aria-expanded="false" aria-label="Toggle navigation">
@@ -21,6 +21,7 @@ with PhaserGame$add_sprite() method."></head><body>
 <li class="nav-item dropdown">
   <button class="nav-link dropdown-toggle" type="button" id="dropdown-articles" data-bs-toggle="dropdown" aria-expanded="false" aria-haspopup="true">Articles</button>
   <ul class="dropdown-menu" aria-labelledby="dropdown-articles"><li><a class="dropdown-item" href="../articles/first-game.html">Build your first shinyphaser game</a></li>
+    <li><a class="dropdown-item" href="../articles/browser-server-actions.html">Choose between browser and server actions</a></li>
   </ul></li>
 <li class="nav-item"><a class="nav-link" href="../news/index.html">Changelog</a></li>
       </ul><ul class="navbar-nav"><li class="nav-item"><form class="form-inline" role="search">
@@ -54,7 +55,11 @@ with PhaserGame$add_sprite() method.</p>
 <ul><li><p><a href="#method-Sprite-new"><code>Sprite$new()</code></a></p></li>
 <li><p><a href="#method-Sprite-add_animation"><code>Sprite$add_animation()</code></a></p></li>
 <li><p><a href="#method-Sprite-play_animation"><code>Sprite$play_animation()</code></a></p></li>
+<li><p><a href="#method-Sprite-stop_motion"><code>Sprite$stop_motion()</code></a></p></li>
 <li><p><a href="#method-Sprite-add_player_controls"><code>Sprite$add_player_controls()</code></a></p></li>
+<li><p><a href="#method-Sprite-follow_camera"><code>Sprite$follow_camera()</code></a></p></li>
+<li><p><a href="#method-Sprite-stop_camera_follow"><code>Sprite$stop_camera_follow()</code></a></p></li>
+<li><p><a href="#method-Sprite-set_scroll_factor"><code>Sprite$set_scroll_factor()</code></a></p></li>
 <li><p><a href="#method-Sprite-set_velocity_x"><code>Sprite$set_velocity_x()</code></a></p></li>
 <li><p><a href="#method-Sprite-set_velocity_y"><code>Sprite$set_velocity_y()</code></a></p></li>
 <li><p><a href="#method-Sprite-set_gravity"><code>Sprite$set_gravity()</code></a></p></li>
@@ -190,10 +195,22 @@ before reverting to idle (defaults to Inf, which loops indefinitely until anothe
 </dl><p></p></div>
 </div>
 
+</div><p></p><hr><a id="method-Sprite-stop_motion"></a><div class="section">
+<h3 id="method-stop-motion-">Method <code>stop_motion()</code><a class="anchor" aria-label="anchor" href="#method-stop-motion-"></a></h3>
+<p>Stop this sprite's current scripted movement.</p><div class="section">
+<h4 id="usage-3">Usage<a class="anchor" aria-label="anchor" href="#usage-3"></a></h4>
+<p></p><div class="r"><div class="sourceCode"><pre><code><span><span class="va">Sprite</span><span class="op">$</span><span class="fu">stop_motion</span><span class="op">(</span><span class="op">)</span></span></code></pre></div><p></p></div>
+</div>
+
+<div class="section">
+<h4 id="returns-1">Returns<a class="anchor" aria-label="anchor" href="#returns-1"></a></h4>
+<p>Invisible; sends a custom message to the client.</p>
+</div>
+
 </div><p></p><hr><a id="method-Sprite-add_player_controls"></a><div class="section">
 <h3 id="method-add-player-controls-">Method <code>add_player_controls()</code><a class="anchor" aria-label="anchor" href="#method-add-player-controls-"></a></h3>
 <p>Enable movement controls (arrow keys) for a player sprite.</p><div class="section">
-<h4 id="usage-3">Usage<a class="anchor" aria-label="anchor" href="#usage-3"></a></h4>
+<h4 id="usage-4">Usage<a class="anchor" aria-label="anchor" href="#usage-4"></a></h4>
 <p></p><div class="r"><div class="sourceCode"><pre><code><span><span class="va">Sprite</span><span class="op">$</span><span class="fu">add_player_controls</span><span class="op">(</span></span>
 <span>  directions <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">"left"</span>, <span class="st">"right"</span>, <span class="st">"down"</span>, <span class="st">"up"</span><span class="op">)</span>,</span>
 <span>  speed <span class="op">=</span> <span class="fl">200</span></span>
@@ -213,15 +230,67 @@ before reverting to idle (defaults to Inf, which loops indefinitely until anothe
 </dl><p></p></div>
 </div>
 
-</div><p></p><hr><a id="method-Sprite-set_velocity_x"></a><div class="section">
-<h3 id="method-set-velocity-x-">Method <code>set_velocity_x()</code><a class="anchor" aria-label="anchor" href="#method-set-velocity-x-"></a></h3>
-<p>Set the sprite's velocity in the x direction.</p><div class="section">
-<h4 id="usage-4">Usage<a class="anchor" aria-label="anchor" href="#usage-4"></a></h4>
-<p></p><div class="r"><div class="sourceCode"><pre><code><span><span class="va">Sprite</span><span class="op">$</span><span class="fu">set_velocity_x</span><span class="op">(</span>x <span class="op">=</span> <span class="fl">100</span><span class="op">)</span></span></code></pre></div><p></p></div>
+</div><p></p><hr><a id="method-Sprite-follow_camera"></a><div class="section">
+<h3 id="method-follow-camera-">Method <code>follow_camera()</code><a class="anchor" aria-label="anchor" href="#method-follow-camera-"></a></h3>
+<p>Make the camera follow this sprite as it moves through the world.</p><div class="section">
+<h4 id="usage-5">Usage<a class="anchor" aria-label="anchor" href="#usage-5"></a></h4>
+<p></p><div class="r"><div class="sourceCode"><pre><code><span><span class="va">Sprite</span><span class="op">$</span><span class="fu">follow_camera</span><span class="op">(</span>lerp_x <span class="op">=</span> <span class="fl">1</span>, lerp_y <span class="op">=</span> <span class="fl">1</span>, round_pixels <span class="op">=</span> <span class="cn">TRUE</span><span class="op">)</span></span></code></pre></div><p></p></div>
 </div>
 
 <div class="section">
 <h4 id="arguments-4">Arguments<a class="anchor" aria-label="anchor" href="#arguments-4"></a></h4>
+<p></p><div class="arguments"><dl><dt><code>lerp_x</code></dt>
+<dd><p>Numeric. Horizontal interpolation factor from 0 to 1 (default: 1).</p></dd>
+
+
+<dt><code>lerp_y</code></dt>
+<dd><p>Numeric. Vertical interpolation factor from 0 to 1 (default: 1).</p></dd>
+
+
+<dt><code>round_pixels</code></dt>
+<dd><p>Logical. Whether to round camera pixels to avoid sub-pixel rendering (default: TRUE).</p></dd>
+
+
+</dl><p></p></div>
+</div>
+
+</div><p></p><hr><a id="method-Sprite-stop_camera_follow"></a><div class="section">
+<h3 id="method-stop-camera-follow-">Method <code>stop_camera_follow()</code><a class="anchor" aria-label="anchor" href="#method-stop-camera-follow-"></a></h3>
+<p>Stop the camera from following this sprite.</p><div class="section">
+<h4 id="usage-6">Usage<a class="anchor" aria-label="anchor" href="#usage-6"></a></h4>
+<p></p><div class="r"><div class="sourceCode"><pre><code><span><span class="va">Sprite</span><span class="op">$</span><span class="fu">stop_camera_follow</span><span class="op">(</span><span class="op">)</span></span></code></pre></div><p></p></div>
+</div>
+
+
+</div><p></p><hr><a id="method-Sprite-set_scroll_factor"></a><div class="section">
+<h3 id="method-set-scroll-factor-">Method <code>set_scroll_factor()</code><a class="anchor" aria-label="anchor" href="#method-set-scroll-factor-"></a></h3>
+<p>Set how much this sprite scrolls with the camera.</p><div class="section">
+<h4 id="usage-7">Usage<a class="anchor" aria-label="anchor" href="#usage-7"></a></h4>
+<p></p><div class="r"><div class="sourceCode"><pre><code><span><span class="va">Sprite</span><span class="op">$</span><span class="fu">set_scroll_factor</span><span class="op">(</span><span class="va">x</span>, y <span class="op">=</span> <span class="va">x</span><span class="op">)</span></span></code></pre></div><p></p></div>
+</div>
+
+<div class="section">
+<h4 id="arguments-5">Arguments<a class="anchor" aria-label="anchor" href="#arguments-5"></a></h4>
+<p></p><div class="arguments"><dl><dt><code>x</code></dt>
+<dd><p>Numeric. Horizontal scroll factor (0 = fixed to viewport, 1 = scrolls with world).</p></dd>
+
+
+<dt><code>y</code></dt>
+<dd><p>Numeric. Vertical scroll factor. Defaults to <code>x</code>.</p></dd>
+
+
+</dl><p></p></div>
+</div>
+
+</div><p></p><hr><a id="method-Sprite-set_velocity_x"></a><div class="section">
+<h3 id="method-set-velocity-x-">Method <code>set_velocity_x()</code><a class="anchor" aria-label="anchor" href="#method-set-velocity-x-"></a></h3>
+<p>Set the sprite's velocity in the x direction.</p><div class="section">
+<h4 id="usage-8">Usage<a class="anchor" aria-label="anchor" href="#usage-8"></a></h4>
+<p></p><div class="r"><div class="sourceCode"><pre><code><span><span class="va">Sprite</span><span class="op">$</span><span class="fu">set_velocity_x</span><span class="op">(</span>x <span class="op">=</span> <span class="fl">100</span><span class="op">)</span></span></code></pre></div><p></p></div>
+</div>
+
+<div class="section">
+<h4 id="arguments-6">Arguments<a class="anchor" aria-label="anchor" href="#arguments-6"></a></h4>
 <p></p><div class="arguments"><dl><dt><code>x</code></dt>
 <dd><p>Numeric. Velocity in pixels/second (positive = right, negative =
 left).</p></dd>
@@ -233,12 +302,12 @@ left).</p></dd>
 </div><p></p><hr><a id="method-Sprite-set_velocity_y"></a><div class="section">
 <h3 id="method-set-velocity-y-">Method <code>set_velocity_y()</code><a class="anchor" aria-label="anchor" href="#method-set-velocity-y-"></a></h3>
 <p>Set the sprite's velocity in the y direction.</p><div class="section">
-<h4 id="usage-5">Usage<a class="anchor" aria-label="anchor" href="#usage-5"></a></h4>
+<h4 id="usage-9">Usage<a class="anchor" aria-label="anchor" href="#usage-9"></a></h4>
 <p></p><div class="r"><div class="sourceCode"><pre><code><span><span class="va">Sprite</span><span class="op">$</span><span class="fu">set_velocity_y</span><span class="op">(</span>x <span class="op">=</span> <span class="fl">100</span><span class="op">)</span></span></code></pre></div><p></p></div>
 </div>
 
 <div class="section">
-<h4 id="arguments-5">Arguments<a class="anchor" aria-label="anchor" href="#arguments-5"></a></h4>
+<h4 id="arguments-7">Arguments<a class="anchor" aria-label="anchor" href="#arguments-7"></a></h4>
 <p></p><div class="arguments"><dl><dt><code>x</code></dt>
 <dd><p>Numeric. Velocity in pixels/second (positive = down, negative =
 up).</p></dd>
@@ -250,12 +319,12 @@ up).</p></dd>
 </div><p></p><hr><a id="method-Sprite-set_gravity"></a><div class="section">
 <h3 id="method-set-gravity-">Method <code>set_gravity()</code><a class="anchor" aria-label="anchor" href="#method-set-gravity-"></a></h3>
 <p>Set the sprite's velocity in both x and y directions.</p><div class="section">
-<h4 id="usage-6">Usage<a class="anchor" aria-label="anchor" href="#usage-6"></a></h4>
+<h4 id="usage-10">Usage<a class="anchor" aria-label="anchor" href="#usage-10"></a></h4>
 <p></p><div class="r"><div class="sourceCode"><pre><code><span><span class="va">Sprite</span><span class="op">$</span><span class="fu">set_gravity</span><span class="op">(</span>x <span class="op">=</span> <span class="fl">100</span>, y <span class="op">=</span> <span class="fl">100</span><span class="op">)</span></span></code></pre></div><p></p></div>
 </div>
 
 <div class="section">
-<h4 id="arguments-6">Arguments<a class="anchor" aria-label="anchor" href="#arguments-6"></a></h4>
+<h4 id="arguments-8">Arguments<a class="anchor" aria-label="anchor" href="#arguments-8"></a></h4>
 <p></p><div class="arguments"><dl><dt><code>x</code></dt>
 <dd><p>Numeric. Velocity in pixels/second (positive = right, negative =
 left).</p></dd>
@@ -272,12 +341,12 @@ up).</p></dd>
 </div><p></p><hr><a id="method-Sprite-set_bounce"></a><div class="section">
 <h3 id="method-set-bounce-">Method <code>set_bounce()</code><a class="anchor" aria-label="anchor" href="#method-set-bounce-"></a></h3>
 <p>Set the sprite's bounce factor.</p><div class="section">
-<h4 id="usage-7">Usage<a class="anchor" aria-label="anchor" href="#usage-7"></a></h4>
+<h4 id="usage-11">Usage<a class="anchor" aria-label="anchor" href="#usage-11"></a></h4>
 <p></p><div class="r"><div class="sourceCode"><pre><code><span><span class="va">Sprite</span><span class="op">$</span><span class="fu">set_bounce</span><span class="op">(</span><span class="va">x</span><span class="op">)</span></span></code></pre></div><p></p></div>
 </div>
 
 <div class="section">
-<h4 id="arguments-7">Arguments<a class="anchor" aria-label="anchor" href="#arguments-7"></a></h4>
+<h4 id="arguments-9">Arguments<a class="anchor" aria-label="anchor" href="#arguments-9"></a></h4>
 <p></p><div class="arguments"><dl><dt><code>x</code></dt>
 <dd><p>Numeric. Bounce factor.</p></dd>
 
@@ -288,7 +357,7 @@ up).</p></dd>
 </div><p></p><hr><a id="method-Sprite-destroy"></a><div class="section">
 <h3 id="method-destroy-">Method <code>destroy()</code><a class="anchor" aria-label="anchor" href="#method-destroy-"></a></h3>
 <p>Remove sprite from the scene.</p><div class="section">
-<h4 id="usage-8">Usage<a class="anchor" aria-label="anchor" href="#usage-8"></a></h4>
+<h4 id="usage-12">Usage<a class="anchor" aria-label="anchor" href="#usage-12"></a></h4>
 <p></p><div class="r"><div class="sourceCode"><pre><code><span><span class="va">Sprite</span><span class="op">$</span><span class="fu">destroy</span><span class="op">(</span><span class="op">)</span></span></code></pre></div><p></p></div>
 </div>
 
@@ -296,12 +365,12 @@ up).</p></dd>
 </div><p></p><hr><a id="method-Sprite-set_in_motion"></a><div class="section">
 <h3 id="method-set-in-motion-">Method <code>set_in_motion()</code><a class="anchor" aria-label="anchor" href="#method-set-in-motion-"></a></h3>
 <p>Move sprite along a vector for a set distance.</p><div class="section">
-<h4 id="usage-9">Usage<a class="anchor" aria-label="anchor" href="#usage-9"></a></h4>
+<h4 id="usage-13">Usage<a class="anchor" aria-label="anchor" href="#usage-13"></a></h4>
 <p></p><div class="r"><div class="sourceCode"><pre><code><span><span class="va">Sprite</span><span class="op">$</span><span class="fu">set_in_motion</span><span class="op">(</span><span class="va">dir_x</span>, <span class="va">dir_y</span>, <span class="va">speed</span>, <span class="va">distance</span>, lag <span class="op">=</span> <span class="va">distance</span><span class="op">/</span><span class="va">speed</span><span class="op">)</span></span></code></pre></div><p></p></div>
 </div>
 
 <div class="section">
-<h4 id="arguments-8">Arguments<a class="anchor" aria-label="anchor" href="#arguments-8"></a></h4>
+<h4 id="arguments-10">Arguments<a class="anchor" aria-label="anchor" href="#arguments-10"></a></h4>
 <p></p><div class="arguments"><dl><dt><code>dir_x</code></dt>
 <dd><p>Numeric. Horizontal direction (-1 = left, +1 = right, 0 = none).</p></dd>
 
@@ -328,12 +397,12 @@ up).</p></dd>
 </div><p></p><hr><a id="method-Sprite-clone"></a><div class="section">
 <h3 id="method-clone-">Method <code>clone()</code><a class="anchor" aria-label="anchor" href="#method-clone-"></a></h3>
 <p>The objects of this class are cloneable with this method.</p><div class="section">
-<h4 id="usage-10">Usage<a class="anchor" aria-label="anchor" href="#usage-10"></a></h4>
+<h4 id="usage-14">Usage<a class="anchor" aria-label="anchor" href="#usage-14"></a></h4>
 <p></p><div class="r"><div class="sourceCode"><pre><code><span><span class="va">Sprite</span><span class="op">$</span><span class="fu">clone</span><span class="op">(</span>deep <span class="op">=</span> <span class="cn">FALSE</span><span class="op">)</span></span></code></pre></div><p></p></div>
 </div>
 
 <div class="section">
-<h4 id="arguments-9">Arguments<a class="anchor" aria-label="anchor" href="#arguments-9"></a></h4>
+<h4 id="arguments-11">Arguments<a class="anchor" aria-label="anchor" href="#arguments-11"></a></h4>
 <p></p><div class="arguments"><dl><dt><code>deep</code></dt>
 <dd><p>Whether to make a deep clone.</p></dd>
 

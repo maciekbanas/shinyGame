@@ -297,16 +297,17 @@ shinyApp(ui, server)
 
 Use overlap when two objects can share space and trigger events. In this
 step, apples act like collectibles: the hedgehog can move through them,
-and each touch fires a callback instead of blocking movement. We first
-create an `apples` static group and place a few apples on the map, then
-register `add_overlap()` between `"hedgehog"` and `"apples"`. Inside
-`callback_fun`, we hide the collected apple (`apples$disable(evt)`),
-increment score, and refresh on-screen text. In short: hedgehog meets
-apple, apple disappears, score goes up — because every hedgehog knows
-apples are the true quest objective.
+and each touch runs an immediate browser action instead of blocking
+movement. We first create an `apples` static group and place a few
+apples on the map, then register `add_overlap()` between `"hedgehog"`
+and `"apples"`. The
+[`browser_actions()`](../reference/browser_actions.md) declaration can
+hide the collected apple and update browser-resident state without
+waiting for Shiny. In short: hedgehog meets apple, apple disappears,
+score goes up — because every hedgehog knows apples are the true quest
+objective.
 
 ``` r
-score <- reactiveVal(0)
 apples <- game$add_static_group("apples", "assets/hedgehog/perks/apple_20.png")
 
 apples$create(260, 140)
@@ -314,15 +315,16 @@ apples$create(640, 180)
 apples$create(730, 390)
 
 score_text <- game$add_text(text = "Score: 0", id = "score", x = 20, y = 20)
+score <- game$add_state("score", 0)
 
 game$add_overlap(
   object_one = "hedgehog",
   group = "apples",
-  callback_fun = function(evt) {
-    apples$disable(evt)        # hide collected apple
-    score(score() + 1)
-    score_text$set(paste("Score:", score()))
-  },
+  browser_action = browser_actions({
+    apples$disable()
+    score$increment()
+    score_text$set(score$value())
+  }),
   input = input
 )
 ```
@@ -389,11 +391,6 @@ server <- function(input, output, session) {
   game$add_overlap(
     object_one = "hedgehog",
     group = "apples",
-    callback_fun = function(evt) {
-      apples$disable(evt)        # hide collected apple
-      score(score() + 1)
-      score_text$set(paste("Score:", score()))
-    },
     input = input
   )
 }
@@ -508,11 +505,6 @@ server <- function(input, output, session) {
   game$add_overlap(
     object_one = "hedgehog",
     group = "apples",
-    callback_fun = function(evt) {
-      apples$disable(evt)        # hide collected apple
-      score(score() + 1)
-      score_text$set(paste("Score:", score()))
-    },
     input = input
   )
 
@@ -551,13 +543,6 @@ enemy <- game$add_sprite(
 game$add_overlap(
   object_one = "hedgehog",
   object_two = "badger",
-  callback_fun = function(evt) {
-    shinyalert::shinyalert(
-      title = "Game over", type = "error",
-      closeOnClickOutside = FALSE, showCancelButton = FALSE,
-      callbackR = function(value) shiny::stopApp()
-    )
-  },
   input = input
 )
 
@@ -650,11 +635,6 @@ server <- function(input, output, session) {
   game$add_overlap(
     object_one = "hedgehog",
     group = "apples",
-    callback_fun = function(evt) {
-      apples$disable(evt)
-      score(score() + 1)
-      score_text$set(paste("Score:", score()))
-    },
     input = input
   )
 
@@ -677,13 +657,6 @@ server <- function(input, output, session) {
   game$add_overlap(
     object_one = "hedgehog",
     object_two = "badger",
-    callback_fun = function(evt) {
-      shinyalert::shinyalert(
-        title = "Game over", type = "error",
-        closeOnClickOutside = FALSE, showCancelButton = FALSE,
-        callbackR = function(value) shiny::stopApp()
-      )
-    },
     input = input
   )
 

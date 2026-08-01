@@ -23,9 +23,14 @@
 * Added `gravity_x` and `gravity_y` parameters to `PhaserGame$new()` for configuring Arcade Physics world gravity when a game is created.
 * Added sound support with `PhaserGame$add_sound()` and a new `Sound` API for loading, playing, pausing, resuming, stopping, and configuring audio.
 * Added `set_scroll_factor()` helpers for scene objects so HUD-style elements can stay fixed while the camera follows another target.
+* Added `set_depth()` helpers for sprites, static sprites, and images to control
+  their rendering order, including when depth is set before an asset finishes
+  loading.
 * Added camera follow helpers for sprites, images, rectangles, static sprites, and text scene objects so the Phaser camera can move with scene objects.
 * Added `PhaserGame$set_world_bounds()` for configuring Phaser physics world and camera bounds from R.
 * Added `StaticSprite$destroy()` for removing static sprites from the Phaser scene.
+* Added `Sprite$stop_motion()` for immediately cancelling scripted sprite
+  movement, including from `browser_actions()`.
 * Added initial visibility control for text objects via `PhaserGame$add_text(..., visible = FALSE)` and `Text$new(..., visible = FALSE)`.
 * Added `Text$show()` and `Text$hide()` helpers for toggling text objects after creation.
 

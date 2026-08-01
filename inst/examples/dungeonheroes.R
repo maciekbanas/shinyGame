@@ -110,6 +110,7 @@ server <- function(input, output, session) {
   enemy_in_range <- NULL
   sword_in_range <- FALSE
   wizard_in_range <- FALSE
+  berry_in_range <- NULL
   has_sword <- FALSE
   hero_last_attack_time <- as.numeric(Sys.time()) - 1
   hero_attack_cooldown <- 0.75
@@ -149,7 +150,8 @@ server <- function(input, output, session) {
   mushroom_sight_range <- 500
   mushroom_approach_speed_multiplier <- 1.35
   mushroom_approach_distance_multiplier <- 2
-  mushroom_reaction_check_interval <- 250
+  # Check every frame so noticing the hero never waits on the movement timer.
+  mushroom_reaction_check_interval <- 16
   mushroom_alert_duration <- 1200
   mushroom_motion_specs <- list(
     mushroom_man_1 = list(speed = 42, distance = 70, lag = 0.0, interval = 1300),
@@ -300,6 +302,7 @@ server <- function(input, output, session) {
   )
   hero$add_player_controls()
   hero$follow_camera()
+  hero$set_depth(10)
   Sys.sleep(0.1)
   game$enable_terrain_collision("hero")
   hero$add_animation(
@@ -369,6 +372,14 @@ server <- function(input, output, session) {
     frame_width = 100, frame_height = 100,
     frame_count = 2, frame_rate = 4
   )
+  lapply(c("left", "right"), function(direction) {
+    hero$add_animation(
+      suffix = paste0("sword_attack_", direction),
+      url = sprintf("assets/dungeonheroes/sprites/hero_sword_attack_%s.png", direction),
+      frame_width = 100, frame_height = 100,
+      frame_count = 2, frame_rate = 4
+    )
+  })
 
   enemies <- stats::setNames(lapply(enemy_specs, function(spec) {
     enemy <- game$add_sprite(
@@ -397,6 +408,14 @@ server <- function(input, output, session) {
       frame_width = 100, frame_height = 100,
       frame_count = 6, frame_rate = 6
     )
+    lapply(c("left", "right"), function(direction) {
+      enemy$add_animation(
+        suffix = paste0("attack_", direction),
+        url = sprintf("assets/dungeonheroes/sprites/mushroom_man_attack_%s.png", direction),
+        frame_width = 100, frame_height = 100,
+        frame_count = 6, frame_rate = 6
+      )
+    })
     enemy$add_animation(
       suffix = "destroy",
       url = "assets/dungeonheroes/sprites/mushroom_man_destroy.png",
@@ -426,6 +445,21 @@ server <- function(input, output, session) {
 
   handle_space <- function(event) {
       if (life_points <= 0) return(invisible(NULL))
+
+      if (!is.null(berry_in_range) && isTRUE(berry_is_available[[berry_in_range]])) {
+        consumed_berry <- berry_in_range
+        restored_life <- min(10, max_life_points - life_points)
+        life_points <<- min(max_life_points, life_points + 10)
+        berry_is_available[[consumed_berry]] <<- FALSE
+        berry_in_range <<- NULL
+        berries[[consumed_berry]]$destroy()
+        update_life_points()
+        set_combat_status(sprintf(
+          "You ate berries and restored %d life. Life: %d/%d",
+          restored_life, life_points, max_life_points
+        ))
+        return(invisible(NULL))
+      }
 
       if (sword_in_range && !has_sword) {
         has_sword <<- TRUE
@@ -541,6 +575,24 @@ server <- function(input, output, session) {
   )
   version_text$set_scroll_factor(0)
 
+  dead_tree_bottom <- game$add_static_sprite(
+    name = "dead_tree_1_bottom",
+    url = "assets/dungeonheroes/terrain/ms/dead_tree_1_bottom.png",
+    x = 550,
+    y = 650
+  )
+  dead_tree_bottom$set_depth(10)
+
+  dead_tree_top <- game$add_image(
+    name = "dead_tree_1_top",
+    url = "assets/dungeonheroes/terrain/ms/dead_tree_1_top.png",
+    x = 550,
+    y = 650 - map_tile_size
+  )
+  dead_tree_top$set_depth(20)
+
+  game$add_collider("hero", "dead_tree_1_bottom")
+
   sword <- game$add_static_sprite(
     name = "sword",
     url = "assets/dungeonheroes/weapons/sword.png",
@@ -555,6 +607,49 @@ server <- function(input, output, session) {
     "hero", "sword", input = input, session = session,
     server_action = function(event) sword_in_range <<- FALSE
   )
+
+  berry_specs <- list(
+    berries_1 = c(x = 650, y = 650),
+    berries_2 = c(x = 1450, y = 1650),
+    berries_3 = c(x = 2550, y = 2250),
+    berries_4 = c(x = 1150, y = 3150),
+    berries_5 = c(x = 2050, y = 3850),
+    berries_6 = c(x = 2850, y = 4750),
+    berries_7 = c(x = 450, y = 5450),
+    berries_8 = c(x = 1550, y = 5550),
+    berries_9 = c(x = 2450, y = 5850),
+    berries_10 = c(x = 2950, y = 6350)
+  )
+  berry_is_available <- stats::setNames(
+    rep(TRUE, length(berry_specs)),
+    names(berry_specs)
+  )
+  berries <- lapply(names(berry_specs), function(berry_name) {
+    position <- berry_specs[[berry_name]]
+    game$add_static_sprite(
+      name = berry_name,
+      url = "assets/dungeonheroes/perks/berries.png",
+      x = position[["x"]],
+      y = position[["y"]]
+    )
+  })
+  names(berries) <- names(berry_specs)
+
+  lapply(names(berries), function(berry_name) {
+    force(berry_name)
+    game$add_overlap(
+      "hero", berry_name, input = input,
+      server_action = function(event) {
+        if (isTRUE(berry_is_available[[berry_name]])) berry_in_range <<- berry_name
+      }
+    )
+    game$add_overlap_end(
+      "hero", berry_name, input = input, session = session,
+      server_action = function(event) {
+        if (identical(berry_in_range, berry_name)) berry_in_range <<- NULL
+      }
+    )
+  })
 
 
   wizard <- game$add_sprite(
@@ -637,6 +732,15 @@ server <- function(input, output, session) {
       object_one = "hero",
       object_two = enemy_name,
       input = input,
+      browser_action = browser_actions({
+        enemies[[enemy_name]]$stop_motion()
+        enemies[[enemy_name]]$play_animation(
+          enemy_animation_key(enemy_name, "attack"),
+          duration = enemy_attack_cooldown * 1000
+        )
+      }),
+      mode = "stay",
+      interval = enemy_attack_cooldown * 1000,
       server_action = function(event) {
         enemy_in_range <<- enemy_name
         now <- as.numeric(Sys.time())
@@ -647,10 +751,6 @@ server <- function(input, output, session) {
 
         enemy_last_attack_time[[enemy_name]] <<- now
         life_points <<- max(0, life_points - enemy_damage[[enemy_name]])
-        enemies[[enemy_name]]$play_animation(
-          enemy_animation_key(enemy_name, "attack"),
-          duration = 1000
-        )
         set_combat_status(sprintf(
           "%s hits you for %d. Life: %d/%d",
           format_enemy_label(enemy_name), enemy_damage[[enemy_name]],
@@ -674,8 +774,10 @@ server <- function(input, output, session) {
     game$add_overlap_end(
       object_one = "hero",
       object_two = enemy_name,
+      # Release the forced attack without leaving a permanent forced-idle state.
       browser_action = browser_actions(enemies[[enemy_name]]$play_animation(
-        enemy_animation_key(enemy_name, "idle")
+        enemy_animation_key(enemy_name, "idle"),
+        duration = 1
       )),
       input = input,
       session = session,

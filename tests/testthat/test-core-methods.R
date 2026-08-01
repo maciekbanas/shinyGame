@@ -16,6 +16,7 @@ test_that("Image and Rectangle methods send expected JS", {
   img$follow_camera(lerp_x = 0.2, lerp_y = 0.3, round_pixels = FALSE)
   img$stop_camera_follow()
   img$set_scroll_factor(0)
+  img$set_depth(20)
 
   rect <- Rectangle$new("hitbox", 1, 2, 3, 4, "0xff00ff", TRUE, TRUE, session = session)
   rect$show()
@@ -31,6 +32,7 @@ test_that("Image and Rectangle methods send expected JS", {
   expect_true(any(grepl("followSpriteWithCamera\\('ground', 0.200000, 0.300000, false\\);", msgs)))
   expect_true(any(grepl("stopCameraFollow\\('ground'\\);", msgs)))
   expect_true(any(grepl("setScrollFactor\\('ground', 0.000000, 0.000000\\);", msgs)))
+  expect_true(any(grepl("setSpriteDepth\\('ground', 20.000000\\);", msgs)))
   expect_true(any(grepl("addRectangle\\('hitbox', 1, 2, 3, 4, 0xff00ff, true, true\\);", msgs)))
   expect_true(any(grepl("showImage\\('hitbox'\\);", msgs)))
   expect_true(any(grepl("hideImage\\('hitbox'\\);", msgs)))
@@ -63,6 +65,7 @@ test_that("StaticSprite destroy sends expected JS", {
   static_sprite$follow_camera(lerp_x = 0.6, lerp_y = 0.7, round_pixels = FALSE)
   static_sprite$stop_camera_follow()
   static_sprite$set_scroll_factor(0)
+  static_sprite$set_depth(10)
   static_sprite$destroy()
 
   msgs <- vapply(session$get_messages(), function(m) m$message$js, character(1))
@@ -70,6 +73,7 @@ test_that("StaticSprite destroy sends expected JS", {
   expect_true(any(grepl("followSpriteWithCamera\\('rock', 0.600000, 0.700000, false\\);", msgs)))
   expect_true(any(grepl("stopCameraFollow\\('rock'\\);", msgs)))
   expect_true(any(grepl("setScrollFactor\\('rock', 0.000000, 0.000000\\);", msgs)))
+  expect_true(any(grepl("setSpriteDepth\\('rock', 10.000000\\);", msgs)))
   expect_true(any(grepl("destroySprite\\('rock'\\);", msgs)))
 })
 
@@ -78,10 +82,12 @@ test_that("Sprite utility methods send expected JS", {
   s <- Sprite$new("hero", "hero.png", 0, 0, 32, 32, frame_count = 4, frame_rate = 12, session = session)
   s$play_animation("idle")
   s$play_animation("run", duration = 300)
+  s$stop_motion()
   s$add_player_controls(c("left", "right"), speed = 180)
   s$follow_camera(lerp_x = 0.5, lerp_y = 0.75, round_pixels = FALSE)
   s$stop_camera_follow()
   s$set_scroll_factor(1, 0.5)
+  s$set_depth(15)
   s$set_velocity_x(120)
   s$set_velocity_y(140)
   s$set_gravity(1, 2)
@@ -94,10 +100,12 @@ test_that("Sprite utility methods send expected JS", {
   msgs <- vapply(session$get_messages(), function(m) m$message$js, character(1))
   expect_true(any(grepl("playAnimation\\('hero','idle'\\);", msgs)))
   expect_true(any(grepl("playAnimationForDuration\\('hero','run', 300\\);", msgs)))
+  expect_true(any(grepl("stopSpriteMotion\\('hero'\\);", msgs)))
   expect_true(any(grepl("addPlayerControls\\('hero',", msgs)))
   expect_true(any(grepl("followSpriteWithCamera\\('hero', 0.500000, 0.750000, false\\);", msgs)))
   expect_true(any(grepl("stopCameraFollow\\('hero'\\);", msgs)))
   expect_true(any(grepl("setScrollFactor\\('hero', 1.000000, 0.500000\\);", msgs)))
+  expect_true(any(grepl("setSpriteDepth\\('hero', 15.000000\\);", msgs)))
   expect_true(any(grepl("setVelocityX\\('hero', 120\\);", msgs)))
   expect_true(any(grepl("setVelocityY\\('hero', 140\\);", msgs)))
   expect_true(any(grepl("setGravity\\('hero', 1, 2\\);", msgs)))
@@ -210,6 +218,7 @@ test_that("browser_actions compile R6 calls for immediate execution", {
     browser_action = browser_actions({
       prompt$show()
       sound$play(volume = 0.5)
+      hero$stop_motion()
       hero$play_animation("wave", duration = 250)
     })
   )
@@ -233,6 +242,7 @@ test_that("browser_actions compile R6 calls for immediate execution", {
   expect_true(any(grepl('addOverlap("hero", "wizard"', msgs, fixed = TRUE)))
   expect_true(any(grepl('"show_text":"prompt"', msgs, fixed = TRUE)))
   expect_true(any(grepl('"play_sound":"hello","volume":0.5', msgs, fixed = TRUE)))
+  expect_true(any(grepl('"stop_motion":"hero"', msgs, fixed = TRUE)))
   expect_true(any(grepl('"play_animation":"wave","sprite":"hero","duration":250', msgs, fixed = TRUE)))
   expect_true(any(grepl('addOverlapEnd("hero", "wizard"', msgs, fixed = TRUE)))
   expect_true(any(grepl('"hide_text":"prompt"', msgs, fixed = TRUE)))
@@ -375,11 +385,76 @@ test_that("dungeonheroes Space action retains interactions and combat", {
   expect_true(any(grepl("server_action = handle_space", example, fixed = TRUE)))
   expect_true(any(grepl("server_action", example, fixed = TRUE)))
   expect_true(any(grepl("enemy_hit_points[[enemy_in_range]]", example, fixed = TRUE)))
+  expect_true(any(grepl("mushroom_reaction_check_interval <- 16", example, fixed = TRUE)))
+  expect_true(any(grepl("enemies[[enemy_name]]$stop_motion()", example, fixed = TRUE)))
+  expect_true(any(grepl("browser_action = browser_actions", example, fixed = TRUE)))
+  expect_true(any(grepl('duration = enemy_attack_cooldown * 1000', example, fixed = TRUE)))
+  expect_true(any(grepl('mode = "stay"', example, fixed = TRUE)))
+  expect_true(any(grepl('interval = enemy_attack_cooldown * 1000', example, fixed = TRUE)))
+  expect_true(any(grepl('duration = 1', example, fixed = TRUE)))
   expect_true(any(grepl('title = "Game over"', example, fixed = TRUE)))
   expect_false(any(grepl("client_action", example, fixed = TRUE)))
   expect_false(any(grepl("dungeonheroes_version", example, fixed = TRUE)))
   expect_false(any(grepl("dungeonheroes v", example, fixed = TRUE)))
   expect_true(any(grepl('text = sprintf("shinyphaser v%s"', example, fixed = TRUE)))
+})
+
+test_that("dungeonheroes tree has a collidable base and foreground top", {
+  example <- readLines(
+    system.file("examples", "dungeonheroes.R", package = "shinyphaser"),
+    warn = FALSE
+  )
+
+  expect_true(any(grepl('name = "dead_tree_1_bottom"', example, fixed = TRUE)))
+  expect_true(any(grepl('name = "dead_tree_1_top"', example, fixed = TRUE)))
+  expect_true(any(grepl('url = "assets/dungeonheroes/terrain/ms/dead_tree_1_bottom.png"', example, fixed = TRUE)))
+  expect_true(any(grepl('url = "assets/dungeonheroes/terrain/ms/dead_tree_1_top.png"', example, fixed = TRUE)))
+  expect_true(any(grepl("y = 650", example, fixed = TRUE)))
+  expect_true(any(grepl('game$add_collider("hero", "dead_tree_1_bottom")', example, fixed = TRUE)))
+  expect_false(any(grepl('game$add_collider("hero", "dead_tree_1_top")', example, fixed = TRUE)))
+  expect_true(any(grepl("dead_tree_top$set_depth(20)", example, fixed = TRUE)))
+})
+
+test_that("sight approach does not restart active movement or hide alerts", {
+  sprite_js <- readLines(
+    system.file("www", "phaser-sprite.js", package = "shinyphaser"),
+    warn = FALSE
+  )
+  sight_start <- grep("function startSpriteApproachOnSight", sprite_js, fixed = TRUE)
+  sight_end <- grep("function constrainedTerrainMotionEnd", sprite_js, fixed = TRUE)
+  sight_code <- sprite_js[sight_start:(sight_end - 1)]
+
+  forced_guard <- grep("if (GameBridge.forcedAnimations[name]) return;", sight_code, fixed = TRUE)
+  alert_creation <- grep('scene.add.text(sprite.x, sprite.y - sprite.displayHeight * 0.6, "!"', sight_code, fixed = TRUE)
+  movement_guard <- grep("if (scene.tweens.isTweening(sprite)) return;", sight_code, fixed = TRUE)
+  approach_move <- grep("setSpriteInMotion(", sight_code, fixed = TRUE)
+  delayed_approach <- grep('setData("sightAlertUntil", now + alertDuration)', sight_code, fixed = TRUE)
+
+  expect_length(forced_guard, 1)
+  expect_length(alert_creation, 1)
+  expect_length(movement_guard, 1)
+  expect_length(delayed_approach, 0)
+  expect_lt(alert_creation, forced_guard)
+  expect_lt(forced_guard, movement_guard)
+  expect_lt(movement_guard, approach_move[[length(approach_move)]])
+})
+
+test_that("recent movement selects four-way directional attack animations", {
+  game_js <- readLines(system.file("www", "phaser-game.js", package = "shinyphaser"), warn = FALSE)
+  sprite_js <- readLines(system.file("www", "phaser-sprite.js", package = "shinyphaser"), warn = FALSE)
+  example <- readLines(system.file("examples", "dungeonheroes.R", package = "shinyphaser"), warn = FALSE)
+
+  expect_true(any(grepl("GameBridge.directionalAttackMemory = 1500", game_js, fixed = TRUE)))
+  expect_true(any(grepl('rememberMovementDirection(sprite, "left", time)', game_js, fixed = TRUE)))
+  expect_true(any(grepl('rememberMovementDirection(sprite, "right", time)', game_js, fixed = TRUE)))
+  expect_true(any(grepl('rememberMovementDirection(sprite, "up", time)', game_js, fixed = TRUE)))
+  expect_true(any(grepl('rememberMovementDirection(sprite, "down", time)', game_js, fixed = TRUE)))
+  expect_true(any(grepl('animationKey + "_" + direction', game_js, fixed = TRUE)))
+  expect_true(any(grepl('forcedKey + "_" + movementSuffix', game_js, fixed = TRUE)))
+  expect_true(any(grepl("targetAnim !== name + '_idle'", game_js, fixed = TRUE)))
+  expect_true(any(grepl('rememberMovementDirection(sprite, movementDirection, now)', sprite_js, fixed = TRUE)))
+  expect_true(any(grepl('suffix = paste0("sword_attack_", direction)', example, fixed = TRUE)))
+  expect_true(any(grepl('suffix = paste0("attack_", direction)', example, fixed = TRUE)))
 })
 
 test_that("bear Space control names its input argument", {
@@ -423,6 +498,7 @@ test_that("runtime visual assets initialize when the loader batch completes", {
 
   expect_true(any(grepl("scene.load.once('complete'", sprite_js, fixed = TRUE)))
   expect_true(any(grepl("scene.load.once('complete'", group_js, fixed = TRUE)))
+  expect_true(any(grepl("applyPendingSpriteActions(imageName)", image_js, fixed = TRUE)))
   expect_true(any(grepl("scene.load.once('complete'", image_js, fixed = TRUE)))
   expect_false(any(grepl("if (!scene.load.isLoading())", sprite_js, fixed = TRUE)))
 })
