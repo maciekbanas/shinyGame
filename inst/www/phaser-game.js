@@ -17,7 +17,7 @@ GameBridge.pendingActiveMap = GameBridge.pendingActiveMap || null;
 GameBridge.mapLoadQueue = GameBridge.mapLoadQueue || [];
 GameBridge.mapLoading = GameBridge.mapLoading || false;
 GameBridge.mapExits = GameBridge.mapExits || {};
-GameBridge.realmExitVisible = GameBridge.realmExitVisible || false;
+GameBridge.mapExitVisible = GameBridge.mapExitVisible || false;
 GameBridge.lastHeroOverlapState = GameBridge.lastHeroOverlapState || "";
 GameBridge.nextHeroOverlapSendAt = GameBridge.nextHeroOverlapSendAt || 0;
 GameBridge.sounds = GameBridge.sounds || {};
@@ -464,10 +464,10 @@ function updateMapExitVisibility() {
   ) <= exit.radius);
   const element = exit && document.getElementById(exit.elementId);
 
-  if (element && nearby !== GameBridge.realmExitVisible) {
+  if (element && nearby !== GameBridge.mapExitVisible) {
     element.style.display = nearby ? "block" : "none";
   }
-  GameBridge.realmExitVisible = nearby;
+  GameBridge.mapExitVisible = nearby;
 }
 
 function applyPendingTerrainColliders() {

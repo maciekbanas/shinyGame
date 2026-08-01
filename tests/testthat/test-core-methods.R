@@ -426,7 +426,7 @@ test_that("dungeonheroes can travel between mushroom swamps and magma hills", {
     simplifyVector = FALSE
   )
 
-  expect_true(any(grepl('"leave_realm", "Leave realm"', example, fixed = TRUE)))
+  expect_true(any(grepl('"leave_map", "Leave map"', example, fixed = TRUE)))
   expect_true(any(grepl('"choose_mushroom_swamps", "Mushroom swamps"', example, fixed = TRUE)))
   expect_true(any(grepl('"choose_magma_hills", "Magma hills"', example, fixed = TRUE)))
   expect_true(any(grepl('map_key = "magma_hills"', example, fixed = TRUE)))

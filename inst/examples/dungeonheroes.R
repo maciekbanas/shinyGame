@@ -38,7 +38,7 @@ ui <- shiny::tagList(
       image-rendering: pixelated;
     }
 
-    #leave_realm {
+    #leave_map {
       position: fixed;
       display: none;
       top: 18px;
@@ -54,7 +54,7 @@ ui <- shiny::tagList(
       cursor: pointer;
     }
 
-    #realm_selector {
+    #map_selector {
       position: fixed;
       inset: 0;
       z-index: 9100;
@@ -65,7 +65,7 @@ ui <- shiny::tagList(
       background: #000;
     }
 
-    #realm_selector .realm_button {
+    #map_selector .map_button {
       min-width: 260px;
       padding: 22px 30px;
       border: 2px solid #f9fafb;
@@ -82,20 +82,20 @@ ui <- shiny::tagList(
     htmltools::tags$div("Loading dungeon heroes...")
   ),
   shiny::actionButton(
-    "leave_realm", "Leave realm",
-    onclick = "document.getElementById('realm_selector').style.display = 'flex';"
+    "leave_map", "Leave map",
+    onclick = "document.getElementById('map_selector').style.display = 'flex';"
   ),
   htmltools::tags$div(
-    id = "realm_selector",
+    id = "map_selector",
     shiny::actionButton(
       "choose_mushroom_swamps", "Mushroom swamps",
-      class = "realm_button",
-      onclick = "document.getElementById('realm_selector').style.display = 'none';"
+      class = "map_button",
+      onclick = "document.getElementById('map_selector').style.display = 'none';"
     ),
     shiny::actionButton(
       "choose_magma_hills", "Magma hills",
-      class = "realm_button",
-      onclick = "document.getElementById('realm_selector').style.display = 'none';"
+      class = "map_button",
+      onclick = "document.getElementById('map_selector').style.display = 'none';"
     )
   ),
   game$use_phaser(),

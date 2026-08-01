@@ -31,8 +31,8 @@
 * Added runtime tilemap switching with `PhaserGame$activate_map()`. Multiple
   maps registered with `PhaserGame$add_map()` are loaded in sequence, and map
   activation updates terrain collision, camera and world bounds, the player
-  position, and realm-specific scene-object visibility.
-* Added `PhaserGame$set_map_exit()` for showing a realm-exit HTML control only
+  position, and map-specific scene-object visibility.
+* Added `PhaserGame$set_map_exit()` for showing a map-exit HTML control only
   while a player is within a configurable distance of a map-specific exit.
 * Added `StaticSprite$destroy()` for removing static sprites from the Phaser scene.
 * Added `Sprite$stop_motion()` for immediately cancelling scripted sprite
@@ -43,9 +43,6 @@
 ## Updates in examples
 * Added new arcade example game (bear).
 * Added new RPG game example (dungeonheroes).
-* Expanded dungeonheroes with a magma hills realm, impassable lava terrain,
-  realm-specific player starts, and a realm selector accessible near each
-  realm's starting position.
 * Updated the hedgehog examples so acknowledging a game-over dialog reloads the Shiny session and starts a fresh game instead of stopping the app.
 
 ## README
