@@ -415,6 +415,31 @@ test_that("dungeonheroes tree has a collidable base and foreground top", {
   expect_true(any(grepl("dead_tree_top$set_depth(20)", example, fixed = TRUE)))
 })
 
+test_that("tilemaps stay behind objects created before they finish loading", {
+  game_js <- readLines(
+    system.file("www", "phaser-game.js", package = "shinyphaser"),
+    warn = FALSE
+  )
+
+  layer_creation <- grep(
+    "const groundLayer = map.createLayer(layerName, phaserTilesets, 0, 0);",
+    game_js,
+    fixed = TRUE
+  )
+  background_depth <- grep("groundLayer.setDepth(-1);", game_js, fixed = TRUE)
+  layer_collision <- grep(
+    "groundLayer.setCollisionByProperty({ collides: true });",
+    game_js,
+    fixed = TRUE
+  )
+
+  expect_length(layer_creation, 1)
+  expect_length(background_depth, 1)
+  expect_length(layer_collision, 1)
+  expect_lt(layer_creation, background_depth)
+  expect_lt(background_depth, layer_collision)
+})
+
 test_that("sight approach does not restart active movement or hide alerts", {
   sprite_js <- readLines(
     system.file("www", "phaser-sprite.js", package = "shinyphaser"),

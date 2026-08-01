@@ -375,6 +375,9 @@ function addMap(mapKey, mapUrl, tilesetUrls, tilesetNames, layerName) {
 
     const groundLayer = map.createLayer(layerName, phaserTilesets, 0, 0);
 
+    // Map assets load asynchronously, so the layer can be created after UI and
+    // game objects. Keep this background behind them regardless of load order.
+    groundLayer.setDepth(-1);
     groundLayer.setCollisionByProperty({ collides: true });
 
     scene.physics.world.bounds.width  = map.widthInPixels;
