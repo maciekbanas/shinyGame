@@ -38,8 +38,9 @@
 ## Updates in examples
 * Added new arcade example game (bear).
 * Added new RPG game example (dungeonheroes).
-* Added a layered dead tree to dungeonheroes with a collidable base and a
-  passable foreground top that renders above the hero.
+* Added a layered dead tree to dungeonheroes using the new `set_depth()` method,
+  with a collidable base and a passable foreground top that renders above the
+  hero.
 * Updated the hedgehog examples so acknowledging a game-over dialog reloads the Shiny session and starts a fresh game instead of stopping the app.
 
 ## README
