@@ -16,6 +16,7 @@ test_that("Image and Rectangle methods send expected JS", {
   img$follow_camera(lerp_x = 0.2, lerp_y = 0.3, round_pixels = FALSE)
   img$stop_camera_follow()
   img$set_scroll_factor(0)
+  img$set_depth(20)
 
   rect <- Rectangle$new("hitbox", 1, 2, 3, 4, "0xff00ff", TRUE, TRUE, session = session)
   rect$show()
@@ -31,6 +32,7 @@ test_that("Image and Rectangle methods send expected JS", {
   expect_true(any(grepl("followSpriteWithCamera\\('ground', 0.200000, 0.300000, false\\);", msgs)))
   expect_true(any(grepl("stopCameraFollow\\('ground'\\);", msgs)))
   expect_true(any(grepl("setScrollFactor\\('ground', 0.000000, 0.000000\\);", msgs)))
+  expect_true(any(grepl("setSpriteDepth\\('ground', 20.000000\\);", msgs)))
   expect_true(any(grepl("addRectangle\\('hitbox', 1, 2, 3, 4, 0xff00ff, true, true\\);", msgs)))
   expect_true(any(grepl("showImage\\('hitbox'\\);", msgs)))
   expect_true(any(grepl("hideImage\\('hitbox'\\);", msgs)))
@@ -63,6 +65,7 @@ test_that("StaticSprite destroy sends expected JS", {
   static_sprite$follow_camera(lerp_x = 0.6, lerp_y = 0.7, round_pixels = FALSE)
   static_sprite$stop_camera_follow()
   static_sprite$set_scroll_factor(0)
+  static_sprite$set_depth(10)
   static_sprite$destroy()
 
   msgs <- vapply(session$get_messages(), function(m) m$message$js, character(1))
@@ -70,6 +73,7 @@ test_that("StaticSprite destroy sends expected JS", {
   expect_true(any(grepl("followSpriteWithCamera\\('rock', 0.600000, 0.700000, false\\);", msgs)))
   expect_true(any(grepl("stopCameraFollow\\('rock'\\);", msgs)))
   expect_true(any(grepl("setScrollFactor\\('rock', 0.000000, 0.000000\\);", msgs)))
+  expect_true(any(grepl("setSpriteDepth\\('rock', 10.000000\\);", msgs)))
   expect_true(any(grepl("destroySprite\\('rock'\\);", msgs)))
 })
 
@@ -83,6 +87,7 @@ test_that("Sprite utility methods send expected JS", {
   s$follow_camera(lerp_x = 0.5, lerp_y = 0.75, round_pixels = FALSE)
   s$stop_camera_follow()
   s$set_scroll_factor(1, 0.5)
+  s$set_depth(15)
   s$set_velocity_x(120)
   s$set_velocity_y(140)
   s$set_gravity(1, 2)
@@ -100,6 +105,7 @@ test_that("Sprite utility methods send expected JS", {
   expect_true(any(grepl("followSpriteWithCamera\\('hero', 0.500000, 0.750000, false\\);", msgs)))
   expect_true(any(grepl("stopCameraFollow\\('hero'\\);", msgs)))
   expect_true(any(grepl("setScrollFactor\\('hero', 1.000000, 0.500000\\);", msgs)))
+  expect_true(any(grepl("setSpriteDepth\\('hero', 15.000000\\);", msgs)))
   expect_true(any(grepl("setVelocityX\\('hero', 120\\);", msgs)))
   expect_true(any(grepl("setVelocityY\\('hero', 140\\);", msgs)))
   expect_true(any(grepl("setGravity\\('hero', 1, 2\\);", msgs)))
@@ -391,6 +397,19 @@ test_that("dungeonheroes Space action retains interactions and combat", {
   expect_false(any(grepl("dungeonheroes_version", example, fixed = TRUE)))
   expect_false(any(grepl("dungeonheroes v", example, fixed = TRUE)))
   expect_true(any(grepl('text = sprintf("shinyphaser v%s"', example, fixed = TRUE)))
+})
+
+test_that("dungeonheroes tree has a collidable base and foreground top", {
+  example <- readLines(
+    system.file("examples", "dungeonheroes.R", package = "shinyphaser"),
+    warn = FALSE
+  )
+
+  expect_true(any(grepl('name = "dead_tree_1_bottom"', example, fixed = TRUE)))
+  expect_true(any(grepl('name = "dead_tree_1_top"', example, fixed = TRUE)))
+  expect_true(any(grepl('game$add_collider("hero", "dead_tree_1_bottom")', example, fixed = TRUE)))
+  expect_false(any(grepl('game$add_collider("hero", "dead_tree_1_top")', example, fixed = TRUE)))
+  expect_true(any(grepl("dead_tree_top$set_depth(20)", example, fixed = TRUE)))
 })
 
 test_that("sight approach does not restart active movement or hide alerts", {

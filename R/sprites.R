@@ -117,6 +117,14 @@ Sprite <- R6::R6Class(
       send_js(private, js)
     },
 
+    #' @description Set the sprite's rendering depth. Objects with a larger
+    #'   depth are rendered in front of objects with a smaller depth.
+    #' @param depth Numeric. Phaser rendering depth.
+    set_depth = function(depth) {
+      js <- sprintf("setSpriteDepth('%s', %f);", private$name, depth)
+      send_js(private, js)
+    },
+
     #' @description Set the sprite's velocity in the x direction.
     #' @param x Numeric. Velocity in pixels/second (positive = right, negative =
     #' left).
@@ -290,6 +298,13 @@ StaticSprite <- R6::R6Class(
     #' @param y Numeric. Vertical scroll factor. Defaults to `x`.
     set_scroll_factor = function(x, y = x) {
       js <- sprintf("setScrollFactor('%s', %f, %f);", private$name, x, y)
+      send_js(private, js)
+    },
+    #' @description Set the static sprite's rendering depth. Objects with a
+    #'   larger depth are rendered in front of objects with a smaller depth.
+    #' @param depth Numeric. Phaser rendering depth.
+    set_depth = function(depth) {
+      js <- sprintf("setSpriteDepth('%s', %f);", private$name, depth)
       send_js(private, js)
     }
   ),

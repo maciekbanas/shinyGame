@@ -32,6 +32,10 @@ function withSprite(name, action, caller) {
   }
 }
 
+function setSpriteDepth(name, depth) {
+  withSprite(name, (sprite) => sprite.setDepth(depth), "setSpriteDepth()");
+}
+
 function resolveFrameCount(textureKey, frameWidth, frameHeight, frameCount) {
   if (Number.isFinite(frameCount) && frameCount > 0) {
     return Math.floor(frameCount);
@@ -97,6 +101,7 @@ function addStaticSprite(name, url, x, y) {
       scene.physics.add.collider(staticSprite, scene.terrainLayer);
     }
     scene[name] = staticSprite;
+    applyPendingSpriteActions(name);
 
     if (typeof applyPendingCameraFollows === "function") {
       applyPendingCameraFollows();
