@@ -431,6 +431,8 @@ test_that("dungeonheroes can travel between mushroom swamps and magma hills", {
   expect_true(any(grepl('"choose_magma_hills", "Magma hills"', example, fixed = TRUE)))
   expect_true(any(grepl('map_key = "magma_hills"', example, fixed = TRUE)))
   expect_true(any(grepl('game$activate_map(', example, fixed = TRUE)))
+  expect_true(any(grepl('"magma_hills", player_name = "hero", x = 1550, y = 650',
+                        example, fixed = TRUE)))
   expect_identical(magma_map$layers[[1]]$name, "terrain")
   expect_identical(vapply(magma_map$tilesets, `[[`, character(1), "name"),
                    c("hill_1", "lava_1"))

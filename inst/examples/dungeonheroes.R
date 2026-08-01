@@ -870,7 +870,9 @@ server <- function(input, output, session) {
 
   shiny::observeEvent(input$choose_magma_hills, {
     game$activate_map(
-      "magma_hills", player_name = "hero", x = 150, y = 150,
+      # Magma hills has its own hill-top arrival point, separate from the
+      # mushroom swamps entrance at (100, 100).
+      "magma_hills", player_name = "hero", x = 1550, y = 650,
       hidden_objects = c(mushroom_swamps_objects, "talk_bubble_text")
     )
     enemy_status_text$set("enemies: none in magma hills")
