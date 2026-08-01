@@ -302,6 +302,7 @@ server <- function(input, output, session) {
   )
   hero$add_player_controls()
   hero$follow_camera()
+  hero$set_depth(10)
   Sys.sleep(0.1)
   game$enable_terrain_collision("hero")
   hero$add_animation(
@@ -573,6 +574,24 @@ server <- function(input, output, session) {
     y = 660
   )
   version_text$set_scroll_factor(0)
+
+  dead_tree_bottom <- game$add_static_sprite(
+    name = "dead_tree_1_bottom",
+    url = "assets/dungeonheroes/terrain/ms/dead_tree_1_bottom.png",
+    x = 550,
+    y = 650
+  )
+  dead_tree_bottom$set_depth(10)
+
+  dead_tree_top <- game$add_image(
+    name = "dead_tree_1_top",
+    url = "assets/dungeonheroes/terrain/ms/dead_tree_1_top.png",
+    x = 550,
+    y = 650 - map_tile_size
+  )
+  dead_tree_top$set_depth(20)
+
+  game$add_collider("hero", "dead_tree_1_bottom")
 
   sword <- game$add_static_sprite(
     name = "sword",
