@@ -116,6 +116,33 @@ function addStaticSprite(name, url, x, y) {
   scene.load.start();
 }
 
+function setObjectVisible(name, visible) {
+  const object = scene && scene[name];
+  if (!object) {
+    withSprite(name, (sprite) => sprite.setVisible(visible), "setObjectVisible()");
+    return;
+  }
+
+  if (typeof object.setVisible === "function") {
+    object.setVisible(visible);
+    return;
+  }
+
+  // Phaser groups are not display objects, so visibility must be applied to
+  // each of their current members.
+  if (typeof object.getChildren === "function") {
+    object.getChildren().forEach((child) => child.setVisible(visible));
+  }
+}
+
+function showObject(name) {
+  setObjectVisible(name, true);
+}
+
+function hideObject(name) {
+  setObjectVisible(name, false);
+}
+
 function addSpriteAnimation(name, suffix, url, frameWidth, frameHeight, frameCount, frameRate) {
   if (!scene) {
     console.warn(`addSpriteAnimation("${name}", "${suffix}"): scene not ready`);
@@ -333,6 +360,8 @@ function runBrowserAction(action, overlapObjectOne, overlapObjectTwo) {
   }
   if (action.show_text) showText(action.show_text);
   if (action.hide_text) hideText(action.hide_text);
+  if (action.show_object) showObject(action.show_object);
+  if (action.hide_object) hideObject(action.hide_object);
   if (action.show_alert) {
     if (typeof swal === "function") swal(action.show_alert);
     else window.alert(action.show_alert.title || action.show_alert.text || "");

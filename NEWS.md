@@ -1,5 +1,7 @@
 # shinyphaser (development version)
 
+* Added `show()` and `hide()` methods to `Sprite`, `StaticSprite`, `Group`, and
+  `StaticGroup`; these methods also work in `browser_actions()`.
 * Split event handling into explicit `browser_action` and `server_action`
   parameters. Browser-side calls must now be declared with `browser_actions()`,
   while arbitrary R logic belongs in a server action.
