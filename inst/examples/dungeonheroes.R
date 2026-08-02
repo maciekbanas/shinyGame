@@ -61,7 +61,8 @@ ui <- shiny::tagList(
     htmltools::tags$div("Loading dungeon heroes...")
   ),
   shiny::actionButton(
-    "leave_map", "Leave map"
+    "leave_map", "Leave map",
+    onclick = "this.style.display = 'none';"
   ),
   game$use_phaser(),
   htmltools::tags$script(htmltools::HTML("
@@ -272,21 +273,10 @@ server <- function(input, output, session) {
   magma_hills_map_image <- game$add_image(
     name = "choose_magma_hills",
     url = "assets/dungeonheroes/terrain/magma_hills/magma_hills_map.png",
-    x = 950, y = 400, visible = FALSE, clickable = TRUE
-  )
-  mushroom_swamps_map_image_from_magma <- game$add_image(
-    name = "choose_mushroom_swamps_from_magma",
-    url = "assets/dungeonheroes/terrain/ms/mushroom_swamps_map.png",
-    x = 650, y = 400, visible = FALSE, clickable = TRUE
-  )
-  magma_hills_map_image_current <- game$add_image(
-    name = "choose_current_magma_hills",
-    url = "assets/dungeonheroes/terrain/magma_hills/magma_hills_map.png",
-    x = 800, y = 400, visible = FALSE, clickable = TRUE
+    x = 800, y = 700, visible = FALSE, clickable = TRUE
   )
   navigation_images <- list(
-    mushroom_swamps_map_image, magma_hills_map_image,
-    mushroom_swamps_map_image_from_magma, magma_hills_map_image_current
+    mushroom_swamps_map_image, magma_hills_map_image
   )
   map_navigation_background$set_scroll_factor(0)
   map_navigation_background$set_depth(99)
@@ -861,12 +851,14 @@ server <- function(input, output, session) {
     "wizard", "mushroom_spirit"
   )
 
-  current_map <- "mushroom_swamps"
-
   hide_map_navigation <- function() {
     map_navigation_background$hide()
     lapply(navigation_images, function(image) image$hide())
     hero$set_depth(10)
+    session$sendCustomMessage(
+      "phaser",
+      list(js = "document.getElementById('leave_map').style.display = 'block';")
+    )
   }
 
   shiny::observeEvent(input$leave_map, {
@@ -874,17 +866,8 @@ server <- function(input, output, session) {
     # Keep the player out of the realm navigation display by rendering it
     # behind the opaque navigation background.
     hero$set_depth(98)
-    if (identical(current_map, "mushroom_swamps")) {
-      mushroom_swamps_map_image$show()
-      magma_hills_map_image$show()
-      mushroom_swamps_map_image_from_magma$hide()
-      magma_hills_map_image_current$hide()
-    } else {
-      mushroom_swamps_map_image$hide()
-      magma_hills_map_image$hide()
-      mushroom_swamps_map_image_from_magma$show()
-      magma_hills_map_image_current$show()
-    }
+    mushroom_swamps_map_image$show()
+    magma_hills_map_image$show()
   }, ignoreInit = TRUE)
 
   choose_mushroom_swamps <- function(event) {
@@ -893,7 +876,6 @@ server <- function(input, output, session) {
       "mushroom_swamps", player_name = "hero", x = 100, y = 100,
       visible_objects = mushroom_swamps_objects
     )
-    current_map <<- "mushroom_swamps"
     update_enemy_status()
     set_combat_status("Back in the mushroom swamps.")
   }
@@ -906,15 +888,12 @@ server <- function(input, output, session) {
       "magma_hills", player_name = "hero", x = 1550, y = 650,
       hidden_objects = c(mushroom_swamps_objects, "talk_bubble_text")
     )
-    current_map <<- "magma_hills"
     enemy_status_text$set("enemies: none in magma hills")
     set_combat_status("Explore the hills. Lava is impassable.")
   }
 
   mushroom_swamps_map_image$click(choose_mushroom_swamps, input)
-  mushroom_swamps_map_image_from_magma$click(choose_mushroom_swamps, input)
   magma_hills_map_image$click(choose_magma_hills, input)
-  magma_hills_map_image_current$click(choose_magma_hills, input)
 }
 
 

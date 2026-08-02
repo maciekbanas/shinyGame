@@ -429,9 +429,11 @@ test_that("dungeonheroes can travel between mushroom swamps and magma hills", {
   )
 
   expect_true(any(grepl('"leave_map", "Leave map"', example, fixed = TRUE)))
+  expect_true(any(grepl("onclick = \"this.style.display = 'none';\"", example, fixed = TRUE)))
   expect_true(any(grepl('name = "map_navigation_background"', example, fixed = TRUE)))
   expect_true(any(grepl('name = "choose_mushroom_swamps"', example, fixed = TRUE)))
   expect_true(any(grepl('name = "choose_magma_hills"', example, fixed = TRUE)))
+  expect_true(any(grepl('x = 800, y = 700', example, fixed = TRUE)))
   expect_true(any(grepl('mushroom_swamps_map_image$click(', example, fixed = TRUE)))
   expect_true(any(grepl('magma_hills_map_image$click(', example, fixed = TRUE)))
   expect_true(any(grepl('hero$set_depth(98)', example, fixed = TRUE)))
