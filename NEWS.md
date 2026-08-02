@@ -43,8 +43,6 @@
 ## Updates in examples
 * Added new arcade example game (bear).
 * Added new RPG game example (dungeonheroes).
-* Updated dungeonheroes realm navigation to use clickable map images on a
-  dedicated in-game navigation screen.
 * Updated the hedgehog examples so acknowledging a game-over dialog reloads the Shiny session and starts a fresh game instead of stopping the app.
 
 ## README
