@@ -159,7 +159,7 @@ ui <- shiny::tagList(
         id = "choose_hero", class = "character_choice action-button",
         type = "button",
         htmltools::tags$span(class = "character_portrait"),
-        htmltools::tags$span(class = "character_name", "Hero"),
+        htmltools::tags$span(class = "character_name", "Human"),
         htmltools::tags$span(class = "character_description", "Courage against the darkness")
       ),
       htmltools::tags$button(
@@ -992,7 +992,10 @@ server <- function(input, output, session) {
     hero$set_depth(10)
     session$sendCustomMessage(
       "phaser",
-      list(js = "document.getElementById('leave_map').style.display = 'block';")
+      list(js = paste(
+        "setRealmNavigationVisible(false);",
+        "document.getElementById('leave_map').style.display = 'block';"
+      ))
     )
   }
 
@@ -1002,18 +1005,16 @@ server <- function(input, output, session) {
     selected_character <<- character
     hero$add_player_controls()
     hero$set_player_animation_prefix(character)
-    play_hero_idle_animation()
     map_navigation_background$show()
     hero$set_depth(98)
     mushroom_swamps_map_image$show()
     magma_hills_map_image$show()
     session$sendCustomMessage(
       "phaser",
-      list(js = "document.getElementById('character_select').style.display = 'none';")
-    )
-    shinyalert::shinyalert(
-      title = "Use Space to attack and interact",
-      type = "info"
+      list(js = paste(
+        "setRealmNavigationVisible(true);",
+        "document.getElementById('character_select').style.display = 'none';"
+      ))
     )
   }
 
@@ -1025,6 +1026,9 @@ server <- function(input, output, session) {
   }, ignoreInit = TRUE)
 
   shiny::observeEvent(input$leave_map, {
+    session$sendCustomMessage(
+      "phaser", list(js = "setRealmNavigationVisible(true);")
+    )
     map_navigation_background$show()
     # Keep the player out of the realm navigation display by rendering it
     # behind the opaque navigation background.
@@ -1033,8 +1037,16 @@ server <- function(input, output, session) {
     magma_hills_map_image$show()
   }, ignoreInit = TRUE)
 
+  show_controls_alert <- function() {
+    shinyalert::shinyalert(
+      title = "Use Space to attack and interact",
+      type = "info"
+    )
+  }
+
   choose_mushroom_swamps <- function(event) {
     hide_map_navigation()
+    show_controls_alert()
     game$activate_map(
       "mushroom_swamps", player_name = "hero", x = 100, y = 100,
       visible_objects = mushroom_swamps_objects
@@ -1045,6 +1057,7 @@ server <- function(input, output, session) {
 
   choose_magma_hills <- function(event) {
     hide_map_navigation()
+    show_controls_alert()
     game$activate_map(
       # Magma hills has its own hill-top arrival point, separate from the
       # mushroom swamps entrance at (100, 100).

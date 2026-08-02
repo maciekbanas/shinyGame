@@ -18,6 +18,7 @@ GameBridge.mapLoadQueue = GameBridge.mapLoadQueue || [];
 GameBridge.mapLoading = GameBridge.mapLoading || false;
 GameBridge.mapExits = GameBridge.mapExits || {};
 GameBridge.mapExitVisible = GameBridge.mapExitVisible || false;
+GameBridge.realmNavigationVisible = GameBridge.realmNavigationVisible || false;
 GameBridge.lastHeroOverlapState = GameBridge.lastHeroOverlapState || "";
 GameBridge.nextHeroOverlapSendAt = GameBridge.nextHeroOverlapSendAt || 0;
 GameBridge.sounds = GameBridge.sounds || {};
@@ -312,7 +313,18 @@ function addPlayerControls(name, directions, speed) {
 
 function setPlayerAnimationPrefix(name, prefix) {
   if (!GameBridge.playerControls[name]) return;
-  GameBridge.playerControls[name].animationPrefix = prefix || name;
+  const animationPrefix = prefix || name;
+  GameBridge.playerControls[name].animationPrefix = animationPrefix;
+  delete GameBridge.forcedAnimations[name];
+
+  const sprite = scene && scene.children.getByName(name);
+  if (sprite) playIfChanged(sprite, animationPrefix + "_idle");
+}
+
+function setRealmNavigationVisible(visible) {
+  GameBridge.realmNavigationVisible = Boolean(visible);
+  const element = document.getElementById("leave_map");
+  if (visible && element) element.style.display = "none";
 }
 
 function applyWorldBounds(bounds) {
@@ -464,6 +476,13 @@ function setMapExit(mapKey, playerName, x, y, radius, elementId) {
 }
 
 function updateMapExitVisibility() {
+  if (GameBridge.realmNavigationVisible) {
+    const navigationExit = document.getElementById("leave_map");
+    if (navigationExit) navigationExit.style.display = "none";
+    GameBridge.mapExitVisible = false;
+    return;
+  }
+
   const exit = GameBridge.mapExits[GameBridge.activeMapKey];
   const player = exit && scene && scene.children.getByName(exit.playerName);
   const nearby = Boolean(player && Phaser.Math.Distance.Between(
