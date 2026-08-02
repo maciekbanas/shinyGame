@@ -267,13 +267,13 @@ server <- function(input, output, session) {
   )
   mushroom_swamps_map_image <- game$add_image(
     name = "choose_mushroom_swamps",
-    url = "assets/dungeonheroes/terrain/ms/mushroom_swamps_map.png",
+    url = "assets/dungeonheroes/terrain/mushroom_swamps/mushroom_swamps_map.png",
     x = 800, y = 400, visible = FALSE, clickable = TRUE
   )
   magma_hills_map_image <- game$add_image(
     name = "choose_magma_hills",
     url = "assets/dungeonheroes/terrain/magma_hills/magma_hills_map.png",
-    x = 800, y = 700, visible = FALSE, clickable = TRUE
+    x = 1300, y = 700, visible = FALSE, clickable = TRUE
   )
   navigation_images <- list(
     mushroom_swamps_map_image, magma_hills_map_image
@@ -287,27 +287,27 @@ server <- function(input, output, session) {
     map_key = "mushroom_swamps",
     map_url = "assets/dungeonheroes/maps/mushroom_swamps.json",
     tileset_urls = c(
-      "assets/dungeonheroes/terrain/ms/mushroom_swamps_grass_1.png",
-      "assets/dungeonheroes/terrain/ms/mushroom_swamps_swamp_1.png",
-      "assets/dungeonheroes/terrain/ms/ms_bank_bottom.png",
-      "assets/dungeonheroes/terrain/ms/ms_bank_bottom_right.png",
-      "assets/dungeonheroes/terrain/ms/ms_bank_left.png",
-      "assets/dungeonheroes/terrain/ms/ms_bank_left_bottom.png",
-      "assets/dungeonheroes/terrain/ms/ms_bank_left_bottom_right.png",
-      "assets/dungeonheroes/terrain/ms/ms_bank_right.png",
-      "assets/dungeonheroes/terrain/ms/ms_bank_top_bottom_left_right.png",
-      "assets/dungeonheroes/terrain/ms/ms_bank_top_left.png",
-      "assets/dungeonheroes/terrain/ms/ms_bank_top_left_right.png",
-      "assets/dungeonheroes/terrain/ms/ms_bank_top_right.png",
-      "assets/dungeonheroes/terrain/ms/ms_bank_top.png",
-      "assets/dungeonheroes/terrain/ms/ms_bank_top_bottom.png",
-      "assets/dungeonheroes/terrain/ms/ms_bank_top_bottom_left.png",
-      "assets/dungeonheroes/terrain/ms/ms_bank_top_bottom_right.png",
-      "assets/dungeonheroes/terrain/ms/ms_bank_left_right.png",
-      "assets/dungeonheroes/terrain/ms/mushroom_swamps_grass_2.png",
-      "assets/dungeonheroes/terrain/ms/mushroom_swamps_grass_3.png",
-      "assets/dungeonheroes/terrain/ms/mushroom_swamps_grass_4.png",
-      "assets/dungeonheroes/terrain/ms/mushroom_swamps_grass_5.png"
+      "assets/dungeonheroes/terrain/mushroom_swamps/mushroom_swamps_grass_1.png",
+      "assets/dungeonheroes/terrain/mushroom_swamps/mushroom_swamps_swamp_1.png",
+      "assets/dungeonheroes/terrain/mushroom_swamps/ms_bank_bottom.png",
+      "assets/dungeonheroes/terrain/mushroom_swamps/ms_bank_bottom_right.png",
+      "assets/dungeonheroes/terrain/mushroom_swamps/ms_bank_left.png",
+      "assets/dungeonheroes/terrain/mushroom_swamps/ms_bank_left_bottom.png",
+      "assets/dungeonheroes/terrain/mushroom_swamps/ms_bank_left_bottom_right.png",
+      "assets/dungeonheroes/terrain/mushroom_swamps/ms_bank_right.png",
+      "assets/dungeonheroes/terrain/mushroom_swamps/ms_bank_top_bottom_left_right.png",
+      "assets/dungeonheroes/terrain/mushroom_swamps/ms_bank_top_left.png",
+      "assets/dungeonheroes/terrain/mushroom_swamps/ms_bank_top_left_right.png",
+      "assets/dungeonheroes/terrain/mushroom_swamps/ms_bank_top_right.png",
+      "assets/dungeonheroes/terrain/mushroom_swamps/ms_bank_top.png",
+      "assets/dungeonheroes/terrain/mushroom_swamps/ms_bank_top_bottom.png",
+      "assets/dungeonheroes/terrain/mushroom_swamps/ms_bank_top_bottom_left.png",
+      "assets/dungeonheroes/terrain/mushroom_swamps/ms_bank_top_bottom_right.png",
+      "assets/dungeonheroes/terrain/mushroom_swamps/ms_bank_left_right.png",
+      "assets/dungeonheroes/terrain/mushroom_swamps/mushroom_swamps_grass_2.png",
+      "assets/dungeonheroes/terrain/mushroom_swamps/mushroom_swamps_grass_3.png",
+      "assets/dungeonheroes/terrain/mushroom_swamps/mushroom_swamps_grass_4.png",
+      "assets/dungeonheroes/terrain/mushroom_swamps/mushroom_swamps_grass_5.png"
     ),
     tileset_names = c(
       "mushroom_swamps_grass_1",
@@ -633,7 +633,7 @@ server <- function(input, output, session) {
 
   dead_tree_bottom <- game$add_static_sprite(
     name = "dead_tree_1_bottom",
-    url = "assets/dungeonheroes/terrain/ms/dead_tree_1_bottom.png",
+    url = "assets/dungeonheroes/terrain/mushroom_swamps/dead_tree_1_bottom.png",
     x = 550,
     y = 650
   )
@@ -641,7 +641,7 @@ server <- function(input, output, session) {
 
   dead_tree_top <- game$add_image(
     name = "dead_tree_1_top",
-    url = "assets/dungeonheroes/terrain/ms/dead_tree_1_top.png",
+    url = "assets/dungeonheroes/terrain/mushroom_swamps/dead_tree_1_top.png",
     x = 550,
     y = 650 - map_tile_size
   )
