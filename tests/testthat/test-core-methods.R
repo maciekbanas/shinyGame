@@ -24,6 +24,7 @@ test_that("Image and Rectangle methods send expected JS", {
   rect$follow_camera(lerp_x = 0.4, lerp_y = 0.5, round_pixels = TRUE)
   rect$stop_camera_follow()
   rect$set_scroll_factor(0.25, 0.75)
+  rect$set_depth(30)
 
   msgs <- vapply(session$get_messages(), function(m) m$message$js, character(1))
   expect_true(any(grepl("addImage\\('ground', 'ground.png', 10, 20, true, false\\);", msgs)))
@@ -39,6 +40,7 @@ test_that("Image and Rectangle methods send expected JS", {
   expect_true(any(grepl("followSpriteWithCamera\\('hitbox', 0.400000, 0.500000, true\\);", msgs)))
   expect_true(any(grepl("stopCameraFollow\\('hitbox'\\);", msgs)))
   expect_true(any(grepl("setScrollFactor\\('hitbox', 0.250000, 0.750000\\);", msgs)))
+  expect_true(any(grepl("setSpriteDepth\\('hitbox', 30.000000\\);", msgs)))
 })
 
 test_that("Group and StaticGroup methods send expected JS", {
@@ -407,8 +409,8 @@ test_that("dungeonheroes tree has a collidable base and foreground top", {
 
   expect_true(any(grepl('name = "dead_tree_1_bottom"', example, fixed = TRUE)))
   expect_true(any(grepl('name = "dead_tree_1_top"', example, fixed = TRUE)))
-  expect_true(any(grepl('url = "assets/dungeonheroes/terrain/ms/dead_tree_1_bottom.png"', example, fixed = TRUE)))
-  expect_true(any(grepl('url = "assets/dungeonheroes/terrain/ms/dead_tree_1_top.png"', example, fixed = TRUE)))
+  expect_true(any(grepl('url = "assets/dungeonheroes/terrain/mushroom_swamps/dead_tree_1_bottom.png"', example, fixed = TRUE)))
+  expect_true(any(grepl('url = "assets/dungeonheroes/terrain/mushroom_swamps/dead_tree_1_top.png"', example, fixed = TRUE)))
   expect_true(any(grepl("y = 650", example, fixed = TRUE)))
   expect_true(any(grepl('game$add_collider("hero", "dead_tree_1_bottom")', example, fixed = TRUE)))
   expect_false(any(grepl('game$add_collider("hero", "dead_tree_1_top")', example, fixed = TRUE)))
@@ -427,8 +429,14 @@ test_that("dungeonheroes can travel between mushroom swamps and magma hills", {
   )
 
   expect_true(any(grepl('"leave_map", "Leave map"', example, fixed = TRUE)))
-  expect_true(any(grepl('"choose_mushroom_swamps", "Mushroom swamps"', example, fixed = TRUE)))
-  expect_true(any(grepl('"choose_magma_hills", "Magma hills"', example, fixed = TRUE)))
+  expect_true(any(grepl("onclick = \"this.style.display = 'none';\"", example, fixed = TRUE)))
+  expect_true(any(grepl('name = "map_navigation_background"', example, fixed = TRUE)))
+  expect_true(any(grepl('name = "choose_mushroom_swamps"', example, fixed = TRUE)))
+  expect_true(any(grepl('name = "choose_magma_hills"', example, fixed = TRUE)))
+  expect_true(any(grepl('x = 1300, y = 700', example, fixed = TRUE)))
+  expect_true(any(grepl('mushroom_swamps_map_image$click(', example, fixed = TRUE)))
+  expect_true(any(grepl('magma_hills_map_image$click(', example, fixed = TRUE)))
+  expect_true(any(grepl('hero$set_depth(98)', example, fixed = TRUE)))
   expect_true(any(grepl('map_key = "magma_hills"', example, fixed = TRUE)))
   expect_true(any(grepl('game$activate_map(', example, fixed = TRUE)))
   expect_true(any(grepl('game$set_map_exit("mushroom_swamps", "hero", x = 100, y = 100)',

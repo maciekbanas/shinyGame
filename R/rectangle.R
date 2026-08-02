@@ -58,6 +58,13 @@ Rectangle <- R6::R6Class(
       js <- sprintf("setScrollFactor('%s', %f, %f);", private$name, x, y)
       send_js(private, js)
     },
+    #' @description Set the rectangle's rendering depth. Objects with a larger
+    #'   depth are rendered in front of objects with a smaller depth.
+    #' @param depth Numeric. Phaser rendering depth.
+    set_depth = function(depth) {
+      js <- sprintf("setSpriteDepth('%s', %f);", private$name, depth)
+      send_js(private, js)
+    },
     #' @description Add a click event listener to the rectangle that triggers an R
     #'  function when clicked.
     #' @param event_fun A function.

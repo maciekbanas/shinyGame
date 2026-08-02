@@ -54,27 +54,6 @@ ui <- shiny::tagList(
       cursor: pointer;
     }
 
-    #map_selector {
-      position: fixed;
-      inset: 0;
-      z-index: 9100;
-      display: none;
-      align-items: center;
-      justify-content: center;
-      gap: 28px;
-      background: #000;
-    }
-
-    #map_selector .map_button {
-      min-width: 260px;
-      padding: 22px 30px;
-      border: 2px solid #f9fafb;
-      border-radius: 8px;
-      background: #1f2937;
-      color: #f9fafb;
-      font: 700 22px sans-serif;
-      cursor: pointer;
-    }
   ")),
   htmltools::tags$div(
     id = "dungeonheroes_loader",
@@ -83,20 +62,7 @@ ui <- shiny::tagList(
   ),
   shiny::actionButton(
     "leave_map", "Leave map",
-    onclick = "document.getElementById('map_selector').style.display = 'flex';"
-  ),
-  htmltools::tags$div(
-    id = "map_selector",
-    shiny::actionButton(
-      "choose_mushroom_swamps", "Mushroom swamps",
-      class = "map_button",
-      onclick = "document.getElementById('map_selector').style.display = 'none';"
-    ),
-    shiny::actionButton(
-      "choose_magma_hills", "Magma hills",
-      class = "map_button",
-      onclick = "document.getElementById('map_selector').style.display = 'none';"
-    )
+    onclick = "this.style.display = 'none';"
   ),
   game$use_phaser(),
   htmltools::tags$script(htmltools::HTML("
@@ -294,31 +260,54 @@ server <- function(input, output, session) {
 
   game$set_world_bounds(world_width, world_height)
 
+  map_navigation_background <- game$add_rectangle(
+    name = "map_navigation_background",
+    x = 800, y = 400, width = 1600, height = 800,
+    color = "0x000000", visible = FALSE
+  )
+  mushroom_swamps_map_image <- game$add_image(
+    name = "choose_mushroom_swamps",
+    url = "assets/dungeonheroes/terrain/mushroom_swamps/mushroom_swamps_map.png",
+    x = 800, y = 400, visible = FALSE, clickable = TRUE
+  )
+  magma_hills_map_image <- game$add_image(
+    name = "choose_magma_hills",
+    url = "assets/dungeonheroes/terrain/magma_hills/magma_hills_map.png",
+    x = 1300, y = 700, visible = FALSE, clickable = TRUE
+  )
+  navigation_images <- list(
+    mushroom_swamps_map_image, magma_hills_map_image
+  )
+  map_navigation_background$set_scroll_factor(0)
+  map_navigation_background$set_depth(99)
+  lapply(navigation_images, function(image) image$set_scroll_factor(0))
+  lapply(navigation_images, function(image) image$set_depth(100))
+
   game$add_map(
     map_key = "mushroom_swamps",
     map_url = "assets/dungeonheroes/maps/mushroom_swamps.json",
     tileset_urls = c(
-      "assets/dungeonheroes/terrain/ms/mushroom_swamps_grass_1.png",
-      "assets/dungeonheroes/terrain/ms/mushroom_swamps_swamp_1.png",
-      "assets/dungeonheroes/terrain/ms/ms_bank_bottom.png",
-      "assets/dungeonheroes/terrain/ms/ms_bank_bottom_right.png",
-      "assets/dungeonheroes/terrain/ms/ms_bank_left.png",
-      "assets/dungeonheroes/terrain/ms/ms_bank_left_bottom.png",
-      "assets/dungeonheroes/terrain/ms/ms_bank_left_bottom_right.png",
-      "assets/dungeonheroes/terrain/ms/ms_bank_right.png",
-      "assets/dungeonheroes/terrain/ms/ms_bank_top_bottom_left_right.png",
-      "assets/dungeonheroes/terrain/ms/ms_bank_top_left.png",
-      "assets/dungeonheroes/terrain/ms/ms_bank_top_left_right.png",
-      "assets/dungeonheroes/terrain/ms/ms_bank_top_right.png",
-      "assets/dungeonheroes/terrain/ms/ms_bank_top.png",
-      "assets/dungeonheroes/terrain/ms/ms_bank_top_bottom.png",
-      "assets/dungeonheroes/terrain/ms/ms_bank_top_bottom_left.png",
-      "assets/dungeonheroes/terrain/ms/ms_bank_top_bottom_right.png",
-      "assets/dungeonheroes/terrain/ms/ms_bank_left_right.png",
-      "assets/dungeonheroes/terrain/ms/mushroom_swamps_grass_2.png",
-      "assets/dungeonheroes/terrain/ms/mushroom_swamps_grass_3.png",
-      "assets/dungeonheroes/terrain/ms/mushroom_swamps_grass_4.png",
-      "assets/dungeonheroes/terrain/ms/mushroom_swamps_grass_5.png"
+      "assets/dungeonheroes/terrain/mushroom_swamps/mushroom_swamps_grass_1.png",
+      "assets/dungeonheroes/terrain/mushroom_swamps/mushroom_swamps_swamp_1.png",
+      "assets/dungeonheroes/terrain/mushroom_swamps/ms_bank_bottom.png",
+      "assets/dungeonheroes/terrain/mushroom_swamps/ms_bank_bottom_right.png",
+      "assets/dungeonheroes/terrain/mushroom_swamps/ms_bank_left.png",
+      "assets/dungeonheroes/terrain/mushroom_swamps/ms_bank_left_bottom.png",
+      "assets/dungeonheroes/terrain/mushroom_swamps/ms_bank_left_bottom_right.png",
+      "assets/dungeonheroes/terrain/mushroom_swamps/ms_bank_right.png",
+      "assets/dungeonheroes/terrain/mushroom_swamps/ms_bank_top_bottom_left_right.png",
+      "assets/dungeonheroes/terrain/mushroom_swamps/ms_bank_top_left.png",
+      "assets/dungeonheroes/terrain/mushroom_swamps/ms_bank_top_left_right.png",
+      "assets/dungeonheroes/terrain/mushroom_swamps/ms_bank_top_right.png",
+      "assets/dungeonheroes/terrain/mushroom_swamps/ms_bank_top.png",
+      "assets/dungeonheroes/terrain/mushroom_swamps/ms_bank_top_bottom.png",
+      "assets/dungeonheroes/terrain/mushroom_swamps/ms_bank_top_bottom_left.png",
+      "assets/dungeonheroes/terrain/mushroom_swamps/ms_bank_top_bottom_right.png",
+      "assets/dungeonheroes/terrain/mushroom_swamps/ms_bank_left_right.png",
+      "assets/dungeonheroes/terrain/mushroom_swamps/mushroom_swamps_grass_2.png",
+      "assets/dungeonheroes/terrain/mushroom_swamps/mushroom_swamps_grass_3.png",
+      "assets/dungeonheroes/terrain/mushroom_swamps/mushroom_swamps_grass_4.png",
+      "assets/dungeonheroes/terrain/mushroom_swamps/mushroom_swamps_grass_5.png"
     ),
     tileset_names = c(
       "mushroom_swamps_grass_1",
@@ -644,7 +633,7 @@ server <- function(input, output, session) {
 
   dead_tree_bottom <- game$add_static_sprite(
     name = "dead_tree_1_bottom",
-    url = "assets/dungeonheroes/terrain/ms/dead_tree_1_bottom.png",
+    url = "assets/dungeonheroes/terrain/mushroom_swamps/dead_tree_1_bottom.png",
     x = 550,
     y = 650
   )
@@ -652,7 +641,7 @@ server <- function(input, output, session) {
 
   dead_tree_top <- game$add_image(
     name = "dead_tree_1_top",
-    url = "assets/dungeonheroes/terrain/ms/dead_tree_1_top.png",
+    url = "assets/dungeonheroes/terrain/mushroom_swamps/dead_tree_1_top.png",
     x = 550,
     y = 650 - map_tile_size
   )
@@ -862,16 +851,37 @@ server <- function(input, output, session) {
     "wizard", "mushroom_spirit"
   )
 
-  shiny::observeEvent(input$choose_mushroom_swamps, {
+  hide_map_navigation <- function() {
+    map_navigation_background$hide()
+    lapply(navigation_images, function(image) image$hide())
+    hero$set_depth(10)
+    session$sendCustomMessage(
+      "phaser",
+      list(js = "document.getElementById('leave_map').style.display = 'block';")
+    )
+  }
+
+  shiny::observeEvent(input$leave_map, {
+    map_navigation_background$show()
+    # Keep the player out of the realm navigation display by rendering it
+    # behind the opaque navigation background.
+    hero$set_depth(98)
+    mushroom_swamps_map_image$show()
+    magma_hills_map_image$show()
+  }, ignoreInit = TRUE)
+
+  choose_mushroom_swamps <- function(event) {
+    hide_map_navigation()
     game$activate_map(
       "mushroom_swamps", player_name = "hero", x = 100, y = 100,
       visible_objects = mushroom_swamps_objects
     )
     update_enemy_status()
     set_combat_status("Back in the mushroom swamps.")
-  }, ignoreInit = TRUE)
+  }
 
-  shiny::observeEvent(input$choose_magma_hills, {
+  choose_magma_hills <- function(event) {
+    hide_map_navigation()
     game$activate_map(
       # Magma hills has its own hill-top arrival point, separate from the
       # mushroom swamps entrance at (100, 100).
@@ -880,7 +890,10 @@ server <- function(input, output, session) {
     )
     enemy_status_text$set("enemies: none in magma hills")
     set_combat_status("Explore the hills. Lava is impassable.")
-  }, ignoreInit = TRUE)
+  }
+
+  mushroom_swamps_map_image$click(choose_mushroom_swamps, input)
+  magma_hills_map_image$click(choose_magma_hills, input)
 }
 
 
