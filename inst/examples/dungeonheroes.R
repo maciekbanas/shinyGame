@@ -107,7 +107,7 @@ ui <- shiny::tagList(
     }
 
     #choose_hero .character_portrait {
-      background-image: url('assets/dungeonheroes/sprites/hero_idle.png');
+      background-image: url('assets/dungeonheroes/sprites/hero_sword_idle.png');
     }
 
     #choose_orc .character_portrait {
@@ -125,6 +125,40 @@ ui <- shiny::tagList(
       margin-top: 7px;
       color: #bcb59e;
       font: 15px sans-serif;
+    }
+
+    #realm_character_marker {
+      position: fixed;
+      z-index: 8500;
+      display: none;
+      width: 100px;
+      height: 100px;
+      border: 3px solid #f5d98b;
+      border-radius: 50%;
+      background-repeat: no-repeat;
+      background-color: rgba(17, 24, 39, 0.88);
+      box-shadow: 0 4px 14px #000;
+      image-rendering: pixelated;
+      pointer-events: none;
+      transform: translate(-50%, -50%);
+    }
+
+    #realm_character_marker.human {
+      background-image: url('assets/dungeonheroes/sprites/hero_sword_idle.png');
+    }
+
+    #realm_character_marker.orc {
+      background-image: url('assets/dungeonheroes/sprites/hero_orc_idle.png');
+    }
+
+    #realm_character_marker.mushroom_swamps {
+      left: 50%;
+      top: 50%;
+    }
+
+    #realm_character_marker.magma_hills {
+      left: 81.25%;
+      top: 87.5%;
     }
 
     #leave_map {
@@ -170,6 +204,11 @@ ui <- shiny::tagList(
         htmltools::tags$span(class = "character_description", "Strength born of the wilds")
       )
     )
+  ),
+  htmltools::tags$div(
+    id = "realm_character_marker",
+    class = "mushroom_swamps",
+    `aria-hidden` = "true"
   ),
   shiny::actionButton(
     "leave_map", "Leave map",
@@ -240,13 +279,10 @@ server <- function(input, output, session) {
   )
   enemy_attack_cooldown <- 2
   enemy_in_range <- NULL
-  sword_in_range <- FALSE
   wizard_in_range <- FALSE
   berry_in_range <- NULL
-  has_sword <- FALSE
   hero_last_attack_time <- as.numeric(Sys.time()) - 1
   hero_attack_cooldown <- 0.75
-  hero_fist_damage <- 1
   hero_sword_damage <- 2
   health_bar_segment_count <- 10
   health_bar_segment_width <- 18
@@ -255,6 +291,7 @@ server <- function(input, output, session) {
   game_over_shown <- FALSE
   defeated_enemy_count <- 0
   selected_character <- NULL
+  current_realm <- "mushroom_swamps"
 
   enemy_animation_key <- function(enemy_name, suffix) {
     paste(enemy_name, suffix, sep = "_")
@@ -341,18 +378,14 @@ server <- function(input, output, session) {
     if (identical(selected_character, "hero_orc")) {
       return("hero_orc_idle")
     }
-    if (has_sword) {
-      return("hero_sword_idle")
-    }
-
-    "hero_idle"
+    "hero_sword_idle"
   }
 
   hero_attack_animation <- function() {
     if (identical(selected_character, "hero_orc")) {
       return("hero_orc_attack")
     }
-    if (has_sword) "hero_sword_attack" else "hero_attack"
+    "hero_sword_attack"
   }
 
   play_hero_idle_animation <- function() {
@@ -461,7 +494,7 @@ server <- function(input, output, session) {
   )
   hero <- game$add_sprite(
     name = "hero",
-    url = "assets/dungeonheroes/sprites/hero_idle.png",
+    url = "assets/dungeonheroes/sprites/hero_sword_idle.png",
     x = 100,
     y = 100,
     frame_width = 100,
@@ -510,21 +543,21 @@ server <- function(input, output, session) {
     suffix = "orc_idle",
     url = "assets/dungeonheroes/sprites/hero_orc_idle.png",
     frame_width = 100, frame_height = 100,
-    frame_count = 7, frame_rate = 4
+    frame_count = 29, frame_rate = 4
   )
   lapply(c("down", "up", "left", "right"), function(direction) {
     hero$add_animation(
       suffix = paste0("orc_move_", direction),
       url = sprintf("assets/dungeonheroes/sprites/hero_orc_move_%s.png", direction),
       frame_width = 100, frame_height = 100,
-      frame_count = 4, frame_rate = 8
+      frame_count = 6, frame_rate = 8
     )
   })
   hero$add_animation(
     suffix = "orc_attack",
     url = "assets/dungeonheroes/sprites/hero_orc_attack.png",
     frame_width = 100, frame_height = 100,
-    frame_count = 2, frame_rate = 4
+    frame_count = 3, frame_rate = 4
   )
 
   hero$add_animation(
@@ -652,16 +685,6 @@ server <- function(input, output, session) {
         return(invisible(NULL))
       }
 
-      if (sword_in_range && !has_sword) {
-        has_sword <<- TRUE
-        sword_in_range <<- FALSE
-        sword$destroy()
-        inventory_text$set("weapon: sword")
-        play_hero_idle_animation()
-        set_combat_status("You picked up the sword.")
-        return(invisible(NULL))
-      }
-
       if (wizard_in_range) {
         shinyalert::shinyalert(
           title = "Dear, oh dear. What are you doing here in these dark forests, lad?",
@@ -680,7 +703,7 @@ server <- function(input, output, session) {
       hero_attack_sound$play()
 
       if (!is.null(enemy_in_range) && isTRUE(enemy_is_alive[[enemy_in_range]])) {
-        damage <- if (has_sword) hero_sword_damage else hero_fist_damage
+        damage <- hero_sword_damage
         hero_animation <- hero_attack_animation()
         enemy_hit_points[[enemy_in_range]] <<- max(0, enemy_hit_points[[enemy_in_range]] - damage)
         play_hero_timed_animation(hero_animation)
@@ -712,7 +735,7 @@ server <- function(input, output, session) {
   )
 
   inventory_text <- game$add_text(
-    text = "weapon: none",
+    text = "weapon: sword",
     id = "inventory_weapon",
     x = 1200,
     y = 85
@@ -751,7 +774,7 @@ server <- function(input, output, session) {
   )
   enemy_status_text$set_scroll_factor(0)
   combat_status_text <- game$add_text(
-    text = "combat: find a weapon, then face the enemies",
+    text = "combat: face the enemies and protect the realms",
     id = "combat_status",
     x = 800,
     y = 660
@@ -783,21 +806,6 @@ server <- function(input, output, session) {
   dead_tree_top$set_depth(20)
 
   game$add_collider("hero", "dead_tree_1_bottom")
-
-  sword <- game$add_static_sprite(
-    name = "sword",
-    url = "assets/dungeonheroes/weapons/sword.png",
-    x = 300,
-    y = 300
-  )
-  game$add_overlap(
-    "hero", "sword", input = input,
-    server_action = function(event) sword_in_range <<- TRUE
-  )
-  game$add_overlap_end(
-    "hero", "sword", input = input, session = session,
-    server_action = function(event) sword_in_range <<- FALSE
-  )
 
   berry_specs <- list(
     berries_1 = c(x = 650, y = 650),
@@ -982,7 +990,7 @@ server <- function(input, output, session) {
 
   mushroom_swamps_objects <- c(
     enemy_names,
-    "dead_tree_1_bottom", "dead_tree_1_top", "sword", names(berries),
+    "dead_tree_1_bottom", "dead_tree_1_top", names(berries),
     "wizard", "mushroom_spirit"
   )
 
@@ -993,7 +1001,7 @@ server <- function(input, output, session) {
     session$sendCustomMessage(
       "phaser",
       list(js = paste(
-        "setRealmNavigationVisible(false);",
+        "setNavigationOverlayVisible(false);",
         "document.getElementById('leave_map').style.display = 'block';"
       ))
     )
@@ -1004,7 +1012,9 @@ server <- function(input, output, session) {
 
     selected_character <<- character
     hero$add_player_controls()
-    hero$set_player_animation_prefix(character)
+    animation_prefix <- if (identical(character, "hero_orc")) character else "hero_sword"
+    marker_character <- if (identical(character, "hero_orc")) "orc" else "human"
+    hero$set_player_animation_prefix(animation_prefix)
     map_navigation_background$show()
     hero$set_depth(98)
     mushroom_swamps_map_image$show()
@@ -1012,7 +1022,11 @@ server <- function(input, output, session) {
     session$sendCustomMessage(
       "phaser",
       list(js = paste(
-        "setRealmNavigationVisible(true);",
+        sprintf(
+          "document.getElementById('realm_character_marker').className = '%s %s';",
+          marker_character, current_realm
+        ),
+        "setNavigationOverlayVisible(true);",
         "document.getElementById('character_select').style.display = 'none';"
       ))
     )
@@ -1027,7 +1041,7 @@ server <- function(input, output, session) {
 
   shiny::observeEvent(input$leave_map, {
     session$sendCustomMessage(
-      "phaser", list(js = "setRealmNavigationVisible(true);")
+      "phaser", list(js = "setNavigationOverlayVisible(true);")
     )
     map_navigation_background$show()
     # Keep the player out of the realm navigation display by rendering it
@@ -1045,6 +1059,11 @@ server <- function(input, output, session) {
   }
 
   choose_mushroom_swamps <- function(event) {
+    current_realm <<- "mushroom_swamps"
+    session$sendCustomMessage(
+      "phaser",
+      list(js = "document.getElementById('realm_character_marker').classList.replace('magma_hills', 'mushroom_swamps');")
+    )
     hide_map_navigation()
     show_controls_alert()
     game$activate_map(
@@ -1056,6 +1075,11 @@ server <- function(input, output, session) {
   }
 
   choose_magma_hills <- function(event) {
+    current_realm <<- "magma_hills"
+    session$sendCustomMessage(
+      "phaser",
+      list(js = "document.getElementById('realm_character_marker').classList.replace('mushroom_swamps', 'magma_hills');")
+    )
     hide_map_navigation()
     show_controls_alert()
     game$activate_map(
