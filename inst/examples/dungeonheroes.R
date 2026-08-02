@@ -38,6 +38,95 @@ ui <- shiny::tagList(
       image-rendering: pixelated;
     }
 
+    #character_select {
+      position: fixed;
+      inset: 0;
+      z-index: 9500;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      gap: 28px;
+      overflow: hidden;
+      background:
+        radial-gradient(circle at 50% 35%, rgba(61, 81, 70, 0.9), transparent 38%),
+        linear-gradient(180deg, #17221e 0%, #080d0b 100%);
+      color: #f6e7bd;
+      font-family: Georgia, serif;
+    }
+
+    #character_select h1 {
+      margin: 0;
+      color: #f5d98b;
+      font-size: clamp(42px, 6vw, 76px);
+      letter-spacing: 0.08em;
+      text-shadow: 0 4px 0 #51351e, 0 8px 18px #000;
+    }
+
+    #character_select .select_prompt {
+      margin: -16px 0 4px;
+      color: #d8c9a3;
+      font: 600 22px sans-serif;
+      letter-spacing: 0.12em;
+      text-transform: uppercase;
+    }
+
+    #character_select .character_choices {
+      display: flex;
+      gap: clamp(24px, 6vw, 80px);
+    }
+
+    #character_select .character_choice {
+      width: 260px;
+      padding: 24px 20px 20px;
+      border: 3px solid #8f7140;
+      border-radius: 12px;
+      background: rgba(20, 27, 23, 0.94);
+      box-shadow: 0 10px 28px #000;
+      color: #f6e7bd;
+      cursor: pointer;
+      transition: transform 120ms ease, border-color 120ms ease, background 120ms ease;
+    }
+
+    #character_select .character_choice:hover,
+    #character_select .character_choice:focus-visible {
+      transform: translateY(-7px) scale(1.02);
+      border-color: #f5d98b;
+      background: #28352e;
+      outline: none;
+    }
+
+    #character_select .character_portrait {
+      display: block;
+      width: 100px;
+      height: 100px;
+      margin: 0 auto 16px;
+      background-repeat: no-repeat;
+      image-rendering: pixelated;
+      transform: scale(1.35);
+    }
+
+    #choose_hero .character_portrait {
+      background-image: url('assets/dungeonheroes/sprites/hero_idle.png');
+    }
+
+    #choose_orc .character_portrait {
+      background-image: url('assets/dungeonheroes/sprites/hero_orc_idle.png');
+    }
+
+    #character_select .character_name {
+      display: block;
+      font: 700 28px Georgia, serif;
+      letter-spacing: 0.05em;
+    }
+
+    #character_select .character_description {
+      display: block;
+      margin-top: 7px;
+      color: #bcb59e;
+      font: 15px sans-serif;
+    }
+
     #leave_map {
       position: fixed;
       display: none;
@@ -59,6 +148,28 @@ ui <- shiny::tagList(
     id = "dungeonheroes_loader",
     htmltools::tags$div(class = "skeleton_loader_sprite"),
     htmltools::tags$div("Loading dungeon heroes...")
+  ),
+  htmltools::tags$div(
+    id = "character_select",
+    htmltools::tags$h1("DUNGEON HEROES"),
+    htmltools::tags$p(class = "select_prompt", "Choose your champion"),
+    htmltools::tags$div(
+      class = "character_choices",
+      htmltools::tags$button(
+        id = "choose_hero", class = "character_choice action-button",
+        type = "button",
+        htmltools::tags$span(class = "character_portrait"),
+        htmltools::tags$span(class = "character_name", "Hero"),
+        htmltools::tags$span(class = "character_description", "Courage against the darkness")
+      ),
+      htmltools::tags$button(
+        id = "choose_orc", class = "character_choice action-button",
+        type = "button",
+        htmltools::tags$span(class = "character_portrait"),
+        htmltools::tags$span(class = "character_name", "Orc"),
+        htmltools::tags$span(class = "character_description", "Strength born of the wilds")
+      )
+    )
   ),
   shiny::actionButton(
     "leave_map", "Leave map",
@@ -143,13 +254,7 @@ server <- function(input, output, session) {
   health_bar_segment_gap <- 3
   game_over_shown <- FALSE
   defeated_enemy_count <- 0
-
-  session$onFlushed(function() {
-    shinyalert::shinyalert(
-      title = "Use Space to attack and interact",
-      type = "info"
-    )
-  }, once = TRUE)
+  selected_character <- NULL
 
   enemy_animation_key <- function(enemy_name, suffix) {
     paste(enemy_name, suffix, sep = "_")
@@ -233,11 +338,21 @@ server <- function(input, output, session) {
   }
 
   hero_idle_animation <- function() {
+    if (identical(selected_character, "hero_orc")) {
+      return("hero_orc_idle")
+    }
     if (has_sword) {
-      return("hero_sword")
+      return("hero_sword_idle")
     }
 
-    "hero"
+    "hero_idle"
+  }
+
+  hero_attack_animation <- function() {
+    if (identical(selected_character, "hero_orc")) {
+      return("hero_orc_attack")
+    }
+    if (has_sword) "hero_sword_attack" else "hero_attack"
   }
 
   play_hero_idle_animation <- function() {
@@ -354,7 +469,6 @@ server <- function(input, output, session) {
     frame_count = 7,
     frame_rate = 4
   )
-  hero$add_player_controls()
   hero$follow_camera()
   hero$set_depth(10)
   game$set_map_exit("mushroom_swamps", "hero", x = 100, y = 100)
@@ -388,6 +502,27 @@ server <- function(input, output, session) {
   hero$add_animation(
     suffix = "attack",
     url = "assets/dungeonheroes/sprites/hero_attack.png",
+    frame_width = 100, frame_height = 100,
+    frame_count = 2, frame_rate = 4
+  )
+
+  hero$add_animation(
+    suffix = "orc_idle",
+    url = "assets/dungeonheroes/sprites/hero_orc_idle.png",
+    frame_width = 100, frame_height = 100,
+    frame_count = 7, frame_rate = 4
+  )
+  lapply(c("down", "up", "left", "right"), function(direction) {
+    hero$add_animation(
+      suffix = paste0("orc_move_", direction),
+      url = sprintf("assets/dungeonheroes/sprites/hero_orc_move_%s.png", direction),
+      frame_width = 100, frame_height = 100,
+      frame_count = 4, frame_rate = 8
+    )
+  })
+  hero$add_animation(
+    suffix = "orc_attack",
+    url = "assets/dungeonheroes/sprites/hero_orc_attack.png",
     frame_width = 100, frame_height = 100,
     frame_count = 2, frame_rate = 4
   )
@@ -522,7 +657,7 @@ server <- function(input, output, session) {
         sword_in_range <<- FALSE
         sword$destroy()
         inventory_text$set("weapon: sword")
-        hero$play_animation("hero_sword")
+        play_hero_idle_animation()
         set_combat_status("You picked up the sword.")
         return(invisible(NULL))
       }
@@ -546,7 +681,7 @@ server <- function(input, output, session) {
 
       if (!is.null(enemy_in_range) && isTRUE(enemy_is_alive[[enemy_in_range]])) {
         damage <- if (has_sword) hero_sword_damage else hero_fist_damage
-        hero_animation <- if (has_sword) "hero_sword_attack" else "hero_attack"
+        hero_animation <- hero_attack_animation()
         enemy_hit_points[[enemy_in_range]] <<- max(0, enemy_hit_points[[enemy_in_range]] - damage)
         play_hero_timed_animation(hero_animation)
         set_combat_status(sprintf(
@@ -565,7 +700,7 @@ server <- function(input, output, session) {
         }
         update_enemy_status()
       } else {
-        play_hero_timed_animation(if (has_sword) "hero_sword_attack" else "hero_attack")
+        play_hero_timed_animation(hero_attack_animation())
       }
 
   }
@@ -860,6 +995,34 @@ server <- function(input, output, session) {
       list(js = "document.getElementById('leave_map').style.display = 'block';")
     )
   }
+
+  choose_character <- function(character) {
+    if (!is.null(selected_character)) return(invisible(NULL))
+
+    selected_character <<- character
+    hero$add_player_controls()
+    hero$set_player_animation_prefix(character)
+    play_hero_idle_animation()
+    map_navigation_background$show()
+    hero$set_depth(98)
+    mushroom_swamps_map_image$show()
+    magma_hills_map_image$show()
+    session$sendCustomMessage(
+      "phaser",
+      list(js = "document.getElementById('character_select').style.display = 'none';")
+    )
+    shinyalert::shinyalert(
+      title = "Use Space to attack and interact",
+      type = "info"
+    )
+  }
+
+  shiny::observeEvent(input$choose_hero, {
+    choose_character("hero")
+  }, ignoreInit = TRUE)
+  shiny::observeEvent(input$choose_orc, {
+    choose_character("hero_orc")
+  }, ignoreInit = TRUE)
 
   shiny::observeEvent(input$leave_map, {
     map_navigation_background$show()
