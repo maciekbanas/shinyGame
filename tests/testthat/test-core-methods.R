@@ -381,8 +381,13 @@ test_that("dungeonheroes Space action retains interactions and combat", {
     warn = FALSE
   )
 
-  expect_true(any(grepl("if (sword_in_range && !has_sword)", example, fixed = TRUE)))
-  expect_true(any(grepl('inventory_text$set("weapon: sword")', example, fixed = TRUE)))
+  expect_false(any(grepl("sword_in_range", example, fixed = TRUE)))
+  expect_true(any(grepl(
+    'weapon <- if (identical(character, "hero_orc")) "axe" else "sword"',
+    example,
+    fixed = TRUE
+  )))
+  expect_true(any(grepl('inventory_text$set(sprintf("weapon: %s", weapon))', example, fixed = TRUE)))
   expect_true(any(grepl("if (wizard_in_range)", example, fixed = TRUE)))
   expect_true(any(grepl("server_action = handle_space", example, fixed = TRUE)))
   expect_true(any(grepl("server_action", example, fixed = TRUE)))
@@ -488,7 +493,7 @@ test_that("recent movement selects four-way directional attack animations", {
   expect_true(any(grepl('rememberMovementDirection(sprite, "down", time)', game_js, fixed = TRUE)))
   expect_true(any(grepl('animationKey + "_" + direction', game_js, fixed = TRUE)))
   expect_true(any(grepl('forcedKey + "_" + movementSuffix', game_js, fixed = TRUE)))
-  expect_true(any(grepl("targetAnim !== name + '_idle'", game_js, fixed = TRUE)))
+  expect_true(any(grepl("targetAnim !== animationPrefix + '_idle'", game_js, fixed = TRUE)))
   expect_true(any(grepl('rememberMovementDirection(sprite, movementDirection, now)', sprite_js, fixed = TRUE)))
   expect_true(any(grepl('suffix = paste0("sword_attack_", direction)', example, fixed = TRUE)))
   expect_true(any(grepl('suffix = paste0("attack_", direction)', example, fixed = TRUE)))
