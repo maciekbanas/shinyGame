@@ -283,7 +283,7 @@ server <- function(input, output, session) {
   berry_in_range <- NULL
   hero_last_attack_time <- as.numeric(Sys.time()) - 1
   hero_attack_cooldown <- 0.75
-  hero_sword_damage <- 2
+  hero_weapon_damage <- 2
   health_bar_segment_count <- 10
   health_bar_segment_width <- 18
   health_bar_segment_height <- 14
@@ -374,13 +374,6 @@ server <- function(input, output, session) {
     enemy_status_text$set(paste("enemies:", paste(enemy_summaries, collapse = " | ")))
   }
 
-  hero_idle_animation <- function() {
-    if (identical(selected_character, "hero_orc")) {
-      return("hero_orc_idle")
-    }
-    "hero_sword_idle"
-  }
-
   hero_attack_animation <- function() {
     if (identical(selected_character, "hero_orc")) {
       return("hero_orc_attack")
@@ -388,19 +381,16 @@ server <- function(input, output, session) {
     "hero_sword_attack"
   }
 
-  play_hero_idle_animation <- function() {
-    hero$play_animation(hero_idle_animation())
+  hero_attack_duration <- function() {
+    # At four frames per second, the Orc needs 750 ms to display all three
+    # attack frames before player controls resume the movement animation.
+    if (identical(selected_character, "hero_orc")) 750 else 500
   }
 
-  play_hero_timed_animation <- function(animation_name, duration = 500) {
-    hero$play_animation(animation_name, duration = duration)
-    later::later(
-      function() {
-        if (life_points > 0) {
-          play_hero_idle_animation()
-        }
-      },
-      delay = duration / 1000
+  play_hero_attack_animation <- function() {
+    hero$play_animation(
+      hero_attack_animation(),
+      duration = hero_attack_duration()
     )
   }
 
@@ -703,10 +693,9 @@ server <- function(input, output, session) {
       hero_attack_sound$play()
 
       if (!is.null(enemy_in_range) && isTRUE(enemy_is_alive[[enemy_in_range]])) {
-        damage <- hero_sword_damage
-        hero_animation <- hero_attack_animation()
+        damage <- hero_weapon_damage
         enemy_hit_points[[enemy_in_range]] <<- max(0, enemy_hit_points[[enemy_in_range]] - damage)
-        play_hero_timed_animation(hero_animation)
+        play_hero_attack_animation()
         set_combat_status(sprintf(
           "You hit %s for %d. Enemy life: %d/%d",
           format_enemy_label(enemy_in_range), damage,
@@ -723,7 +712,7 @@ server <- function(input, output, session) {
         }
         update_enemy_status()
       } else {
-        play_hero_timed_animation(hero_attack_animation())
+        play_hero_attack_animation()
       }
 
   }
@@ -735,7 +724,7 @@ server <- function(input, output, session) {
   )
 
   inventory_text <- game$add_text(
-    text = "weapon: sword",
+    text = "weapon: waiting for character",
     id = "inventory_weapon",
     x = 1200,
     y = 85
@@ -1014,7 +1003,9 @@ server <- function(input, output, session) {
     hero$add_player_controls()
     animation_prefix <- if (identical(character, "hero_orc")) character else "hero_sword"
     marker_character <- if (identical(character, "hero_orc")) "orc" else "human"
+    weapon <- if (identical(character, "hero_orc")) "axe" else "sword"
     hero$set_player_animation_prefix(animation_prefix)
+    inventory_text$set(sprintf("weapon: %s", weapon))
     map_navigation_background$show()
     hero$set_depth(98)
     mushroom_swamps_map_image$show()
