@@ -871,7 +871,9 @@ server <- function(input, output, session) {
 
   shiny::observeEvent(input$leave_map, {
     map_navigation_background$show()
-    hero$set_depth(101)
+    # Keep the player out of the realm navigation display by rendering it
+    # behind the opaque navigation background.
+    hero$set_depth(98)
     if (identical(current_map, "mushroom_swamps")) {
       mushroom_swamps_map_image$show()
       magma_hills_map_image$show()
