@@ -28,6 +28,12 @@
   loading.
 * Added camera follow helpers for sprites, images, rectangles, static sprites, and text scene objects so the Phaser camera can move with scene objects.
 * Added `PhaserGame$set_world_bounds()` for configuring Phaser physics world and camera bounds from R.
+* Added runtime tilemap switching with `PhaserGame$activate_map()`. Multiple
+  maps registered with `PhaserGame$add_map()` are loaded in sequence, and map
+  activation updates terrain collision, camera and world bounds, the player
+  position, and map-specific scene-object visibility.
+* Added `PhaserGame$set_map_exit()` for showing a map-exit HTML control only
+  while a player is within a configurable distance of a map-specific exit.
 * Added `StaticSprite$destroy()` for removing static sprites from the Phaser scene.
 * Added `Sprite$stop_motion()` for immediately cancelling scripted sprite
   movement, including from `browser_actions()`.

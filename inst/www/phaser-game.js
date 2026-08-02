@@ -9,6 +9,15 @@ GameBridge.pendingCameraFollow = GameBridge.pendingCameraFollow || {};
 GameBridge.pendingScrollFactor = GameBridge.pendingScrollFactor || {};
 GameBridge.pendingWorldBounds = GameBridge.pendingWorldBounds || null;
 GameBridge.pendingTerrainColliders = GameBridge.pendingTerrainColliders || [];
+GameBridge.terrainColliderSprites = GameBridge.terrainColliderSprites || [];
+GameBridge.terrainColliders = GameBridge.terrainColliders || {};
+GameBridge.maps = GameBridge.maps || {};
+GameBridge.activeMapKey = GameBridge.activeMapKey || null;
+GameBridge.pendingActiveMap = GameBridge.pendingActiveMap || null;
+GameBridge.mapLoadQueue = GameBridge.mapLoadQueue || [];
+GameBridge.mapLoading = GameBridge.mapLoading || false;
+GameBridge.mapExits = GameBridge.mapExits || {};
+GameBridge.mapExitVisible = GameBridge.mapExitVisible || false;
 GameBridge.lastHeroOverlapState = GameBridge.lastHeroOverlapState || "";
 GameBridge.nextHeroOverlapSendAt = GameBridge.nextHeroOverlapSendAt || 0;
 GameBridge.sounds = GameBridge.sounds || {};
@@ -137,6 +146,7 @@ function initPhaserGame(containerId, config) {
   function update(time, delta) {
       applyPendingCameraFollows();
       applyPendingScrollFactors();
+      updateMapExitVisibility();
       sendHeroOverlapState(time);
 
       Object.entries(GameBridge.playerControls).forEach(([name, opts]) => {
@@ -358,6 +368,16 @@ function stopCameraFollow(name) {
 }
 
 function addMap(mapKey, mapUrl, tilesetUrls, tilesetNames, layerName) {
+  GameBridge.mapLoadQueue.push({ mapKey, mapUrl, tilesetUrls, tilesetNames, layerName });
+  loadNextMap();
+}
+
+function loadNextMap() {
+  if (GameBridge.mapLoading || GameBridge.mapLoadQueue.length === 0) return;
+  GameBridge.mapLoading = true;
+  const { mapKey, mapUrl, tilesetUrls, tilesetNames, layerName } =
+    GameBridge.mapLoadQueue.shift();
+
   scene.load.tilemapTiledJSON(mapKey, mapUrl);
   for (let i = 0; i < tilesetNames.length; i++) {
     scene.load.image(tilesetNames[i], tilesetUrls[i]);
@@ -376,26 +396,98 @@ function addMap(mapKey, mapUrl, tilesetUrls, tilesetNames, layerName) {
     const groundLayer = map.createLayer(layerName, phaserTilesets, 0, 0);
 
     groundLayer.setCollisionByProperty({ collides: true });
+    GameBridge.maps[mapKey] = { map, layer: groundLayer };
+    groundLayer.setVisible(false).setActive(false);
 
-    scene.physics.world.bounds.width  = map.widthInPixels;
-    scene.physics.world.bounds.height = map.heightInPixels;
-    scene.cameras.main.setBounds(0, 0, map.widthInPixels, map.heightInPixels);
-
-    scene.terrainLayer = groundLayer;
-    applyPendingTerrainColliders();
+    if (!GameBridge.activeMapKey) {
+      activateMap(mapKey);
+    } else if (GameBridge.pendingActiveMap?.mapKey === mapKey) {
+      activateMap(...GameBridge.pendingActiveMap.args);
+    }
+    GameBridge.mapLoading = false;
+    loadNextMap();
   });
 
   scene.load.start();
 }
 
+function activateMap(mapKey, playerName = null, x = null, y = null,
+                     visibleObjects = [], hiddenObjects = []) {
+  const mapEntry = GameBridge.maps[mapKey];
+  if (!mapEntry) {
+    GameBridge.pendingActiveMap = {
+      mapKey,
+      args: [mapKey, playerName, x, y, visibleObjects, hiddenObjects]
+    };
+    return;
+  }
+
+  Object.entries(GameBridge.maps).forEach(([key, entry]) => {
+    const active = key === mapKey;
+    entry.layer.setVisible(active).setActive(active);
+  });
+
+  GameBridge.activeMapKey = mapKey;
+  GameBridge.pendingActiveMap = null;
+  scene.terrainLayer = mapEntry.layer;
+  scene.physics.world.setBounds(0, 0, mapEntry.map.widthInPixels, mapEntry.map.heightInPixels);
+  scene.cameras.main.setBounds(0, 0, mapEntry.map.widthInPixels, mapEntry.map.heightInPixels);
+
+  [...visibleObjects.map((name) => [name, true]),
+   ...hiddenObjects.map((name) => [name, false])].forEach(([name, visible]) => {
+    const object = scene.children.getByName(name);
+    if (!object) return;
+    object.setVisible(visible).setActive(visible);
+    if (object.body) object.body.enable = visible;
+  });
+
+  const player = playerName && scene.children.getByName(playerName);
+  if (player && Number.isFinite(x) && Number.isFinite(y)) {
+    player.setPosition(x, y);
+    if (player.body) player.body.reset(x, y);
+  }
+
+  applyPendingTerrainColliders();
+  updateMapExitVisibility();
+}
+
+function setMapExit(mapKey, playerName, x, y, radius, elementId) {
+  GameBridge.mapExits[mapKey] = { playerName, x, y, radius, elementId };
+  updateMapExitVisibility();
+}
+
+function updateMapExitVisibility() {
+  const exit = GameBridge.mapExits[GameBridge.activeMapKey];
+  const player = exit && scene && scene.children.getByName(exit.playerName);
+  const nearby = Boolean(player && Phaser.Math.Distance.Between(
+    player.x, player.y, exit.x, exit.y
+  ) <= exit.radius);
+  const element = exit && document.getElementById(exit.elementId);
+
+  if (element && nearby !== GameBridge.mapExitVisible) {
+    element.style.display = nearby ? "block" : "none";
+  }
+  GameBridge.mapExitVisible = nearby;
+}
+
 function applyPendingTerrainColliders() {
   if (!scene || !scene.terrainLayer) return;
 
-  GameBridge.pendingTerrainColliders = GameBridge.pendingTerrainColliders.filter((spriteName) => {
+  GameBridge.pendingTerrainColliders.forEach((spriteName) => {
+    if (!GameBridge.terrainColliderSprites.includes(spriteName)) {
+      GameBridge.terrainColliderSprites.push(spriteName);
+    }
+  });
+  GameBridge.pendingTerrainColliders = [];
+
+  Object.values(GameBridge.terrainColliders).forEach((collider) => collider.destroy());
+  GameBridge.terrainColliders = {};
+  GameBridge.terrainColliderSprites.forEach((spriteName) => {
     const sprite = scene.children.getByName(spriteName);
-    if (!sprite) return true;
-    scene.physics.add.collider(sprite, scene.terrainLayer);
-    return false;
+    if (!sprite) return;
+    GameBridge.terrainColliders[spriteName] = scene.physics.add.collider(
+      sprite, scene.terrainLayer
+    );
   });
 }
 
@@ -407,7 +499,10 @@ function addPlayerTerrainCollider(spriteName) {
     }
     return;
   }
-  scene.physics.add.collider(sprite, scene.terrainLayer);
+  if (!GameBridge.terrainColliderSprites.includes(spriteName)) {
+    GameBridge.terrainColliderSprites.push(spriteName);
+  }
+  applyPendingTerrainColliders();
 }
 
 function addCollider(objectOneName, objectTwoName, inputId, browserActions = []) {

@@ -153,6 +153,45 @@ PhaserGame <- R6::R6Class(
       send_js(private, js)
     },
 
+    #' @description Activate a tilemap previously loaded with `add_map()`.
+    #' @param map_key Character. Key of the tilemap to activate.
+    #' @param player_name Character. Optional player sprite to reposition.
+    #' @param x Numeric. Optional player x-coordinate.
+    #' @param y Numeric. Optional player y-coordinate.
+    #' @param visible_objects Character vector. Scene objects to show and enable.
+    #' @param hidden_objects Character vector. Scene objects to hide and disable.
+    #' @return Invisible; sends a custom message to the client.
+    activate_map = function(map_key, player_name = NULL, x = NULL, y = NULL,
+                            visible_objects = character(), hidden_objects = character()) {
+      js_value <- function(value) jsonlite::toJSON(value, auto_unbox = TRUE, null = "null")
+      js <- sprintf(
+        "activateMap(%s, %s, %s, %s, %s, %s);",
+        js_value(map_key), js_value(player_name), js_value(x), js_value(y),
+        js_value(visible_objects), js_value(hidden_objects)
+      )
+      send_js(private, js)
+    },
+
+    #' @description Show a map-exit element while the player is near it.
+    #' @param map_key Character. Key of a tilemap loaded with `add_map()`.
+    #' @param player_name Character. Player sprite whose position is monitored.
+    #' @param x Numeric. Map-exit x-coordinate.
+    #' @param y Numeric. Map-exit y-coordinate.
+    #' @param radius Numeric. Maximum distance at which the exit is available.
+    #' @param element_id Character. ID of the HTML element to show near the exit.
+    #' @return Invisible; sends a custom message to the client.
+    set_map_exit = function(map_key, player_name, x, y, radius = 180,
+                            element_id = "leave_map") {
+      js <- sprintf(
+        "setMapExit(%s, %s, %f, %f, %f, %s);",
+        jsonlite::toJSON(map_key, auto_unbox = TRUE),
+        jsonlite::toJSON(player_name, auto_unbox = TRUE),
+        x, y, radius,
+        jsonlite::toJSON(element_id, auto_unbox = TRUE)
+      )
+      send_js(private, js)
+    },
+
     #' @description Set the Phaser physics world and camera bounds.
     #' @param width Numeric. World width in pixels.
     #' @param height Numeric. World height in pixels.

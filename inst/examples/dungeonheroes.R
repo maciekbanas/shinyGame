@@ -37,11 +37,66 @@ ui <- shiny::tagList(
       animation: dungeonheroes-skeleton-loader 1s steps(8) infinite;
       image-rendering: pixelated;
     }
+
+    #leave_map {
+      position: fixed;
+      display: none;
+      top: 18px;
+      left: 50%;
+      z-index: 9000;
+      transform: translateX(-50%);
+      padding: 12px 24px;
+      border: 2px solid #f9fafb;
+      border-radius: 6px;
+      background: #111827;
+      color: #f9fafb;
+      font: 700 18px sans-serif;
+      cursor: pointer;
+    }
+
+    #map_selector {
+      position: fixed;
+      inset: 0;
+      z-index: 9100;
+      display: none;
+      align-items: center;
+      justify-content: center;
+      gap: 28px;
+      background: #000;
+    }
+
+    #map_selector .map_button {
+      min-width: 260px;
+      padding: 22px 30px;
+      border: 2px solid #f9fafb;
+      border-radius: 8px;
+      background: #1f2937;
+      color: #f9fafb;
+      font: 700 22px sans-serif;
+      cursor: pointer;
+    }
   ")),
   htmltools::tags$div(
     id = "dungeonheroes_loader",
     htmltools::tags$div(class = "skeleton_loader_sprite"),
     htmltools::tags$div("Loading dungeon heroes...")
+  ),
+  shiny::actionButton(
+    "leave_map", "Leave map",
+    onclick = "document.getElementById('map_selector').style.display = 'flex';"
+  ),
+  htmltools::tags$div(
+    id = "map_selector",
+    shiny::actionButton(
+      "choose_mushroom_swamps", "Mushroom swamps",
+      class = "map_button",
+      onclick = "document.getElementById('map_selector').style.display = 'none';"
+    ),
+    shiny::actionButton(
+      "choose_magma_hills", "Magma hills",
+      class = "map_button",
+      onclick = "document.getElementById('map_selector').style.display = 'none';"
+    )
   ),
   game$use_phaser(),
   htmltools::tags$script(htmltools::HTML("
@@ -290,6 +345,16 @@ server <- function(input, output, session) {
     ),
     layer_name = "terrain"
   )
+  game$add_map(
+    map_key = "magma_hills",
+    map_url = "assets/dungeonheroes/maps/magma_hills.json",
+    tileset_urls = c(
+      "assets/dungeonheroes/terrain/magma_hills/hill_1.png",
+      "assets/dungeonheroes/terrain/magma_hills/lava_1.png"
+    ),
+    tileset_names = c("hill_1", "lava_1"),
+    layer_name = "terrain"
+  )
   hero <- game$add_sprite(
     name = "hero",
     url = "assets/dungeonheroes/sprites/hero_idle.png",
@@ -303,6 +368,8 @@ server <- function(input, output, session) {
   hero$add_player_controls()
   hero$follow_camera()
   hero$set_depth(10)
+  game$set_map_exit("mushroom_swamps", "hero", x = 100, y = 100)
+  game$set_map_exit("magma_hills", "hero", x = 1550, y = 650)
   Sys.sleep(0.1)
   game$enable_terrain_collision("hero")
   hero$add_animation(
@@ -788,6 +855,32 @@ server <- function(input, output, session) {
   }
 
   lapply(enemy_names, add_enemy_handlers)
+
+  mushroom_swamps_objects <- c(
+    enemy_names,
+    "dead_tree_1_bottom", "dead_tree_1_top", "sword", names(berries),
+    "wizard", "mushroom_spirit"
+  )
+
+  shiny::observeEvent(input$choose_mushroom_swamps, {
+    game$activate_map(
+      "mushroom_swamps", player_name = "hero", x = 100, y = 100,
+      visible_objects = mushroom_swamps_objects
+    )
+    update_enemy_status()
+    set_combat_status("Back in the mushroom swamps.")
+  }, ignoreInit = TRUE)
+
+  shiny::observeEvent(input$choose_magma_hills, {
+    game$activate_map(
+      # Magma hills has its own hill-top arrival point, separate from the
+      # mushroom swamps entrance at (100, 100).
+      "magma_hills", player_name = "hero", x = 1550, y = 650,
+      hidden_objects = c(mushroom_swamps_objects, "talk_bubble_text")
+    )
+    enemy_status_text$set("enemies: none in magma hills")
+    set_combat_status("Explore the hills. Lava is impassable.")
+  }, ignoreInit = TRUE)
 }
 
 
