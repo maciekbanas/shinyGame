@@ -23,9 +23,9 @@
 * Added `gravity_x` and `gravity_y` parameters to `PhaserGame$new()` for configuring Arcade Physics world gravity when a game is created.
 * Added sound support with `PhaserGame$add_sound()` and a new `Sound` API for loading, playing, pausing, resuming, stopping, and configuring audio.
 * Added `set_scroll_factor()` helpers for scene objects so HUD-style elements can stay fixed while the camera follows another target.
-* Added `set_depth()` helpers for sprites, static sprites, and images to control
-  their rendering order, including when depth is set before an asset finishes
-  loading.
+* Added `set_depth()` helpers for sprites, static sprites, images, and rectangles
+  to control their rendering order, including when depth is set before an asset
+  finishes loading.
 * Added camera follow helpers for sprites, images, rectangles, static sprites, and text scene objects so the Phaser camera can move with scene objects.
 * Added `PhaserGame$set_world_bounds()` for configuring Phaser physics world and camera bounds from R.
 * Added runtime tilemap switching with `PhaserGame$activate_map()`. Multiple
@@ -43,6 +43,8 @@
 ## Updates in examples
 * Added new arcade example game (bear).
 * Added new RPG game example (dungeonheroes).
+* Updated dungeonheroes realm navigation to use clickable map images on a
+  dedicated in-game navigation screen.
 * Updated the hedgehog examples so acknowledging a game-over dialog reloads the Shiny session and starts a fresh game instead of stopping the app.
 
 ## README
