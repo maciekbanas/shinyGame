@@ -259,6 +259,11 @@ server <- function(input, output, session) {
 
   game$set_world_bounds(world_width, world_height)
 
+  map_navigation_background <- game$add_rectangle(
+    name = "map_navigation_background",
+    x = 800, y = 400, width = 1600, height = 800,
+    color = "0x000000", visible = FALSE
+  )
   mushroom_swamps_map_image <- game$add_image(
     name = "choose_mushroom_swamps",
     url = "assets/dungeonheroes/terrain/ms/mushroom_swamps_map.png",
@@ -283,6 +288,8 @@ server <- function(input, output, session) {
     mushroom_swamps_map_image, magma_hills_map_image,
     mushroom_swamps_map_image_from_magma, magma_hills_map_image_current
   )
+  map_navigation_background$set_scroll_factor(0)
+  map_navigation_background$set_depth(99)
   lapply(navigation_images, function(image) image$set_scroll_factor(0))
   lapply(navigation_images, function(image) image$set_depth(100))
 
@@ -857,11 +864,13 @@ server <- function(input, output, session) {
   current_map <- "mushroom_swamps"
 
   hide_map_navigation <- function() {
+    map_navigation_background$hide()
     lapply(navigation_images, function(image) image$hide())
     hero$set_depth(10)
   }
 
   shiny::observeEvent(input$leave_map, {
+    map_navigation_background$show()
     hero$set_depth(101)
     if (identical(current_map, "mushroom_swamps")) {
       mushroom_swamps_map_image$show()
@@ -876,10 +885,7 @@ server <- function(input, output, session) {
     }
   }, ignoreInit = TRUE)
 
-  shiny::observeEvent(list(
-    input$choose_mushroom_swamps,
-    input$choose_mushroom_swamps_from_magma
-  ), {
+  choose_mushroom_swamps <- function(event) {
     hide_map_navigation()
     game$activate_map(
       "mushroom_swamps", player_name = "hero", x = 100, y = 100,
@@ -888,12 +894,9 @@ server <- function(input, output, session) {
     current_map <<- "mushroom_swamps"
     update_enemy_status()
     set_combat_status("Back in the mushroom swamps.")
-  }, ignoreInit = TRUE)
+  }
 
-  shiny::observeEvent(list(
-    input$choose_magma_hills,
-    input$choose_current_magma_hills
-  ), {
+  choose_magma_hills <- function(event) {
     hide_map_navigation()
     game$activate_map(
       # Magma hills has its own hill-top arrival point, separate from the
@@ -904,7 +907,12 @@ server <- function(input, output, session) {
     current_map <<- "magma_hills"
     enemy_status_text$set("enemies: none in magma hills")
     set_combat_status("Explore the hills. Lava is impassable.")
-  }, ignoreInit = TRUE)
+  }
+
+  mushroom_swamps_map_image$click(choose_mushroom_swamps, input)
+  mushroom_swamps_map_image_from_magma$click(choose_mushroom_swamps, input)
+  magma_hills_map_image$click(choose_magma_hills, input)
+  magma_hills_map_image_current$click(choose_magma_hills, input)
 }
 
 

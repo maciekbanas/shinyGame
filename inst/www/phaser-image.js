@@ -40,7 +40,8 @@ function clickImage(imageName) {
     console.log(imageName + ' clicked!');
     Shiny.setInputValue(
       imageName + '_click',
-      true
+      true,
+      { priority: 'event' }
     )
   });
 }
