@@ -54,27 +54,6 @@ ui <- shiny::tagList(
       cursor: pointer;
     }
 
-    #map_selector {
-      position: fixed;
-      inset: 0;
-      z-index: 9100;
-      display: none;
-      align-items: center;
-      justify-content: center;
-      gap: 28px;
-      background: #000;
-    }
-
-    #map_selector .map_button {
-      min-width: 260px;
-      padding: 22px 30px;
-      border: 2px solid #f9fafb;
-      border-radius: 8px;
-      background: #1f2937;
-      color: #f9fafb;
-      font: 700 22px sans-serif;
-      cursor: pointer;
-    }
   ")),
   htmltools::tags$div(
     id = "dungeonheroes_loader",
@@ -82,21 +61,7 @@ ui <- shiny::tagList(
     htmltools::tags$div("Loading dungeon heroes...")
   ),
   shiny::actionButton(
-    "leave_map", "Leave map",
-    onclick = "document.getElementById('map_selector').style.display = 'flex';"
-  ),
-  htmltools::tags$div(
-    id = "map_selector",
-    shiny::actionButton(
-      "choose_mushroom_swamps", "Mushroom swamps",
-      class = "map_button",
-      onclick = "document.getElementById('map_selector').style.display = 'none';"
-    ),
-    shiny::actionButton(
-      "choose_magma_hills", "Magma hills",
-      class = "map_button",
-      onclick = "document.getElementById('map_selector').style.display = 'none';"
-    )
+    "leave_map", "Leave map"
   ),
   game$use_phaser(),
   htmltools::tags$script(htmltools::HTML("
@@ -293,6 +258,33 @@ server <- function(input, output, session) {
   game$set_shiny_session()
 
   game$set_world_bounds(world_width, world_height)
+
+  mushroom_swamps_map_image <- game$add_image(
+    name = "choose_mushroom_swamps",
+    url = "assets/dungeonheroes/terrain/ms/mushroom_swamps_map.png",
+    x = 800, y = 400, visible = FALSE, clickable = TRUE
+  )
+  magma_hills_map_image <- game$add_image(
+    name = "choose_magma_hills",
+    url = "assets/dungeonheroes/terrain/magma_hills/magma_hills_map.png",
+    x = 950, y = 400, visible = FALSE, clickable = TRUE
+  )
+  mushroom_swamps_map_image_from_magma <- game$add_image(
+    name = "choose_mushroom_swamps_from_magma",
+    url = "assets/dungeonheroes/terrain/ms/mushroom_swamps_map.png",
+    x = 650, y = 400, visible = FALSE, clickable = TRUE
+  )
+  magma_hills_map_image_current <- game$add_image(
+    name = "choose_current_magma_hills",
+    url = "assets/dungeonheroes/terrain/magma_hills/magma_hills_map.png",
+    x = 800, y = 400, visible = FALSE, clickable = TRUE
+  )
+  navigation_images <- list(
+    mushroom_swamps_map_image, magma_hills_map_image,
+    mushroom_swamps_map_image_from_magma, magma_hills_map_image_current
+  )
+  lapply(navigation_images, function(image) image$set_scroll_factor(0))
+  lapply(navigation_images, function(image) image$set_depth(100))
 
   game$add_map(
     map_key = "mushroom_swamps",
@@ -862,22 +854,54 @@ server <- function(input, output, session) {
     "wizard", "mushroom_spirit"
   )
 
-  shiny::observeEvent(input$choose_mushroom_swamps, {
+  current_map <- "mushroom_swamps"
+
+  hide_map_navigation <- function() {
+    lapply(navigation_images, function(image) image$hide())
+    hero$set_depth(10)
+  }
+
+  shiny::observeEvent(input$leave_map, {
+    hero$set_depth(101)
+    if (identical(current_map, "mushroom_swamps")) {
+      mushroom_swamps_map_image$show()
+      magma_hills_map_image$show()
+      mushroom_swamps_map_image_from_magma$hide()
+      magma_hills_map_image_current$hide()
+    } else {
+      mushroom_swamps_map_image$hide()
+      magma_hills_map_image$hide()
+      mushroom_swamps_map_image_from_magma$show()
+      magma_hills_map_image_current$show()
+    }
+  }, ignoreInit = TRUE)
+
+  shiny::observeEvent(list(
+    input$choose_mushroom_swamps,
+    input$choose_mushroom_swamps_from_magma
+  ), {
+    hide_map_navigation()
     game$activate_map(
       "mushroom_swamps", player_name = "hero", x = 100, y = 100,
       visible_objects = mushroom_swamps_objects
     )
+    current_map <<- "mushroom_swamps"
     update_enemy_status()
     set_combat_status("Back in the mushroom swamps.")
   }, ignoreInit = TRUE)
 
-  shiny::observeEvent(input$choose_magma_hills, {
+  shiny::observeEvent(list(
+    input$choose_magma_hills,
+    input$choose_current_magma_hills
+  ), {
+    hide_map_navigation()
     game$activate_map(
       # Magma hills has its own hill-top arrival point, separate from the
       # mushroom swamps entrance at (100, 100).
       "magma_hills", player_name = "hero", x = 1550, y = 650,
       hidden_objects = c(mushroom_swamps_objects, "talk_bubble_text")
     )
+    current_map <<- "magma_hills"
     enemy_status_text$set("enemies: none in magma hills")
     set_combat_status("Explore the hills. Lava is impassable.")
   }, ignoreInit = TRUE)
