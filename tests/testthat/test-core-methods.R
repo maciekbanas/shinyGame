@@ -383,7 +383,7 @@ test_that("dungeonheroes Space action retains interactions and combat", {
 
   expect_false(any(grepl("sword_in_range", example, fixed = TRUE)))
   expect_true(any(grepl(
-    'weapon <- if (identical(character, "hero_orc")) "axe" else "sword"',
+    'weapon <- switch(character, hero_orc = "axe", hero_elf = "bow", "sword")',
     example,
     fixed = TRUE
   )))
@@ -455,6 +455,36 @@ test_that("dungeonheroes can travel between mushroom swamps and magma hills", {
                    c("hill_1", "lava_1"))
   expect_true(magma_map$tilesets[[2]]$tiles[[1]]$properties[[1]]$value)
   expect_true(all(unlist(magma_map$layers[[1]]$data) %in% c(1L, 2L)))
+})
+
+test_that("dungeonheroes includes the elf and new western realms", {
+  example <- readLines(
+    system.file("examples", "dungeonheroes.R", package = "shinyphaser"),
+    warn = FALSE
+  )
+  wild_map <- jsonlite::read_json(
+    system.file("assets", "dungeonheroes", "maps", "wild_forests.json",
+                package = "shinyphaser"),
+    simplifyVector = FALSE
+  )
+  grey_map <- jsonlite::read_json(
+    system.file("assets", "dungeonheroes", "maps", "grey_mountains.json",
+                package = "shinyphaser"),
+    simplifyVector = FALSE
+  )
+
+  expect_true(any(grepl('class = "character_name", "Elf Ranger"', example, fixed = TRUE)))
+  expect_true(any(grepl('suffix = "elf_idle"', example, fixed = TRUE)))
+  expect_true(any(grepl('choose_character("hero_elf")', example, fixed = TRUE)))
+  expect_true(any(grepl('name = "choose_wild_forests"', example, fixed = TRUE)))
+  expect_true(any(grepl('name = "choose_grey_mountains"', example, fixed = TRUE)))
+  expect_true(any(grepl('x = 300, y = 400', example, fixed = TRUE)))
+  expect_true(any(grepl('x = 300, y = 700', example, fixed = TRUE)))
+  expect_identical(vapply(wild_map$tilesets, `[[`, character(1), "name"),
+                   sprintf("grass_%d", 1:5))
+  expect_identical(vapply(grey_map$tilesets, `[[`, character(1), "name"), "hill_1")
+  expect_length(wild_map$layers[[1]]$data, 32 * 64)
+  expect_length(grey_map$layers[[1]]$data, 32 * 64)
 })
 
 test_that("sight approach does not restart active movement or hide alerts", {

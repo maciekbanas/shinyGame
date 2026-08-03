@@ -114,6 +114,10 @@ ui <- shiny::tagList(
       background-image: url('assets/dungeonheroes/sprites/hero_orc_idle.png');
     }
 
+    #choose_elf .character_portrait {
+      background-image: url('assets/dungeonheroes/sprites/hero_elf_idle.png');
+    }
+
     #character_select .character_name {
       display: block;
       font: 700 28px Georgia, serif;
@@ -151,6 +155,10 @@ ui <- shiny::tagList(
       background-image: url('assets/dungeonheroes/sprites/hero_orc_idle.png');
     }
 
+    #realm_character_marker.elf {
+      background-image: url('assets/dungeonheroes/sprites/hero_elf_idle.png');
+    }
+
     #realm_character_marker.mushroom_swamps {
       left: 50%;
       top: 50%;
@@ -158,6 +166,16 @@ ui <- shiny::tagList(
 
     #realm_character_marker.magma_hills {
       left: 81.25%;
+      top: 87.5%;
+    }
+
+    #realm_character_marker.wild_forests {
+      left: 18.75%;
+      top: 50%;
+    }
+
+    #realm_character_marker.grey_mountains {
+      left: 18.75%;
       top: 87.5%;
     }
 
@@ -265,6 +283,13 @@ ui <- shiny::tagList(
         htmltools::tags$span(class = "character_portrait"),
         htmltools::tags$span(class = "character_name", "Orc"),
         htmltools::tags$span(class = "character_description", "Strength born of the wilds")
+      ),
+      htmltools::tags$button(
+        id = "choose_elf", class = "character_choice action-button",
+        type = "button",
+        htmltools::tags$span(class = "character_portrait"),
+        htmltools::tags$span(class = "character_name", "Elf Ranger"),
+        htmltools::tags$span(class = "character_description", "Fleet guardian of the forest")
       )
     )
   ),
@@ -507,6 +532,9 @@ server <- function(input, output, session) {
     if (identical(selected_character, "hero_orc")) {
       return("hero_orc_attack")
     }
+    if (identical(selected_character, "hero_elf")) {
+      return("hero_elf_idle")
+    }
     "hero_sword_attack"
   }
 
@@ -537,13 +565,24 @@ server <- function(input, output, session) {
     url = "assets/dungeonheroes/terrain/mushroom_swamps/mushroom_swamps_map.png",
     x = 800, y = 400, visible = FALSE, clickable = TRUE
   )
+  wild_forests_map_image <- game$add_image(
+    name = "choose_wild_forests",
+    url = "assets/dungeonheroes/terrain/wild_forests/wild_forests_map.png",
+    x = 300, y = 400, visible = FALSE, clickable = TRUE
+  )
+  grey_mountains_map_image <- game$add_image(
+    name = "choose_grey_mountains",
+    url = "assets/dungeonheroes/terrain/grey_mountains/grey_mountains_map.png",
+    x = 300, y = 700, visible = FALSE, clickable = TRUE
+  )
   magma_hills_map_image <- game$add_image(
     name = "choose_magma_hills",
     url = "assets/dungeonheroes/terrain/magma_hills/magma_hills_map.png",
     x = 1300, y = 700, visible = FALSE, clickable = TRUE
   )
   navigation_images <- list(
-    mushroom_swamps_map_image, magma_hills_map_image
+    wild_forests_map_image, mushroom_swamps_map_image,
+    grey_mountains_map_image, magma_hills_map_image
   )
   map_navigation_background$set_scroll_factor(0)
   map_navigation_background$set_depth(99)
@@ -611,6 +650,22 @@ server <- function(input, output, session) {
     tileset_names = c("hill_1", "lava_1"),
     layer_name = "terrain"
   )
+  game$add_map(
+    map_key = "wild_forests",
+    map_url = "assets/dungeonheroes/maps/wild_forests.json",
+    tileset_urls = sprintf(
+      "assets/dungeonheroes/terrain/wild_forests/grass_%d.png", 1:5
+    ),
+    tileset_names = sprintf("grass_%d", 1:5),
+    layer_name = "terrain"
+  )
+  game$add_map(
+    map_key = "grey_mountains",
+    map_url = "assets/dungeonheroes/maps/grey_mountains.json",
+    tileset_urls = "assets/dungeonheroes/terrain/grey_mountains/hill_1.png",
+    tileset_names = "hill_1",
+    layer_name = "terrain"
+  )
   hero <- game$add_sprite(
     name = "hero",
     url = "assets/dungeonheroes/sprites/hero_sword_idle.png",
@@ -625,6 +680,8 @@ server <- function(input, output, session) {
   hero$set_depth(10)
   game$set_map_exit("mushroom_swamps", "hero", x = 100, y = 100)
   game$set_map_exit("magma_hills", "hero", x = 1550, y = 650)
+  game$set_map_exit("wild_forests", "hero", x = 100, y = 100)
+  game$set_map_exit("grey_mountains", "hero", x = 100, y = 100)
   Sys.sleep(0.1)
   game$enable_terrain_collision("hero")
   hero$add_animation(
@@ -678,6 +735,22 @@ server <- function(input, output, session) {
     frame_width = 100, frame_height = 100,
     frame_count = 3, frame_rate = 4
   )
+
+  hero$add_animation(
+    suffix = "elf_idle",
+    url = "assets/dungeonheroes/sprites/hero_elf_idle.png",
+    frame_width = 100, frame_height = 100,
+    frame_count = 25, frame_rate = 4
+  )
+  lapply(c("down", "left", "right", "up"), function(direction) {
+    source_direction <- if (direction %in% c("up", "down")) direction else "down"
+    hero$add_animation(
+      suffix = paste0("elf_move_", direction),
+      url = sprintf("assets/dungeonheroes/sprites/hero_elf_move_%s.png", source_direction),
+      frame_width = 100, frame_height = 100,
+      frame_count = 4, frame_rate = 8
+    )
+  })
 
   hero$add_animation(
     suffix = "sword_idle",
@@ -1130,15 +1203,18 @@ server <- function(input, output, session) {
 
     selected_character <<- character
     hero$add_player_controls()
-    animation_prefix <- if (identical(character, "hero_orc")) character else "hero_sword"
-    marker_character <- if (identical(character, "hero_orc")) "orc" else "human"
-    weapon <- if (identical(character, "hero_orc")) "axe" else "sword"
+    animation_prefix <- switch(character,
+      hero_orc = "hero_orc", hero_elf = "hero_elf", "hero_sword"
+    )
+    marker_character <- switch(character,
+      hero_orc = "orc", hero_elf = "elf", "human"
+    )
+    weapon <- switch(character, hero_orc = "axe", hero_elf = "bow", "sword")
     hero$set_player_animation_prefix(animation_prefix)
     inventory_text$set(sprintf("weapon: %s", weapon))
     map_navigation_background$show()
     hero$set_depth(98)
-    mushroom_swamps_map_image$show()
-    magma_hills_map_image$show()
+    lapply(navigation_images, function(image) image$show())
     session$sendCustomMessage(
       "phaser",
       list(js = paste(
@@ -1169,6 +1245,9 @@ server <- function(input, output, session) {
   }, ignoreInit = TRUE)
   shiny::observeEvent(input$choose_orc, {
     choose_character("hero_orc")
+  }, ignoreInit = TRUE)
+  shiny::observeEvent(input$choose_elf, {
+    choose_character("hero_elf")
   }, ignoreInit = TRUE)
 
   send_saved_games <- function() {
@@ -1202,10 +1281,11 @@ server <- function(input, output, session) {
 
   shiny::observeEvent(input$load_game, {
     save <- game$load_game(input$load_game$name, restore = FALSE)
-    if (is.null(save$character) || !save$character %in% c("hero", "hero_orc")) return()
+    if (is.null(save$character) || !save$character %in% c("hero", "hero_orc", "hero_elf")) return()
 
     choose_character(save$character)
-    current_realm <<- if (identical(save$realm, "magma_hills")) "magma_hills" else "mushroom_swamps"
+    available_realms <- c("mushroom_swamps", "wild_forests", "grey_mountains", "magma_hills")
+    current_realm <<- if (save$realm %in% available_realms) save$realm else "mushroom_swamps"
     life_points <<- max(0, min(max_life_points, as.numeric(save$lifePoints %||% max_life_points)))
     update_life_points()
 
@@ -1220,7 +1300,9 @@ server <- function(input, output, session) {
     berry_is_available[common_berries] <<- as.logical(saved_berries[common_berries])
     update_enemy_status()
 
-    marker_character <- if (identical(save$character, "hero_orc")) "orc" else "human"
+    marker_character <- switch(save$character,
+      hero_orc = "orc", hero_elf = "elf", "human"
+    )
     saved_hero <- save$phaser$objects$hero %||% list()
     x <- as.numeric(saved_hero$x %||% 100)
     y <- as.numeric(saved_hero$y %||% 100)
@@ -1248,7 +1330,7 @@ server <- function(input, output, session) {
       available_objects <- c(enemy_names[enemy_is_alive], names(berries)[berry_is_available], persistent_objects)
       unavailable_objects <- c(enemy_names[!enemy_is_alive], names(berries)[!berry_is_available])
       visible <- if (identical(current_realm, "mushroom_swamps")) available_objects else character()
-      hidden <- if (identical(current_realm, "magma_hills")) {
+      hidden <- if (!identical(current_realm, "mushroom_swamps")) {
         c(mushroom_swamps_objects, "talk_bubble_text")
       } else {
         unavailable_objects
@@ -1266,8 +1348,7 @@ server <- function(input, output, session) {
     # Keep the player out of the realm navigation display by rendering it
     # behind the opaque navigation background.
     hero$set_depth(98)
-    mushroom_swamps_map_image$show()
-    magma_hills_map_image$show()
+    lapply(navigation_images, function(image) image$show())
   }, ignoreInit = TRUE)
 
   show_controls_alert <- function() {
@@ -1277,12 +1358,23 @@ server <- function(input, output, session) {
     )
   }
 
-  choose_mushroom_swamps <- function(event) {
-    current_realm <<- "mushroom_swamps"
+  move_realm_marker <- function(realm) {
     session$sendCustomMessage(
       "phaser",
-      list(js = "document.getElementById('realm_character_marker').classList.replace('magma_hills', 'mushroom_swamps');")
+      list(js = sprintf(
+        paste0(
+          "document.getElementById('realm_character_marker').classList.remove(",
+          "'mushroom_swamps','wild_forests','grey_mountains','magma_hills');",
+          "document.getElementById('realm_character_marker').classList.add(%s);"
+        ),
+        jsonlite::toJSON(realm, auto_unbox = TRUE)
+      ))
     )
+  }
+
+  choose_mushroom_swamps <- function(event) {
+    current_realm <<- "mushroom_swamps"
+    move_realm_marker(current_realm)
     hide_map_navigation()
     show_controls_alert()
     game$activate_map(
@@ -1295,10 +1387,7 @@ server <- function(input, output, session) {
 
   choose_magma_hills <- function(event) {
     current_realm <<- "magma_hills"
-    session$sendCustomMessage(
-      "phaser",
-      list(js = "document.getElementById('realm_character_marker').classList.replace('mushroom_swamps', 'magma_hills');")
-    )
+    move_realm_marker(current_realm)
     hide_map_navigation()
     show_controls_alert()
     game$activate_map(
@@ -1311,7 +1400,35 @@ server <- function(input, output, session) {
     set_combat_status("Explore the hills. Lava is impassable.")
   }
 
+  choose_wild_forests <- function(event) {
+    current_realm <<- "wild_forests"
+    move_realm_marker(current_realm)
+    hide_map_navigation()
+    show_controls_alert()
+    game$activate_map(
+      current_realm, player_name = "hero", x = 100, y = 100,
+      hidden_objects = c(mushroom_swamps_objects, "talk_bubble_text")
+    )
+    enemy_status_text$set("enemies: none in wild forests")
+    set_combat_status("Explore the wild forests.")
+  }
+
+  choose_grey_mountains <- function(event) {
+    current_realm <<- "grey_mountains"
+    move_realm_marker(current_realm)
+    hide_map_navigation()
+    show_controls_alert()
+    game$activate_map(
+      current_realm, player_name = "hero", x = 100, y = 100,
+      hidden_objects = c(mushroom_swamps_objects, "talk_bubble_text")
+    )
+    enemy_status_text$set("enemies: none in grey mountains")
+    set_combat_status("Explore the grey mountains.")
+  }
+
+  wild_forests_map_image$click(choose_wild_forests, input)
   mushroom_swamps_map_image$click(choose_mushroom_swamps, input)
+  grey_mountains_map_image$click(choose_grey_mountains, input)
   magma_hills_map_image$click(choose_magma_hills, input)
 }
 
