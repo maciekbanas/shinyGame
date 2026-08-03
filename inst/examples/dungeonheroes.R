@@ -217,8 +217,11 @@ ui <- shiny::tagList(
     #saved_games .empty_save { color: #bcb59e; font-family: sans-serif; }
     #save_game_dialog { z-index: 9700; display: none; background: rgba(0, 0, 0, .72); }
     #save_game_actions { display: flex; gap: 12px; }
-    #save_game {
+    #game_session_actions {
       position: fixed; right: 22px; top: 18px; z-index: 9000; display: none;
+      gap: 10px;
+    }
+    #game_session_actions .game_menu_button {
       width: auto; margin: 0; padding: 11px 20px;
     }
 
@@ -269,7 +272,11 @@ ui <- shiny::tagList(
     "leave_map", "Leave map",
     onclick = "this.style.display = 'none';"
   ),
-  htmltools::tags$button(id = "save_game", class = "game_menu_button", type = "button", "Save game"),
+  htmltools::tags$div(
+    id = "game_session_actions",
+    htmltools::tags$button(id = "save_game", class = "game_menu_button", type = "button", "Save game"),
+    htmltools::tags$button(id = "exit_game", class = "game_menu_button", type = "button", "Exit")
+  ),
   htmltools::tags$div(
     id = "save_game_dialog",
     htmltools::tags$div(
@@ -310,6 +317,7 @@ ui <- shiny::tagList(
       document.addEventListener('DOMContentLoaded', function() {
         document.getElementById('show_load_game').onclick = function() { var h = document.getElementById('saved_games'); h.style.display = 'block'; renderSaves(); };
         document.getElementById('save_game').onclick = function() { var d = document.getElementById('save_game_dialog'); d.style.display = 'flex'; document.getElementById('save_game_name').focus(); };
+        document.getElementById('exit_game').onclick = function() { window.location.reload(); };
         document.getElementById('cancel_save_game').onclick = function() { document.getElementById('save_game_dialog').style.display = 'none'; };
         document.getElementById('confirm_save_game').onclick = function() {
           var name = document.getElementById('save_game_name').value.trim();
@@ -1123,7 +1131,7 @@ server <- function(input, output, session) {
         "setNavigationOverlayVisible(true);",
         "document.getElementById('character_select').style.display = 'none';",
         "document.getElementById('game_start').style.display = 'none';",
-        "document.getElementById('save_game').style.display = 'block';"
+        "document.getElementById('game_session_actions').style.display = 'flex';"
       ))
     )
   }
@@ -1199,7 +1207,7 @@ server <- function(input, output, session) {
         paste(
           "document.getElementById('realm_character_marker').className = %s + ' ' + %s;",
           "document.getElementById('game_start').style.display = 'none';",
-          "document.getElementById('save_game').style.display = 'block';"
+          "document.getElementById('game_session_actions').style.display = 'flex';"
         ),
         jsonlite::toJSON(marker_character, auto_unbox = TRUE),
         jsonlite::toJSON(current_realm, auto_unbox = TRUE)
