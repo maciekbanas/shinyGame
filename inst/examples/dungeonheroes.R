@@ -218,12 +218,17 @@ ui <- shiny::tagList(
     #save_game_dialog { z-index: 9700; display: none; background: rgba(0, 0, 0, .72); }
     #save_game_actions { display: flex; gap: 12px; }
     #game_session_actions {
-      position: fixed; right: 22px; top: 18px; z-index: 9000; display: none;
-      gap: 10px;
+      position: fixed; left: 18px; top: 18px; z-index: 9000; display: none;
     }
     #game_session_actions .game_menu_button {
       width: auto; margin: 0; padding: 11px 20px;
     }
+    #game_session_menu {
+      display: none; width: 190px; margin-top: 8px; padding: 8px;
+      border: 2px solid #8f7140; border-radius: 6px;
+      background: rgba(15, 22, 18, .96); box-shadow: 0 8px 24px #000;
+    }
+    #game_session_menu .game_menu_button { width: 100%; margin-top: 6px; }
 
   ")),
   htmltools::tags$div(
@@ -274,8 +279,13 @@ ui <- shiny::tagList(
   ),
   htmltools::tags$div(
     id = "game_session_actions",
-    htmltools::tags$button(id = "save_game", class = "game_menu_button", type = "button", "Save game"),
-    htmltools::tags$button(id = "exit_game", class = "game_menu_button", type = "button", "Exit")
+    htmltools::tags$button(id = "toggle_game_menu", class = "game_menu_button", type = "button",
+                          `aria-expanded` = "false", "Menu"),
+    htmltools::tags$div(
+      id = "game_session_menu",
+      htmltools::tags$button(id = "save_game", class = "game_menu_button", type = "button", "Save game"),
+      htmltools::tags$button(id = "exit_game", class = "game_menu_button", type = "button", "Exit")
+    )
   ),
   htmltools::tags$div(
     id = "save_game_dialog",
@@ -294,41 +304,44 @@ ui <- shiny::tagList(
   game$use_phaser(),
   htmltools::tags$script(htmltools::HTML("
     (function() {
-      var storageKey = 'dungeonheroes.savedGames.v1';
-      function saves() { try { return JSON.parse(localStorage.getItem(storageKey)) || []; } catch (e) { return []; } }
-      function renderSaves() {
+      function renderSaves(items) {
         var host = document.getElementById('saved_games');
-        var items = saves();
         host.innerHTML = '';
         if (!items.length) { host.innerHTML = '<p class=\"empty_save\">No saved games yet.</p>'; return; }
-        items.sort(function(a, b) { return b.savedAt.localeCompare(a.savedAt); }).forEach(function(save) {
+        items.forEach(function(save) {
           var button = document.createElement('button');
           button.type = 'button'; button.className = 'game_menu_button';
           button.textContent = save.name + ' — ' + new Date(save.savedAt).toLocaleString();
-          button.onclick = function() { Shiny.setInputValue('load_game', save, {priority: 'event'}); };
+          button.onclick = function() { Shiny.setInputValue('load_game', {name: save.name, nonce: Date.now()}, {priority: 'event'}); };
           host.appendChild(button);
         });
       }
-      window.storeDungeonHeroesSave = function(save) {
-        var items = saves().filter(function(item) { return item.name !== save.name; });
-        items.push(save); localStorage.setItem(storageKey, JSON.stringify(items));
-        document.getElementById('save_game_dialog').style.display = 'none'; renderSaves();
-      };
+      window.renderDungeonHeroesSaves = renderSaves;
+      window.addEventListener('shinyphaser:saved', function() {
+        document.getElementById('save_game_dialog').style.display = 'none';
+        Shiny.setInputValue('list_saved_games', Date.now(), {priority: 'event'});
+      });
       document.addEventListener('DOMContentLoaded', function() {
-        document.getElementById('show_load_game').onclick = function() { var h = document.getElementById('saved_games'); h.style.display = 'block'; renderSaves(); };
-        document.getElementById('save_game').onclick = function() { var d = document.getElementById('save_game_dialog'); d.style.display = 'flex'; document.getElementById('save_game_name').focus(); };
+        document.getElementById('show_load_game').onclick = function() {
+          document.getElementById('saved_games').style.display = 'block';
+          Shiny.setInputValue('list_saved_games', Date.now(), {priority: 'event'});
+        };
+        document.getElementById('toggle_game_menu').onclick = function() {
+          var menu = document.getElementById('game_session_menu');
+          var open = menu.style.display === 'block';
+          menu.style.display = open ? 'none' : 'block';
+          this.setAttribute('aria-expanded', open ? 'false' : 'true');
+        };
+        document.getElementById('save_game').onclick = function() { document.getElementById('game_session_menu').style.display = 'none'; var d = document.getElementById('save_game_dialog'); d.style.display = 'flex'; document.getElementById('save_game_name').focus(); };
         document.getElementById('exit_game').onclick = function() { window.location.reload(); };
         document.getElementById('cancel_save_game').onclick = function() { document.getElementById('save_game_dialog').style.display = 'none'; };
         document.getElementById('confirm_save_game').onclick = function() {
           var name = document.getElementById('save_game_name').value.trim();
           if (!name) { document.getElementById('save_game_name').focus(); return; }
-          // `scene` is a top-level lexical binding in phaser-game.js, not a
-          // property on `window`. Reading window.scene therefore always used
-          // the fallback entrance coordinates instead of the player's current
-          // position.
-          var activeScene = typeof scene !== 'undefined' ? scene : null;
-          var hero = activeScene && activeScene.children.getByName('hero');
-          Shiny.setInputValue('save_game_requested', {name: name, x: hero ? hero.x : 100, y: hero ? hero.y : 100, navigation: !!GameBridge.navigationOverlayVisible, nonce: Date.now()}, {priority: 'event'});
+          capturePhaserGameState('save_game_requested', String(Date.now()), name, {
+            objects: ['hero'],
+            state: {navigation: !!GameBridge.navigationOverlayVisible}
+          });
         };
       });
     })();
@@ -1158,32 +1171,37 @@ server <- function(input, output, session) {
     choose_character("hero_orc")
   }, ignoreInit = TRUE)
 
+  send_saved_games <- function() {
+    summaries <- lapply(game$list_saved_games(), function(save) {
+      list(name = save$name, savedAt = save$savedAt)
+    })
+    session$sendCustomMessage("phaser", list(js = sprintf(
+      "renderDungeonHeroesSaves(%s);",
+      jsonlite::toJSON(summaries, auto_unbox = TRUE, null = "null")
+    )))
+  }
+
+  shiny::observeEvent(input$list_saved_games, send_saved_games(), ignoreInit = TRUE)
+
   shiny::observeEvent(input$save_game_requested, {
     request <- input$save_game_requested
-    save <- list(
+    game$save_game(
       name = as.character(request$name),
-      savedAt = format(Sys.time(), "%Y-%m-%dT%H:%M:%OS3Z", tz = "UTC"),
-      character = selected_character,
-      realm = current_realm,
-      navigation = isTRUE(request$navigation),
-      x = as.numeric(request$x),
-      y = as.numeric(request$y),
-      lifePoints = life_points,
-      enemyHitPoints = as.list(enemy_hit_points),
-      enemyIsAlive = as.list(enemy_is_alive),
-      berriesAvailable = as.list(berry_is_available)
-    )
-    session$sendCustomMessage(
-      "phaser",
-      list(js = sprintf(
-        "storeDungeonHeroesSave(%s);",
-        jsonlite::toJSON(save, auto_unbox = TRUE, null = "null")
-      ))
+      snapshot = request$objects,
+      state = list(
+        character = selected_character,
+        realm = current_realm,
+        navigation = isTRUE(request$state$navigation),
+        lifePoints = life_points,
+        enemyHitPoints = as.list(enemy_hit_points),
+        enemyIsAlive = as.list(enemy_is_alive),
+        berriesAvailable = as.list(berry_is_available)
+      )
     )
   }, ignoreInit = TRUE)
 
   shiny::observeEvent(input$load_game, {
-    save <- input$load_game
+    save <- game$load_game(input$load_game$name, restore = FALSE)
     if (is.null(save$character) || !save$character %in% c("hero", "hero_orc")) return()
 
     choose_character(save$character)
@@ -1203,8 +1221,9 @@ server <- function(input, output, session) {
     update_enemy_status()
 
     marker_character <- if (identical(save$character, "hero_orc")) "orc" else "human"
-    x <- as.numeric(save$x %||% 100)
-    y <- as.numeric(save$y %||% 100)
+    saved_hero <- save$phaser$objects$hero %||% list()
+    x <- as.numeric(saved_hero$x %||% 100)
+    y <- as.numeric(saved_hero$y %||% 100)
     on_navigation <- isTRUE(save$navigation)
     session$sendCustomMessage(
       "phaser",
