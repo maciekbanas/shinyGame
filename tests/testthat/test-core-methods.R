@@ -486,13 +486,26 @@ test_that("dungeonheroes includes the elf and new western realms", {
     'tileset_urls = "assets/dungeonheroes/terrain/grey_mountains/hill_1.png"',
     example, fixed = TRUE
   )))
-  expect_true(any(grepl('x = 300, y = 400', example, fixed = TRUE)))
+  expect_true(any(grepl('x = 700, y = 400', example, fixed = TRUE)))
   expect_true(any(grepl('x = 300, y = 700', example, fixed = TRUE)))
+  expect_true(any(grepl('left: 700px;', example, fixed = TRUE)))
+  expect_false(any(grepl('border-radius: 50%;', example, fixed = TRUE)))
   expect_identical(vapply(wild_map$tilesets, `[[`, character(1), "name"),
                    sprintf("grass_%d", 1:5))
   expect_identical(vapply(grey_map$tilesets, `[[`, character(1), "name"), "hill_1")
   expect_length(wild_map$layers[[1]]$data, 32 * 64)
   expect_length(grey_map$layers[[1]]$data, 32 * 64)
+})
+
+test_that("realm marker shares the navigation canvas coordinate space", {
+  game_js <- readLines(
+    system.file("www", "phaser-game.js", package = "shinyphaser"),
+    warn = FALSE
+  )
+
+  expect_true(any(grepl('const container = game?.canvas?.parentElement;',
+                        game_js, fixed = TRUE)))
+  expect_true(any(grepl('container.appendChild(marker);', game_js, fixed = TRUE)))
 })
 
 test_that("sight approach does not restart active movement or hide alerts", {

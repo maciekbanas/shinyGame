@@ -132,16 +132,12 @@ ui <- shiny::tagList(
     }
 
     #realm_character_marker {
-      position: fixed;
+      position: absolute;
       z-index: 8500;
       display: none;
       width: 100px;
       height: 100px;
-      border: 3px solid #f5d98b;
-      border-radius: 50%;
       background-repeat: no-repeat;
-      background-color: rgba(17, 24, 39, 0.88);
-      box-shadow: 0 4px 14px #000;
       image-rendering: pixelated;
       pointer-events: none;
       transform: translate(-50%, -50%);
@@ -160,23 +156,23 @@ ui <- shiny::tagList(
     }
 
     #realm_character_marker.mushroom_swamps {
-      left: 50%;
-      top: 50%;
+      left: 800px;
+      top: 400px;
     }
 
     #realm_character_marker.magma_hills {
-      left: 81.25%;
-      top: 87.5%;
+      left: 1300px;
+      top: 700px;
     }
 
     #realm_character_marker.wild_forests {
-      left: 18.75%;
-      top: 50%;
+      left: 700px;
+      top: 400px;
     }
 
     #realm_character_marker.grey_mountains {
-      left: 18.75%;
-      top: 87.5%;
+      left: 300px;
+      top: 700px;
     }
 
     #leave_map {
@@ -568,7 +564,7 @@ server <- function(input, output, session) {
   wild_forests_map_image <- game$add_image(
     name = "choose_wild_forests",
     url = "assets/dungeonheroes/terrain/wild_forests/wild_forests_map.png",
-    x = 300, y = 400, visible = FALSE, clickable = TRUE
+    x = 700, y = 400, visible = FALSE, clickable = TRUE
   )
   grey_mountains_map_image <- game$add_image(
     name = "choose_grey_mountains",
