@@ -708,6 +708,55 @@ function sendHeroOverlapState(time) {
   );
 }
 
+// Phaser owns the live transforms, so snapshot them at the instant a save is
+// requested instead of relying on coordinates previously delivered to Shiny.
+function capturePhaserGameState(inputId, requestId, name, options = {}) {
+  if (!scene || !shinyInputReady()) return;
+  const requested = Array.isArray(options.objects) ? new Set(options.objects) : null;
+  const objects = {};
+  scene.children.list.forEach((object) => {
+    if (!object.name || (requested && !requested.has(object.name))) return;
+    objects[object.name] = {
+      x: object.x,
+      y: object.y,
+      visible: object.visible,
+      active: object.active
+    };
+  });
+  Shiny.setInputValue(inputId, {
+    requestId,
+    name,
+    state: options.state || {},
+    objects,
+    evt_nonce: Date.now() + Math.random()
+  }, { priority: "event" });
+}
+
+function restorePhaserGameState(snapshot, attempts = 40) {
+  const pending = [];
+  Object.entries(snapshot?.objects || {}).forEach(([name, saved]) => {
+    const object = scene && scene.children.getByName(name);
+    if (!object) { pending.push(name); return; }
+    if (Number.isFinite(saved.x) && Number.isFinite(saved.y)) {
+      object.setPosition(saved.x, saved.y);
+      // Arcade bodies retain their own previous position; reset both values so
+      // the next physics tick cannot snap the hero back to the old location.
+      if (object.body && typeof object.body.reset === "function") {
+        object.body.reset(saved.x, saved.y);
+      }
+    }
+    if (typeof saved.visible === "boolean") object.setVisible(saved.visible);
+    if (typeof saved.active === "boolean") object.setActive(saved.active);
+  });
+  if (pending.length && attempts > 0) {
+    window.setTimeout(() => restorePhaserGameState(snapshot, attempts - 1), 100);
+  }
+}
+
 Shiny.addCustomMessageHandler("phaser", function (message) {
   eval(message.js);
+});
+
+Shiny.addCustomMessageHandler("phaser-save-complete", function (save) {
+  window.dispatchEvent(new CustomEvent("shinyphaser:saved", { detail: save }));
 });

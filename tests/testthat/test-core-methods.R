@@ -553,3 +553,24 @@ test_that("bear uses Arcade world gravity", {
   expect_true(any(grepl("gravity_y = 1200", bear, fixed = TRUE)))
   expect_false(any(grepl("$set_gravity", bear, fixed = TRUE)))
 })
+
+test_that("saved games use Phaser snapshots and server disk persistence", {
+  game_js <- readLines(system.file("www", "phaser-game.js", package = "shinyphaser"), warn = FALSE)
+  example <- readLines(system.file("examples", "dungeonheroes.R", package = "shinyphaser"), warn = FALSE)
+
+  expect_true(any(grepl("function capturePhaserGameState", game_js, fixed = TRUE)))
+  expect_true(any(grepl("object.body.reset(saved.x, saved.y)", game_js, fixed = TRUE)))
+  expect_false(any(grepl("localStorage", example, fixed = TRUE)))
+  expect_true(any(grepl('game$save_game(', example, fixed = TRUE)))
+  expect_true(any(grepl('game$load_game(input$load_game$name', example, fixed = TRUE)))
+})
+
+test_that("save file helpers replace named JSON records", {
+  directory <- tempfile("shinyphaser-saves-")
+  path <- file.path(directory, "save-games.json")
+  saves <- list(list(name = "first", savedAt = "2026-01-01", state = list(score = 1)))
+
+  write_phaser_saves(saves, path)
+  expect_true(file.exists(path))
+  expect_equal(read_phaser_saves(path), saves)
+})
