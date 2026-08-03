@@ -322,7 +322,12 @@ ui <- shiny::tagList(
         document.getElementById('confirm_save_game').onclick = function() {
           var name = document.getElementById('save_game_name').value.trim();
           if (!name) { document.getElementById('save_game_name').focus(); return; }
-          var hero = window.scene && scene.children.getByName('hero');
+          // `scene` is a top-level lexical binding in phaser-game.js, not a
+          // property on `window`. Reading window.scene therefore always used
+          // the fallback entrance coordinates instead of the player's current
+          // position.
+          var activeScene = typeof scene !== 'undefined' ? scene : null;
+          var hero = activeScene && activeScene.children.getByName('hero');
           Shiny.setInputValue('save_game_requested', {name: name, x: hero ? hero.x : 100, y: hero ? hero.y : 100, navigation: !!GameBridge.navigationOverlayVisible, nonce: Date.now()}, {priority: 'event'});
         };
       });
