@@ -274,14 +274,14 @@ ui <- shiny::tagList(
         id = "choose_hero", class = "character_choice action-button",
         type = "button",
         htmltools::tags$span(class = "character_portrait"),
-        htmltools::tags$span(class = "character_name", "Human"),
+        htmltools::tags$span(class = "character_name", "Human Knight"),
         htmltools::tags$span(class = "character_description", "Courage against the darkness")
       ),
       htmltools::tags$button(
         id = "choose_orc", class = "character_choice action-button",
         type = "button",
         htmltools::tags$span(class = "character_portrait"),
-        htmltools::tags$span(class = "character_name", "Orc"),
+        htmltools::tags$span(class = "character_name", "Orc Hunter"),
         htmltools::tags$span(class = "character_description", "Strength born of the wilds")
       ),
       htmltools::tags$button(
@@ -740,7 +740,7 @@ server <- function(input, output, session) {
     suffix = "elf_idle",
     url = "assets/dungeonheroes/sprites/hero_elf_idle.png",
     frame_width = 100, frame_height = 100,
-    frame_count = 25, frame_rate = 4
+    frame_count = 26, frame_rate = 4
   )
   lapply(c("down", "left", "right", "up"), function(direction) {
     source_direction <- if (direction %in% c("up", "down")) direction else "down"

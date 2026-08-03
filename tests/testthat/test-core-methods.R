@@ -474,10 +474,18 @@ test_that("dungeonheroes includes the elf and new western realms", {
   )
 
   expect_true(any(grepl('class = "character_name", "Elf Ranger"', example, fixed = TRUE)))
+  expect_true(any(grepl('class = "character_name", "Human Knight"', example, fixed = TRUE)))
+  expect_true(any(grepl('class = "character_name", "Orc Hunter"', example, fixed = TRUE)))
   expect_true(any(grepl('suffix = "elf_idle"', example, fixed = TRUE)))
+  expect_true(any(grepl('frame_count = 26, frame_rate = 4', example, fixed = TRUE)))
   expect_true(any(grepl('choose_character("hero_elf")', example, fixed = TRUE)))
   expect_true(any(grepl('name = "choose_wild_forests"', example, fixed = TRUE)))
   expect_true(any(grepl('name = "choose_grey_mountains"', example, fixed = TRUE)))
+  expect_true(any(grepl('map_key = "grey_mountains"', example, fixed = TRUE)))
+  expect_true(any(grepl(
+    'tileset_urls = "assets/dungeonheroes/terrain/grey_mountains/hill_1.png"',
+    example, fixed = TRUE
+  )))
   expect_true(any(grepl('x = 300, y = 400', example, fixed = TRUE)))
   expect_true(any(grepl('x = 300, y = 700', example, fixed = TRUE)))
   expect_identical(vapply(wild_map$tilesets, `[[`, character(1), "name"),
