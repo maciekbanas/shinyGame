@@ -20,6 +20,15 @@
 * Queued sprite physics actions until sprites finish loading so setup calls such as `set_gravity()` are not lost during asynchronous asset initialization.
 
 ## New interface features
+* Added `PhaserGame$save_game()` for persisting application state and live
+  Phaser object snapshots to server-side JSON files. Saves default to a
+  game-specific directory below `tempdir()` and can also accept an explicitly
+  captured snapshot for an immediate disk write.
+* Added `PhaserGame$list_saved_games()` for retrieving the available
+  server-side saves in newest-first order.
+* Added `PhaserGame$load_game()` for reading saved application state and
+  optionally restoring captured Phaser object positions, visibility, and active
+  state in the running scene.
 * Added `Sprite$set_player_animation_prefix()` for switching the idle and directional movement animation set used by player controls at runtime.
 * Added `gravity_x` and `gravity_y` parameters to `PhaserGame$new()` for configuring Arcade Physics world gravity when a game is created.
 * Added sound support with `PhaserGame$add_sound()` and a new `Sound` API for loading, playing, pausing, resuming, stopping, and configuring audio.
@@ -44,6 +53,8 @@
 ## Updates in examples
 * Added new arcade example game (bear).
 * Added new RPG game example (dungeonheroes).
+* Updated dungeonheroes to store saves on the server, capture the hero's live
+  Phaser coordinates, and expose Save and Exit from a top-left game menu.
 * Updated the hedgehog examples so acknowledging a game-over dialog reloads the Shiny session and starts a fresh game instead of stopping the app.
 
 ## README
