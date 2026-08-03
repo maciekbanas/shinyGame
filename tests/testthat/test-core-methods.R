@@ -574,3 +574,30 @@ test_that("save file helpers replace named JSON records", {
   expect_true(file.exists(path))
   expect_equal(read_phaser_saves(path), saves)
 })
+
+test_that("dungeonheroes captures its hero before the synchronous disk save", {
+  example <- readLines(system.file("examples", "dungeonheroes.R", package = "shinyphaser"), warn = FALSE)
+
+  expect_true(any(grepl("capturePhaserGameState('save_game_requested'", example, fixed = TRUE)))
+  expect_true(any(grepl("snapshot = request$objects", example, fixed = TRUE)))
+  expect_true(any(grepl('id = "toggle_game_menu"', example, fixed = TRUE)))
+  expect_true(any(grepl('position: fixed; left: 18px; top: 18px', example, fixed = TRUE)))
+})
+
+test_that("save_game writes a supplied Phaser snapshot immediately", {
+  directory <- tempfile("shinyphaser-game-")
+  game <- PhaserGame$new(id = "save-test")
+
+  game$save_game(
+    "checkpoint",
+    state = list(score = 12),
+    snapshot = list(hero = list(x = 321, y = 654)),
+    directory = directory
+  )
+
+  saves <- game$list_saved_games(directory)
+  expect_length(saves, 1)
+  expect_equal(saves[[1]]$phaser$objects$hero$x, 321)
+  loaded <- game$load_game("checkpoint", restore = FALSE, directory = directory)
+  expect_equal(loaded$score, 12)
+})

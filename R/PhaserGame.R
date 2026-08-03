@@ -49,18 +49,28 @@ PhaserGame <- R6::R6Class(
     #' @param state Named list. Additional JSON-serializable application state.
     #' @param objects Character vector. Named Phaser scene objects to capture. By
     #'   default all named scene objects are captured.
+    #' @param snapshot Named list. Optional Phaser object snapshot already
+    #'   captured in the browser. Supplying it writes the save synchronously.
     #' @param directory Character. Server-side directory. Defaults to a
     #'   game-specific folder below [tempdir()].
     #' @return Invisible request identifier. The disk write completes
     #'   asynchronously after Phaser returns its snapshot.
-    save_game = function(name, state = list(), objects = NULL, directory = NULL) {
+    save_game = function(name, state = list(), objects = NULL, snapshot = NULL,
+                         directory = NULL) {
       private$set_save_directory(directory)
       private$register_save_handler()
+      name <- trimws(as.character(name)[1])
+      if (!nzchar(name)) stop("name must not be empty.", call. = FALSE)
+      if (!is.null(snapshot)) {
+        record <- private$write_save(name, state, snapshot)
+        if (!is.null(private$session)) {
+          private$session$sendCustomMessage("phaser-save-complete", record)
+        }
+        return(invisible(record))
+      }
       if (is.null(private$save_observer)) {
         stop("A Shiny session must be set before save_game() is called.", call. = FALSE)
       }
-      name <- trimws(as.character(name)[1])
-      if (!nzchar(name)) stop("name must not be empty.", call. = FALSE)
       request_id <- paste0(as.integer(Sys.time()), "-", sample.int(1e9, 1))
       js <- sprintf(
         "capturePhaserGameState(%s, %s, %s, %s);",
@@ -490,6 +500,18 @@ PhaserGame <- R6::R6Class(
     save_file = NULL,
     save_input_id = NULL,
     save_observer = NULL,
+    write_save = function(name, state, objects) {
+      saves <- read_phaser_saves(private$save_file)
+      record <- list(
+        name = as.character(name),
+        savedAt = format(Sys.time(), "%Y-%m-%dT%H:%M:%OS3Z", tz = "UTC"),
+        state = state %||% list(),
+        phaser = list(objects = objects %||% list())
+      )
+      keep <- !vapply(saves, function(x) identical(x$name, record$name), logical(1))
+      write_phaser_saves(c(saves[keep], list(record)), private$save_file)
+      record
+    },
     set_save_directory = function(directory = NULL) {
       if (!is.null(directory)) private$save_directory <- normalizePath(directory, mustWork = FALSE)
       if (is.null(private$save_directory)) {
@@ -506,15 +528,7 @@ PhaserGame <- R6::R6Class(
       private$save_observer <- shiny::observeEvent(
         private$session$input[[private$save_input_id]], {
           request <- private$session$input[[private$save_input_id]]
-          saves <- read_phaser_saves(private$save_file)
-          record <- list(
-            name = as.character(request$name),
-            savedAt = format(Sys.time(), "%Y-%m-%dT%H:%M:%OS3Z", tz = "UTC"),
-            state = request$state %||% list(),
-            phaser = list(objects = request$objects %||% list())
-          )
-          keep <- !vapply(saves, function(x) identical(x$name, record$name), logical(1))
-          write_phaser_saves(c(saves[keep], list(record)), private$save_file)
+          record <- private$write_save(request$name, request$state, request$objects)
           private$session$sendCustomMessage("phaser-save-complete", record)
         }, ignoreInit = TRUE
       )

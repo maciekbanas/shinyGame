@@ -218,12 +218,17 @@ ui <- shiny::tagList(
     #save_game_dialog { z-index: 9700; display: none; background: rgba(0, 0, 0, .72); }
     #save_game_actions { display: flex; gap: 12px; }
     #game_session_actions {
-      position: fixed; right: 22px; top: 18px; z-index: 9000; display: none;
-      gap: 10px;
+      position: fixed; left: 18px; top: 18px; z-index: 9000; display: none;
     }
     #game_session_actions .game_menu_button {
       width: auto; margin: 0; padding: 11px 20px;
     }
+    #game_session_menu {
+      display: none; width: 190px; margin-top: 8px; padding: 8px;
+      border: 2px solid #8f7140; border-radius: 6px;
+      background: rgba(15, 22, 18, .96); box-shadow: 0 8px 24px #000;
+    }
+    #game_session_menu .game_menu_button { width: 100%; margin-top: 6px; }
 
   ")),
   htmltools::tags$div(
@@ -274,8 +279,13 @@ ui <- shiny::tagList(
   ),
   htmltools::tags$div(
     id = "game_session_actions",
-    htmltools::tags$button(id = "save_game", class = "game_menu_button", type = "button", "Save game"),
-    htmltools::tags$button(id = "exit_game", class = "game_menu_button", type = "button", "Exit")
+    htmltools::tags$button(id = "toggle_game_menu", class = "game_menu_button", type = "button",
+                          `aria-expanded` = "false", "Menu"),
+    htmltools::tags$div(
+      id = "game_session_menu",
+      htmltools::tags$button(id = "save_game", class = "game_menu_button", type = "button", "Save game"),
+      htmltools::tags$button(id = "exit_game", class = "game_menu_button", type = "button", "Exit")
+    )
   ),
   htmltools::tags$div(
     id = "save_game_dialog",
@@ -316,13 +326,22 @@ ui <- shiny::tagList(
           document.getElementById('saved_games').style.display = 'block';
           Shiny.setInputValue('list_saved_games', Date.now(), {priority: 'event'});
         };
-        document.getElementById('save_game').onclick = function() { var d = document.getElementById('save_game_dialog'); d.style.display = 'flex'; document.getElementById('save_game_name').focus(); };
+        document.getElementById('toggle_game_menu').onclick = function() {
+          var menu = document.getElementById('game_session_menu');
+          var open = menu.style.display === 'block';
+          menu.style.display = open ? 'none' : 'block';
+          this.setAttribute('aria-expanded', open ? 'false' : 'true');
+        };
+        document.getElementById('save_game').onclick = function() { document.getElementById('game_session_menu').style.display = 'none'; var d = document.getElementById('save_game_dialog'); d.style.display = 'flex'; document.getElementById('save_game_name').focus(); };
         document.getElementById('exit_game').onclick = function() { window.location.reload(); };
         document.getElementById('cancel_save_game').onclick = function() { document.getElementById('save_game_dialog').style.display = 'none'; };
         document.getElementById('confirm_save_game').onclick = function() {
           var name = document.getElementById('save_game_name').value.trim();
           if (!name) { document.getElementById('save_game_name').focus(); return; }
-          Shiny.setInputValue('save_game_requested', {name: name, navigation: !!GameBridge.navigationOverlayVisible, nonce: Date.now()}, {priority: 'event'});
+          capturePhaserGameState('save_game_requested', String(Date.now()), name, {
+            objects: ['hero'],
+            state: {navigation: !!GameBridge.navigationOverlayVisible}
+          });
         };
       });
     })();
@@ -1168,11 +1187,11 @@ server <- function(input, output, session) {
     request <- input$save_game_requested
     game$save_game(
       name = as.character(request$name),
-      objects = "hero",
+      snapshot = request$objects,
       state = list(
         character = selected_character,
         realm = current_realm,
-        navigation = isTRUE(request$navigation),
+        navigation = isTRUE(request$state$navigation),
         lifePoints = life_points,
         enemyHitPoints = as.list(enemy_hit_points),
         enemyIsAlive = as.list(enemy_is_alive),

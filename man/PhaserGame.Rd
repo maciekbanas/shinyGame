@@ -113,11 +113,18 @@ Set the Shiny session used to send Phaser custom messages.
 \if{html}{\out{<a id="method-PhaserGame-save_game"></a>}}
 \subsection{Method \code{save_game()}}{
 Save application state and live Phaser object transforms to server-side JSON.
-\subsection{Usage}{\preformatted{PhaserGame$save_game(name, state = list(), objects = NULL, directory = NULL)}}
+\subsection{Usage}{\preformatted{PhaserGame$save_game(
+  name,
+  state = list(),
+  objects = NULL,
+  snapshot = NULL,
+  directory = NULL
+)}}
 \subsection{Arguments}{\describe{
 \item{\code{name}}{Human-readable save name.}
 \item{\code{state}}{Named list of application state.}
 \item{\code{objects}}{Named Phaser objects to capture; \code{NULL} captures all named objects.}
+\item{\code{snapshot}}{Optional Phaser object snapshot already captured by the browser.}
 \item{\code{directory}}{Server directory; defaults below \code{tempdir()}.}
 }}
 }
