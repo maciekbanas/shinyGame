@@ -18,6 +18,7 @@ GameBridge.mapLoadQueue = GameBridge.mapLoadQueue || [];
 GameBridge.mapLoading = GameBridge.mapLoading || false;
 GameBridge.mapExits = GameBridge.mapExits || {};
 GameBridge.mapExitVisible = GameBridge.mapExitVisible || false;
+GameBridge.navigationOverlayVisible = GameBridge.navigationOverlayVisible || false;
 GameBridge.lastHeroOverlapState = GameBridge.lastHeroOverlapState || "";
 GameBridge.nextHeroOverlapSendAt = GameBridge.nextHeroOverlapSendAt || 0;
 GameBridge.sounds = GameBridge.sounds || {};
@@ -154,6 +155,7 @@ function initPhaserGame(containerId, config) {
           if (!sprite) return;
 
           const { speed, directionMap } = opts;
+          const animationPrefix = opts.animationPrefix || name;
 
           if (directionMap.left || directionMap.right) {
             sprite.body.setVelocityX(0);
@@ -162,30 +164,30 @@ function initPhaserGame(containerId, config) {
             sprite.body.setVelocityY(0);
           }
 
-          let targetAnim = name + '_idle';
+          let targetAnim = animationPrefix + '_idle';
 
           if (cursors.left.isDown && directionMap.left) {
             sprite.body.setVelocityX(-speed);
-            targetAnim = name + '_move_left';
+            targetAnim = animationPrefix + '_move_left';
             rememberMovementDirection(sprite, "left", time);
           } else if (cursors.right.isDown && directionMap.right) {
             sprite.body.setVelocityX(speed);
-            targetAnim = name + '_move_right';
+            targetAnim = animationPrefix + '_move_right';
             rememberMovementDirection(sprite, "right", time);
           } else if (cursors.up.isDown && directionMap.up) {
             sprite.body.setVelocityY(-speed);
-            targetAnim = name + '_move_up';
+            targetAnim = animationPrefix + '_move_up';
             rememberMovementDirection(sprite, "up", time);
           } else if (cursors.down.isDown && directionMap.down) {
             sprite.body.setVelocityY(speed);
-            targetAnim = name + '_move_down';
+            targetAnim = animationPrefix + '_move_down';
             rememberMovementDirection(sprite, "down", time);
           }
 
           const forced = GameBridge.forcedAnimations[name];
           if (forced) {
             if (forced.until === null || time <= forced.until) {
-              const movementKey = targetAnim !== name + '_idle' ? targetAnim : null;
+              const movementKey = targetAnim !== animationPrefix + '_idle' ? targetAnim : null;
               const forcedAnimKey = forcedAnimationForMovement(
                 sprite, forced.key, movementKey, time
               );
@@ -299,6 +301,7 @@ function hideText(id) {
 function addPlayerControls(name, directions, speed) {
   GameBridge.playerControls[name] = {
     speed,
+    animationPrefix: name,
     directionMap: {
       left: directions.includes("left"),
       right: directions.includes("right"),
@@ -307,6 +310,25 @@ function addPlayerControls(name, directions, speed) {
     }
   };
 };
+
+function setPlayerAnimationPrefix(name, prefix) {
+  if (!GameBridge.playerControls[name]) return;
+  const animationPrefix = prefix || name;
+  GameBridge.playerControls[name].animationPrefix = animationPrefix;
+  delete GameBridge.forcedAnimations[name];
+
+  const sprite = scene && scene.children.getByName(name);
+  if (sprite) playIfChanged(sprite, animationPrefix + "_idle");
+}
+
+function setNavigationOverlayVisible(visible) {
+  GameBridge.navigationOverlayVisible = Boolean(visible);
+  const element = document.getElementById("leave_map");
+  if (visible && element) element.style.display = "none";
+
+  const marker = document.getElementById("realm_character_marker");
+  if (marker) marker.style.display = visible ? "block" : "none";
+}
 
 function applyWorldBounds(bounds) {
   if (!bounds || !scene || !scene.physics || !scene.cameras) return;
@@ -457,6 +479,13 @@ function setMapExit(mapKey, playerName, x, y, radius, elementId) {
 }
 
 function updateMapExitVisibility() {
+  if (GameBridge.navigationOverlayVisible) {
+    const navigationExit = document.getElementById("leave_map");
+    if (navigationExit) navigationExit.style.display = "none";
+    GameBridge.mapExitVisible = false;
+    return;
+  }
+
   const exit = GameBridge.mapExits[GameBridge.activeMapKey];
   const player = exit && scene && scene.children.getByName(exit.playerName);
   const nearby = Boolean(player && Phaser.Math.Distance.Between(

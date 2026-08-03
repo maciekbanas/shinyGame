@@ -89,6 +89,18 @@ Sprite <- R6::R6Class(
       send_js(private, js)
     },
 
+    #' @description Choose the animation prefix used by player controls.
+    #' @param prefix Character. Prefix for idle and directional movement animation keys.
+    #' @return Invisible; sends a custom message to the client.
+    set_player_animation_prefix = function(prefix) {
+      js <- sprintf(
+        "setPlayerAnimationPrefix(%s, %s);",
+        jsonlite::toJSON(private$name, auto_unbox = TRUE),
+        jsonlite::toJSON(prefix, auto_unbox = TRUE)
+      )
+      send_js(private, js)
+    },
+
     #' @description Make the camera follow this sprite as it moves through the world.
     #' @param lerp_x Numeric. Horizontal interpolation factor from 0 to 1 (default: 1).
     #' @param lerp_y Numeric. Vertical interpolation factor from 0 to 1 (default: 1).
