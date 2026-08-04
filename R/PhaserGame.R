@@ -235,10 +235,11 @@ PhaserGame <- R6::R6Class(
     activate_map = function(map_key, player_name = NULL, x = NULL, y = NULL,
                             visible_objects = character(), hidden_objects = character()) {
       js_value <- function(value) jsonlite::toJSON(value, auto_unbox = TRUE, null = "null")
+      js_array <- function(value) jsonlite::toJSON(value, auto_unbox = FALSE, null = "null")
       js <- sprintf(
         "activateMap(%s, %s, %s, %s, %s, %s);",
         js_value(map_key), js_value(player_name), js_value(x), js_value(y),
-        js_value(visible_objects), js_value(hidden_objects)
+        js_array(visible_objects), js_array(hidden_objects)
       )
       send_js(private, js)
     },

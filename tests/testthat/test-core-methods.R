@@ -209,6 +209,28 @@ test_that("PhaserGame can create Sound objects", {
   expect_true(any(grepl("addSound\\(\\\"jump\\\", \\\"jump.wav\\\", 0.400000, true\\);", msgs)))
 })
 
+test_that("activate_map serializes realm object arguments as arrays", {
+  session <- make_mock_session()
+  game <- PhaserGame$new()
+  game$set_shiny_session(session)
+
+  game$activate_map(
+    "castle", player_name = "hero", x = 700, y = 500,
+    visible_objects = "blacksmith", hidden_objects = "dead_tree"
+  )
+  game$activate_map("mushroom_swamps", visible_objects = character())
+
+  msgs <- vapply(session$get_messages(), function(m) m$message$js, character(1))
+  expect_true(any(grepl(
+    'activateMap("castle", "hero", 700, 500, ["blacksmith"], ["dead_tree"]);',
+    msgs, fixed = TRUE
+  )))
+  expect_true(any(grepl(
+    'activateMap("mushroom_swamps", null, null, null, [], []);',
+    msgs, fixed = TRUE
+  )))
+})
+
 test_that("browser_actions compile R6 calls for immediate execution", {
   session <- make_mock_session()
   game <- PhaserGame$new()

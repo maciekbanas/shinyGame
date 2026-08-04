@@ -451,6 +451,16 @@ function loadNextMap() {
 
 function activateMap(mapKey, playerName = null, x = null, y = null,
                      visibleObjects = [], hiddenObjects = []) {
+  // R JSON serializers can simplify a one-item vector to a scalar. Normalize
+  // both arguments so realm activation remains safe for zero, one, or many
+  // objects, including messages produced by older shinyphaser versions.
+  visibleObjects = Array.isArray(visibleObjects)
+    ? visibleObjects
+    : (visibleObjects == null ? [] : [visibleObjects]);
+  hiddenObjects = Array.isArray(hiddenObjects)
+    ? hiddenObjects
+    : (hiddenObjects == null ? [] : [hiddenObjects]);
+
   const mapEntry = GameBridge.maps[mapKey];
   if (!mapEntry) {
     GameBridge.pendingActiveMap = {
