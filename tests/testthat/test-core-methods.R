@@ -408,7 +408,7 @@ test_that("dungeonheroes Space action retains interactions and combat", {
 
   expect_false(any(grepl("sword_in_range", example, fixed = TRUE)))
   expect_true(any(grepl(
-    'weapon <- switch(character, hero_orc = "axe", hero_elf = "bow", "sword")',
+    'weapon <- switch(character, hero_orc = "axe", hero_elf = "staff", "sword")',
     example,
     fixed = TRUE
   )))
@@ -416,7 +416,10 @@ test_that("dungeonheroes Space action retains interactions and combat", {
   expect_true(any(grepl("if (wizard_in_range)", example, fixed = TRUE)))
   expect_true(any(grepl("server_action = handle_space", example, fixed = TRUE)))
   expect_true(any(grepl("server_action", example, fixed = TRUE)))
-  expect_true(any(grepl("enemy_hit_points[[enemy_in_range]]", example, fixed = TRUE)))
+  expect_true(any(grepl("damage <- hero_weapon$damage", example, fixed = TRUE)))
+  expect_true(any(grepl("enemy_hit_points[[hit_enemy]]", example, fixed = TRUE)))
+  expect_true(any(grepl("distance = hero_weapon$knockback", example, fixed = TRUE)))
+  expect_true(any(grepl('paste0("damage_", knockback_direction)', example, fixed = TRUE)))
   expect_true(any(grepl("mushroom_reaction_check_interval <- 16", example, fixed = TRUE)))
   expect_true(any(grepl("enemies[[enemy_name]]$stop_motion()", example, fixed = TRUE)))
   expect_true(any(grepl("browser_action = browser_actions", example, fixed = TRUE)))
@@ -493,7 +496,7 @@ test_that("dungeonheroes includes the elf and new western realms", {
   expect_true(any(grepl('class = "character_name", "Human Knight"', example, fixed = TRUE)))
   expect_true(any(grepl('class = "character_name", "Orc Hunter"', example, fixed = TRUE)))
   expect_true(any(grepl('suffix = "elf_idle"', example, fixed = TRUE)))
-  expect_true(any(grepl('frame_count = 25, frame_rate = 4', example, fixed = TRUE)))
+  expect_true(any(grepl('frame_count = 21, frame_rate = 4', example, fixed = TRUE)))
   expect_true(any(grepl(
     'hero_orc = "grey_mountains", hero_elf = "wild_forests", "castle"',
     example, fixed = TRUE
