@@ -19,6 +19,15 @@
       )
     })
 
+    lapply(c("down", "left", "right", "up"), function(direction) {
+      enemy$add_animation(
+        suffix = paste0("damage_", direction),
+        url = sprintf("assets/dungeonheroes/sprites/enemies/mushroom_man/mushroom_man_damage_%s.png", direction),
+        frame_width = 100, frame_height = 100,
+        frame_count = 3, frame_rate = 8
+      )
+    })
+
     enemy$add_animation(
       suffix = "attack",
       url = "assets/dungeonheroes/sprites/enemies/mushroom_man/mushroom_man_attack.png",
@@ -96,9 +105,14 @@
       hero_attack_sound$play()
 
       if (!is.null(enemy_in_range) && isTRUE(enemy_is_alive[[enemy_in_range]])) {
-        damage <- hero_weapon_damage
+        damage <- hero_weapon$damage
         enemy_hit_points[[enemy_in_range]] <<- max(0, enemy_hit_points[[enemy_in_range]] - damage)
         play_hero_attack_animation()
+        enemies[[enemy_in_range]]$take_damage(
+          source_name = "hero",
+          knockback = hero_weapon$knockback,
+          duration = 375
+        )
         set_combat_status(sprintf(
           "You hit %s for %d. Enemy life: %d/%d",
           format_enemy_label(enemy_in_range), damage,
@@ -109,8 +123,12 @@
           defeated <- enemy_in_range
           enemy_is_alive[[defeated]] <<- FALSE
           defeated_enemy_count <<- defeated_enemy_count + 1
-          enemies[[defeated]]$play_animation(enemy_animation_key(defeated, "destroy"), duration = 750)
-          later::later(function() enemies[[defeated]]$destroy(), delay = 0.75)
+          later::later(function() {
+            enemies[[defeated]]$play_animation(
+              enemy_animation_key(defeated, "destroy"), duration = 500
+            )
+          }, delay = 0.375)
+          later::later(function() enemies[[defeated]]$destroy(), delay = 0.875)
           enemy_in_range <<- NULL
         }
         update_enemy_status()

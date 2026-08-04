@@ -26,6 +26,7 @@
       hero_orc = "orc", hero_elf = "elf", "human"
     )
     weapon <- switch(character, hero_orc = "axe", hero_elf = "bow", "sword")
+    hero_weapon <<- hero_weapons[[weapon]]
     hero$set_player_animation_prefix(animation_prefix)
     inventory_text$set(sprintf("weapon: %s", weapon))
     map_navigation_background$show()

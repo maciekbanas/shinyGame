@@ -54,7 +54,12 @@
   berry_in_range <- NULL
   hero_last_attack_time <- as.numeric(Sys.time()) - 1
   hero_attack_cooldown <- 0.75
-  hero_weapon_damage <- 2
+  hero_weapons <- list(
+    sword = list(damage = 2, knockback = 28),
+    axe = list(damage = 2, knockback = 52),
+    bow = list(damage = 2, knockback = 40)
+  )
+  hero_weapon <- NULL
   health_bar_segment_count <- 10
   health_bar_segment_width <- 18
   health_bar_segment_height <- 14

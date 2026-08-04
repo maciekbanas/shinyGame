@@ -199,6 +199,67 @@ function stopSpriteMotion(name) {
   if (sprite.body && typeof sprite.body.stop === "function") sprite.body.stop();
 }
 
+function takeSpriteDamage(name, sourceName, animation, knockback, duration) {
+  const sprite = getSpriteByName(name, "takeSpriteDamage()");
+  const source = getSpriteByName(sourceName, "takeSpriteDamage()");
+  if (!sprite || !source) return;
+
+  stopSpriteMotion(name);
+
+  let deltaX = sprite.x - source.x;
+  let deltaY = sprite.y - source.y;
+  if (deltaX === 0 && deltaY === 0) {
+    const sourceDirection = source.getData("lastMovementDirection");
+    const fallback = {
+      left: [-1, 0], right: [1, 0], up: [0, -1], down: [0, 1]
+    }[sourceDirection] || [0, 1];
+    [deltaX, deltaY] = fallback;
+  }
+
+  const length = Math.hypot(deltaX, deltaY);
+  const direction = Math.abs(deltaX) > Math.abs(deltaY)
+    ? (deltaX < 0 ? "left" : "right")
+    : (deltaY < 0 ? "up" : "down");
+  const animationKey = `${name}_${animation}_${direction}`;
+  const animationDuration = Math.max(0, Number(duration) || 0);
+
+  if (scene.anims.exists(animationKey)) {
+    playAnimationForDuration(name, animationKey, animationDuration);
+  }
+
+  const distance = Math.max(0, Number(knockback) || 0);
+  if (distance === 0 || !sprite.active) return;
+  const directionX = deltaX / length;
+  const directionY = deltaY / length;
+  const terrainEnd = constrainedTerrainMotionEnd(
+    sprite, directionX, directionY, distance
+  );
+  const worldBounds = scene.physics.world.bounds;
+  const halfWidth = sprite.displayWidth * sprite.originX;
+  const halfHeight = sprite.displayHeight * sprite.originY;
+  const targetX = Phaser.Math.Clamp(
+    terrainEnd.x,
+    worldBounds.left + halfWidth,
+    worldBounds.right - (sprite.displayWidth - halfWidth)
+  );
+  const targetY = Phaser.Math.Clamp(
+    terrainEnd.y,
+    worldBounds.top + halfHeight,
+    worldBounds.bottom - (sprite.displayHeight - halfHeight)
+  );
+
+  scene.tweens.add({
+    targets: sprite,
+    x: targetX,
+    y: targetY,
+    duration: animationDuration,
+    ease: "Quad.easeOut",
+    onComplete: () => {
+      if (sprite.body && sprite.active) sprite.body.reset(sprite.x, sprite.y);
+    }
+  });
+}
+
 function setGravity(name, x, y) {
   withSprite(name, (sprite) => {
     if (sprite.body) sprite.body.setGravity(x, y);
