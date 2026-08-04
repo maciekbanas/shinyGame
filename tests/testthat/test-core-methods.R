@@ -493,7 +493,13 @@ test_that("dungeonheroes includes the elf and new western realms", {
   expect_true(any(grepl('class = "character_name", "Human Knight"', example, fixed = TRUE)))
   expect_true(any(grepl('class = "character_name", "Orc Hunter"', example, fixed = TRUE)))
   expect_true(any(grepl('suffix = "elf_idle"', example, fixed = TRUE)))
-  expect_true(any(grepl('frame_count = 26, frame_rate = 4', example, fixed = TRUE)))
+  expect_true(any(grepl('frame_count = 25, frame_rate = 4', example, fixed = TRUE)))
+  expect_true(any(grepl(
+    'hero_orc = "grey_mountains", hero_elf = "wild_forests", "castle"',
+    example, fixed = TRUE
+  )))
+  expect_true(any(grepl('frame_count = 2, frame_rate = 8', example, fixed = TRUE)))
+  expect_true(any(grepl('frame_count = 4, frame_rate = 6', example, fixed = TRUE)))
   expect_true(any(grepl('choose_character("hero_elf")', example, fixed = TRUE)))
   expect_true(any(grepl('name = "choose_wild_forests"', example, fixed = TRUE)))
   expect_true(any(grepl('name = "choose_grey_mountains"', example, fixed = TRUE)))

@@ -15,6 +15,9 @@
     if (!is.null(selected_character)) return(invisible(NULL))
 
     selected_character <<- character
+    current_realm <<- switch(character,
+      hero_orc = "grey_mountains", hero_elf = "wild_forests", "castle"
+    )
     hero$add_player_controls()
     animation_prefix <- switch(character,
       hero_orc = "hero_orc", hero_elf = "hero_elf", "hero_sword"

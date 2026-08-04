@@ -15,7 +15,7 @@
         suffix = paste0("move_", direction),
         url = sprintf("assets/dungeonheroes/sprites/enemies/mushroom_man/mushroom_man_walk_%s.png", direction),
         frame_width = 100, frame_height = 100,
-        frame_count = 12, frame_rate = 8
+        frame_count = 2, frame_rate = 8
       )
     })
 
@@ -23,21 +23,21 @@
       suffix = "attack",
       url = "assets/dungeonheroes/sprites/enemies/mushroom_man/mushroom_man_attack.png",
       frame_width = 100, frame_height = 100,
-      frame_count = 6, frame_rate = 6
+      frame_count = 4, frame_rate = 6
     )
     lapply(c("left", "right"), function(direction) {
       enemy$add_animation(
         suffix = paste0("attack_", direction),
         url = sprintf("assets/dungeonheroes/sprites/enemies/mushroom_man/mushroom_man_attack_%s.png", direction),
         frame_width = 100, frame_height = 100,
-        frame_count = 6, frame_rate = 6
+        frame_count = 4, frame_rate = 6
       )
     })
     enemy$add_animation(
       suffix = "destroy",
       url = "assets/dungeonheroes/sprites/enemies/mushroom_man/mushroom_man_destroy.png",
       frame_width = 100, frame_height = 100,
-      frame_count = 6, frame_rate = 8
+      frame_count = 4, frame_rate = 8
     )
 
     enemy
