@@ -1,3 +1,9 @@
+read_dungeonheroes_example <- function() {
+  example_dir <- system.file("examples", "dungeonheroes", package = "shinyphaser")
+  files <- list.files(example_dir, pattern = "[.]R$", recursive = TRUE, full.names = TRUE)
+  unlist(lapply(files, readLines, warn = FALSE), use.names = FALSE)
+}
+
 make_mock_session <- function() {
   msgs <- list()
   env <- new.env(parent = emptyenv())
@@ -376,10 +382,7 @@ test_that("hedgehog action events retain game progress alerts", {
 })
 
 test_that("dungeonheroes Space action retains interactions and combat", {
-  example <- readLines(
-    system.file("examples", "dungeonheroes.R", package = "shinyphaser"),
-    warn = FALSE
-  )
+  example <- read_dungeonheroes_example()
 
   expect_false(any(grepl("sword_in_range", example, fixed = TRUE)))
   expect_true(any(grepl(
@@ -407,10 +410,7 @@ test_that("dungeonheroes Space action retains interactions and combat", {
 })
 
 test_that("dungeonheroes tree has a collidable base and foreground top", {
-  example <- readLines(
-    system.file("examples", "dungeonheroes.R", package = "shinyphaser"),
-    warn = FALSE
-  )
+  example <- read_dungeonheroes_example()
 
   expect_true(any(grepl('name = "dead_tree_1_bottom"', example, fixed = TRUE)))
   expect_true(any(grepl('name = "dead_tree_1_top"', example, fixed = TRUE)))
@@ -423,10 +423,7 @@ test_that("dungeonheroes tree has a collidable base and foreground top", {
 })
 
 test_that("dungeonheroes can travel between mushroom swamps and magma hills", {
-  example <- readLines(
-    system.file("examples", "dungeonheroes.R", package = "shinyphaser"),
-    warn = FALSE
-  )
+  example <- read_dungeonheroes_example()
   magma_map <- jsonlite::read_json(
     system.file("assets", "dungeonheroes", "maps", "magma_hills.json",
                 package = "shinyphaser"),
@@ -458,10 +455,7 @@ test_that("dungeonheroes can travel between mushroom swamps and magma hills", {
 })
 
 test_that("dungeonheroes includes the elf and new western realms", {
-  example <- readLines(
-    system.file("examples", "dungeonheroes.R", package = "shinyphaser"),
-    warn = FALSE
-  )
+  example <- read_dungeonheroes_example()
   wild_map <- jsonlite::read_json(
     system.file("assets", "dungeonheroes", "maps", "wild_forests.json",
                 package = "shinyphaser"),
@@ -535,7 +529,7 @@ test_that("sight approach does not restart active movement or hide alerts", {
 test_that("recent movement selects four-way directional attack animations", {
   game_js <- readLines(system.file("www", "phaser-game.js", package = "shinyphaser"), warn = FALSE)
   sprite_js <- readLines(system.file("www", "phaser-sprite.js", package = "shinyphaser"), warn = FALSE)
-  example <- readLines(system.file("examples", "dungeonheroes.R", package = "shinyphaser"), warn = FALSE)
+  example <- read_dungeonheroes_example()
 
   expect_true(any(grepl("GameBridge.directionalAttackMemory = 1500", game_js, fixed = TRUE)))
   expect_true(any(grepl('rememberMovementDirection(sprite, "left", time)', game_js, fixed = TRUE)))
@@ -607,7 +601,7 @@ test_that("bear uses Arcade world gravity", {
 
 test_that("saved games use Phaser snapshots and server disk persistence", {
   game_js <- readLines(system.file("www", "phaser-game.js", package = "shinyphaser"), warn = FALSE)
-  example <- readLines(system.file("examples", "dungeonheroes.R", package = "shinyphaser"), warn = FALSE)
+  example <- read_dungeonheroes_example()
 
   expect_true(any(grepl("function capturePhaserGameState", game_js, fixed = TRUE)))
   expect_true(any(grepl("object.body.reset(saved.x, saved.y)", game_js, fixed = TRUE)))
@@ -627,7 +621,7 @@ test_that("save file helpers replace named JSON records", {
 })
 
 test_that("dungeonheroes captures its hero before the synchronous disk save", {
-  example <- readLines(system.file("examples", "dungeonheroes.R", package = "shinyphaser"), warn = FALSE)
+  example <- read_dungeonheroes_example()
 
   expect_true(any(grepl("capturePhaserGameState('save_game_requested'", example, fixed = TRUE)))
   expect_true(any(grepl("snapshot = request$objects", example, fixed = TRUE)))
@@ -651,4 +645,23 @@ test_that("save_game writes a supplied Phaser snapshot immediately", {
   expect_equal(saves[[1]]$phaser$objects$hero$x, 321)
   loaded <- game$load_game("checkpoint", restore = FALSE, directory = directory)
   expect_equal(loaded$score, 12)
+})
+
+test_that("dungeonheroes is organized into focused modules and sprite directories", {
+  example_dir <- system.file("examples", "dungeonheroes", package = "shinyphaser")
+  asset_dir <- system.file("assets", "dungeonheroes", "sprites", package = "shinyphaser")
+
+  expect_true(file.exists(file.path(example_dir, "app.R")))
+  expect_true(file.exists(file.path(example_dir, "R", "saving.R")))
+  expect_true(file.exists(file.path(example_dir, "R", "navigation.R")))
+  expect_true(file.exists(file.path(example_dir, "R", "realms", "magma_hills.R")))
+  expect_true(file.exists(file.path(example_dir, "R", "realms", "mushroom_swamps.R")))
+  expect_true(file.exists(file.path(example_dir, "R", "realms", "wild_forests.R")))
+  expect_true(file.exists(file.path(example_dir, "R", "realms", "grey_mountains.R")))
+  expect_true(file.exists(file.path(asset_dir, "hero", "human", "hero_sword_idle.png")))
+  expect_true(file.exists(file.path(asset_dir, "hero", "elf", "hero_elf_idle.png")))
+  expect_true(file.exists(file.path(asset_dir, "hero", "orc", "hero_orc_idle.png")))
+  expect_true(file.exists(file.path(asset_dir, "enemies", "mushroom_man", "mushroom_man_idle.png")))
+  expect_true(file.exists(file.path(asset_dir, "enemies", "skeleton", "skeleton_idle.png")))
+  expect_true(file.exists(file.path(asset_dir, "npc", "wizard", "wizard_idle.png")))
 })
