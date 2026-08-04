@@ -105,29 +105,43 @@
       hero_attack_sound$play()
 
       if (!is.null(enemy_in_range) && isTRUE(enemy_is_alive[[enemy_in_range]])) {
+        hit_enemy <- enemy_in_range
         damage <- hero_weapon$damage
-        enemy_hit_points[[enemy_in_range]] <<- max(0, enemy_hit_points[[enemy_in_range]] - damage)
+        enemy_hit_points[[hit_enemy]] <<- max(0, enemy_hit_points[[hit_enemy]] - damage)
         play_hero_attack_animation()
-        enemies[[enemy_in_range]]$take_damage(
-          source_name = "hero",
-          knockback = hero_weapon$knockback,
+        knockback_direction <- enemy_damage_direction[[hit_enemy]]
+        knockback_vector <- switch(knockback_direction,
+          left = c(-1, 0), right = c(1, 0), up = c(0, -1), c(0, 1)
+        )
+        enemies[[hit_enemy]]$stop_motion()
+        enemies[[hit_enemy]]$set_in_motion(
+          dir_x = knockback_vector[[1]],
+          dir_y = knockback_vector[[2]],
+          # play_animation() queues after 100 ms; keep the generic movement
+          # active for the same total window as all three damage frames.
+          speed = ceiling(hero_weapon$knockback / 0.475),
+          distance = hero_weapon$knockback,
+          lag = 0
+        )
+        enemies[[hit_enemy]]$play_animation(
+          enemy_animation_key(hit_enemy, paste0("damage_", knockback_direction)),
           duration = 375
         )
         set_combat_status(sprintf(
           "You hit %s for %d. Enemy life: %d/%d",
-          format_enemy_label(enemy_in_range), damage,
-          enemy_hit_points[[enemy_in_range]], enemy_max_hit_points[[enemy_in_range]]
+          format_enemy_label(hit_enemy), damage,
+          enemy_hit_points[[hit_enemy]], enemy_max_hit_points[[hit_enemy]]
         ))
 
-        if (enemy_hit_points[[enemy_in_range]] <= 0) {
-          defeated <- enemy_in_range
+        if (enemy_hit_points[[hit_enemy]] <= 0) {
+          defeated <- hit_enemy
           enemy_is_alive[[defeated]] <<- FALSE
           defeated_enemy_count <<- defeated_enemy_count + 1
           later::later(function() {
             enemies[[defeated]]$play_animation(
               enemy_animation_key(defeated, "destroy"), duration = 500
             )
-          }, delay = 0.375)
+          }, delay = 0.275)
           later::later(function() enemies[[defeated]]$destroy(), delay = 0.875)
           enemy_in_range <<- NULL
         }
@@ -352,6 +366,13 @@
       interval = enemy_attack_cooldown * 1000,
       server_action = function(event) {
         enemy_in_range <<- enemy_name
+        delta_x <- event$x2 - event$x1
+        delta_y <- event$y2 - event$y1
+        enemy_damage_direction[[enemy_name]] <<- if (abs(delta_x) > abs(delta_y)) {
+          if (delta_x < 0) "left" else "right"
+        } else {
+          if (delta_y < 0) "up" else "down"
+        }
         now <- as.numeric(Sys.time())
         if (life_points <= 0 || !isTRUE(enemy_is_alive[[enemy_name]]) ||
             now - enemy_last_attack_time[[enemy_name]] < enemy_attack_cooldown) {

@@ -50,6 +50,9 @@
   )
   enemy_attack_cooldown <- 2
   enemy_in_range <- NULL
+  enemy_damage_direction <- stats::setNames(
+    rep("down", length(enemy_names)), enemy_names
+  )
   wizard_in_range <- FALSE
   berry_in_range <- NULL
   hero_last_attack_time <- as.numeric(Sys.time()) - 1

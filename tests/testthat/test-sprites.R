@@ -77,26 +77,3 @@ test_that("Sprite can select a player animation prefix", {
     'setPlayerAnimationPrefix\\("hero", "hero_orc"\\);'
   )
 })
-
-test_that("Sprite damage includes source, animation, knockback, and duration", {
-  session <- make_mock_session()
-  sprite <- Sprite$new(
-    name = "mushroom_man",
-    url = "idle.png",
-    x = 0,
-    y = 0,
-    frame_width = 100,
-    frame_height = 100,
-    frame_rate = 8,
-    session = session
-  )
-
-  sprite$take_damage("hero", animation = "damage", knockback = 52, duration = 375)
-
-  msgs <- session$get_messages()
-  expect_length(msgs, 2)
-  expect_match(
-    msgs[[2]]$message$js,
-    'takeSpriteDamage\\("mushroom_man", "hero", "damage", 52\\.000000, 375\\.000000\\);'
-  )
-})

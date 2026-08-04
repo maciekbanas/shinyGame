@@ -79,26 +79,6 @@ Sprite <- R6::R6Class(
       send_js(private, sprintf("stopSpriteMotion('%s');", private$name))
     },
 
-    #' @description Play directional damage animation and knock the sprite away
-    #'   from another sprite.
-    #' @param source_name Character. Name of the sprite that caused the hit.
-    #' @param animation Character. Base animation suffix. The browser appends
-    #'   the knockback direction (for example, `damage_left`).
-    #' @param knockback Numeric. Distance in pixels to move the damaged sprite.
-    #' @param duration Numeric. Damage animation and knockback duration in
-    #'   milliseconds.
-    take_damage = function(source_name, animation = "damage", knockback,
-                           duration = 375) {
-      js <- sprintf(
-        "takeSpriteDamage(%s, %s, %s, %f, %f);",
-        jsonlite::toJSON(private$name, auto_unbox = TRUE),
-        jsonlite::toJSON(source_name, auto_unbox = TRUE),
-        jsonlite::toJSON(animation, auto_unbox = TRUE),
-        knockback, duration
-      )
-      send_js(private, js)
-    },
-
     #' @description Enable movement controls (arrow keys) for a player sprite.
     #' @param directions Character vector. Directions to enable (defaults to c("left","right","down","up")).
     #' @param speed Numeric. Movement speed in pixels/second (default: 200).
