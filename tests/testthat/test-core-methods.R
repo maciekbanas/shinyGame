@@ -572,6 +572,8 @@ test_that("recent movement selects four-way directional attack animations", {
   expect_true(any(grepl("targetAnim !== animationPrefix + '_idle'", game_js, fixed = TRUE)))
   expect_true(any(grepl('rememberMovementDirection(sprite, movementDirection, now)', sprite_js, fixed = TRUE)))
   expect_true(any(grepl('suffix = paste0("sword_attack_", direction)', example, fixed = TRUE)))
+  expect_true(any(grepl('suffix = paste0("orc_attack_", direction)', example, fixed = TRUE)))
+  expect_true(any(grepl('hero_orc_attack_%s.png', example, fixed = TRUE)))
   expect_true(any(grepl('suffix = paste0("attack_", direction)', example, fixed = TRUE)))
 })
 

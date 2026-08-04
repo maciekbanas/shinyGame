@@ -67,6 +67,14 @@
     frame_width = 100, frame_height = 100,
     frame_count = 3, frame_rate = 4
   )
+  lapply(c("down", "up", "left", "right"), function(direction) {
+    hero$add_animation(
+      suffix = paste0("orc_attack_", direction),
+      url = sprintf("assets/dungeonheroes/sprites/hero/orc/hero_orc_attack_%s.png", direction),
+      frame_width = 100, frame_height = 100,
+      frame_count = 3, frame_rate = 4
+    )
+  })
 
   hero$add_animation(
     suffix = "elf_idle",
