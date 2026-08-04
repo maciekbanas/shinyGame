@@ -327,7 +327,16 @@ function setNavigationOverlayVisible(visible) {
   if (visible && element) element.style.display = "none";
 
   const marker = document.getElementById("realm_character_marker");
-  if (marker) marker.style.display = visible ? "block" : "none";
+  if (marker) {
+    // Keep the realm marker in the same scrolling coordinate space as the
+    // Phaser canvas instead of pinning it to the browser viewport.
+    const container = game?.canvas?.parentElement;
+    if (container && marker.parentElement !== container) {
+      container.style.position = "relative";
+      container.appendChild(marker);
+    }
+    marker.style.display = visible ? "block" : "none";
+  }
 }
 
 function applyWorldBounds(bounds) {
