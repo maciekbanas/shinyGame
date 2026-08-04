@@ -209,6 +209,28 @@ test_that("PhaserGame can create Sound objects", {
   expect_true(any(grepl("addSound\\(\\\"jump\\\", \\\"jump.wav\\\", 0.400000, true\\);", msgs)))
 })
 
+test_that("activate_map serializes realm object arguments as arrays", {
+  session <- make_mock_session()
+  game <- PhaserGame$new()
+  game$set_shiny_session(session)
+
+  game$activate_map(
+    "castle", player_name = "hero", x = 700, y = 500,
+    visible_objects = "blacksmith", hidden_objects = "dead_tree"
+  )
+  game$activate_map("mushroom_swamps", visible_objects = character())
+
+  msgs <- vapply(session$get_messages(), function(m) m$message$js, character(1))
+  expect_true(any(grepl(
+    'activateMap("castle", "hero", 700, 500, ["blacksmith"], ["dead_tree"]);',
+    msgs, fixed = TRUE
+  )))
+  expect_true(any(grepl(
+    'activateMap("mushroom_swamps", null, null, null, [], []);',
+    msgs, fixed = TRUE
+  )))
+})
+
 test_that("browser_actions compile R6 calls for immediate execution", {
   session <- make_mock_session()
   game <- PhaserGame$new()
@@ -435,7 +457,7 @@ test_that("dungeonheroes can travel between mushroom swamps and magma hills", {
   expect_true(any(grepl('name = "map_navigation_background"', example, fixed = TRUE)))
   expect_true(any(grepl('name = "choose_mushroom_swamps"', example, fixed = TRUE)))
   expect_true(any(grepl('name = "choose_magma_hills"', example, fixed = TRUE)))
-  expect_true(any(grepl('x = 1300, y = 700', example, fixed = TRUE)))
+  expect_true(any(grepl('x = 400, y = 300', example, fixed = TRUE)))
   expect_true(any(grepl('mushroom_swamps_map_image$click(', example, fixed = TRUE)))
   expect_true(any(grepl('magma_hills_map_image$click(', example, fixed = TRUE)))
   expect_true(any(grepl('hero$set_depth(98)', example, fixed = TRUE)))
@@ -480,9 +502,9 @@ test_that("dungeonheroes includes the elf and new western realms", {
     'tileset_urls = "assets/dungeonheroes/terrain/grey_mountains/hill_1.png"',
     example, fixed = TRUE
   )))
-  expect_true(any(grepl('x = 700, y = 400', example, fixed = TRUE)))
-  expect_true(any(grepl('x = 300, y = 700', example, fixed = TRUE)))
-  expect_true(any(grepl('left: 700px;', example, fixed = TRUE)))
+  expect_true(any(grepl('x = 400, y = 200', example, fixed = TRUE)))
+  expect_true(any(grepl('x = 300, y = 300', example, fixed = TRUE)))
+  expect_true(any(grepl('left: 400px;', example, fixed = TRUE)))
   expect_false(any(grepl('border-radius: 50%;', example, fixed = TRUE)))
   expect_identical(vapply(wild_map$tilesets, `[[`, character(1), "name"),
                    sprintf("grass_%d", 1:5))
@@ -576,6 +598,7 @@ test_that("browser feedback is configured for immediate visibility and audio", {
   expect_true(any(grepl("if (!scene.load.isLoading()) scene.load.start()", game_js, fixed = TRUE)))
   expect_true(any(grepl("() => addCollider(objectOneName", game_js, fixed = TRUE)))
   expect_true(any(grepl('typeof target !== "string"', game_js, fixed = TRUE)))
+  expect_true(any(grepl("groundLayer.setDepth(-1)", game_js, fixed = TRUE)))
 })
 
 test_that("runtime visual assets initialize when the loader batch completes", {

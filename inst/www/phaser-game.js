@@ -18,6 +18,7 @@ GameBridge.mapLoadQueue = GameBridge.mapLoadQueue || [];
 GameBridge.mapLoading = GameBridge.mapLoading || false;
 GameBridge.mapExits = GameBridge.mapExits || {};
 GameBridge.mapExitVisible = GameBridge.mapExitVisible || false;
+GameBridge.realmObjectVisibility = GameBridge.realmObjectVisibility || {};
 GameBridge.navigationOverlayVisible = GameBridge.navigationOverlayVisible || false;
 GameBridge.lastHeroOverlapState = GameBridge.lastHeroOverlapState || "";
 GameBridge.nextHeroOverlapSendAt = GameBridge.nextHeroOverlapSendAt || 0;
@@ -337,6 +338,12 @@ function setNavigationOverlayVisible(visible) {
     }
     marker.style.display = visible ? "block" : "none";
   }
+  const realmLabel = document.getElementById("realm_name_label");
+  if (realmLabel) {
+    const container = game?.canvas?.parentElement;
+    if (container && realmLabel.parentElement !== container) container.appendChild(realmLabel);
+    realmLabel.style.display = visible ? "block" : "none";
+  }
 }
 
 function applyWorldBounds(bounds) {
@@ -427,6 +434,9 @@ function loadNextMap() {
     const groundLayer = map.createLayer(layerName, phaserTilesets, 0, 0);
 
     groundLayer.setCollisionByProperty({ collides: true });
+    // Tilemaps are scenery. Keep them behind sprites and fixed HUD objects
+    // regardless of which asynchronous asset happens to finish loading first.
+    groundLayer.setDepth(-1);
     GameBridge.maps[mapKey] = { map, layer: groundLayer };
     groundLayer.setVisible(false).setActive(false);
 
@@ -444,6 +454,16 @@ function loadNextMap() {
 
 function activateMap(mapKey, playerName = null, x = null, y = null,
                      visibleObjects = [], hiddenObjects = []) {
+  // R JSON serializers can simplify a one-item vector to a scalar. Normalize
+  // both arguments so realm activation remains safe for zero, one, or many
+  // objects, including messages produced by older shinyphaser versions.
+  visibleObjects = Array.isArray(visibleObjects)
+    ? visibleObjects
+    : (visibleObjects == null ? [] : [visibleObjects]);
+  hiddenObjects = Array.isArray(hiddenObjects)
+    ? hiddenObjects
+    : (hiddenObjects == null ? [] : [hiddenObjects]);
+
   const mapEntry = GameBridge.maps[mapKey];
   if (!mapEntry) {
     GameBridge.pendingActiveMap = {
@@ -466,10 +486,7 @@ function activateMap(mapKey, playerName = null, x = null, y = null,
 
   [...visibleObjects.map((name) => [name, true]),
    ...hiddenObjects.map((name) => [name, false])].forEach(([name, visible]) => {
-    const object = scene.children.getByName(name);
-    if (!object) return;
-    object.setVisible(visible).setActive(visible);
-    if (object.body) object.body.enable = visible;
+    setRealmObjectVisibility(name, visible);
   });
 
   const player = playerName && scene.children.getByName(playerName);
@@ -480,6 +497,21 @@ function activateMap(mapKey, playerName = null, x = null, y = null,
 
   applyPendingTerrainColliders();
   updateMapExitVisibility();
+}
+
+function setRealmObjectVisibility(name, visible) {
+  GameBridge.realmObjectVisibility[name] = Boolean(visible);
+  applyRealmObjectVisibility(name);
+}
+
+function applyRealmObjectVisibility(name) {
+  if (!Object.prototype.hasOwnProperty.call(GameBridge.realmObjectVisibility, name)) return;
+  const object = scene && scene.children.getByName(name);
+  if (!object) return;
+
+  const visible = GameBridge.realmObjectVisibility[name];
+  object.setVisible(visible).setActive(visible);
+  if (object.body) object.body.enable = visible;
 }
 
 function setMapExit(mapKey, playerName, x, y, radius, elementId) {

@@ -78,6 +78,9 @@ function addSprite(name, url, x, y, frameWidth, frameHeight, frameCount, frameRa
 
     scene[name] = sprite;
     applyPendingSpriteActions(name);
+    if (typeof applyRealmObjectVisibility === "function") {
+      applyRealmObjectVisibility(name);
+    }
 
     if (typeof applyPendingCameraFollows === "function") {
       applyPendingCameraFollows();
@@ -102,6 +105,9 @@ function addStaticSprite(name, url, x, y) {
     }
     scene[name] = staticSprite;
     applyPendingSpriteActions(name);
+    if (typeof applyRealmObjectVisibility === "function") {
+      applyRealmObjectVisibility(name);
+    }
 
     if (typeof applyPendingCameraFollows === "function") {
       applyPendingCameraFollows();

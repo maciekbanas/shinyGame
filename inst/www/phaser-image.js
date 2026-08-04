@@ -15,6 +15,9 @@ function addImage(imageName, imageUrl, x = null, y = null, visible = true, click
     }
     applyPendingSpriteActions(imageName);
     scene[imageName].setVisible(visible);
+    if (typeof applyRealmObjectVisibility === "function") {
+      applyRealmObjectVisibility(imageName);
+    }
 
     if (typeof applyPendingCameraFollows === "function") {
       applyPendingCameraFollows();
