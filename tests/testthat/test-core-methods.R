@@ -588,6 +588,17 @@ test_that("runtime visual assets initialize when the loader batch completes", {
   expect_true(any(grepl("applyPendingSpriteActions(imageName)", image_js, fixed = TRUE)))
   expect_true(any(grepl("scene.load.once('complete'", image_js, fixed = TRUE)))
   expect_false(any(grepl("if (!scene.load.isLoading())", sprite_js, fixed = TRUE)))
+
+  interactive <- grep("scene[imageName].setInteractive();", image_js, fixed = TRUE)
+  pending <- grep("applyPendingSpriteActions(imageName);", image_js, fixed = TRUE)
+  expect_length(interactive, 1)
+  expect_length(pending, 1)
+  expect_lt(interactive, pending)
+  expect_true(any(grepl(
+    'withSprite(imageName, (image) => {', image_js, fixed = TRUE
+  )))
+  expect_true(any(grepl('}, "clickImage()");', image_js, fixed = TRUE)))
+  expect_false(any(grepl("scene[imageName].on('pointerdown'", image_js, fixed = TRUE)))
 })
 
 test_that("bear uses Arcade world gravity", {

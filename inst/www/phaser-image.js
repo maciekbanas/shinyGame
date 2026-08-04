@@ -10,10 +10,10 @@ function addImage(imageName, imageUrl, x = null, y = null, visible = true, click
       : scene.cameras.main.height / 2;
 
     scene[imageName] = scene.add.image(px, py, imageName).setName(imageName);
-    applyPendingSpriteActions(imageName);
     if (clickable) {
       scene[imageName].setInteractive();
     }
+    applyPendingSpriteActions(imageName);
     scene[imageName].setVisible(visible);
 
     if (typeof applyPendingCameraFollows === "function") {
@@ -36,12 +36,18 @@ function hideImage(imageName) {
 }
 
 function clickImage(imageName) {
-  scene[imageName].on('pointerdown', () => {
-    console.log(imageName + ' clicked!');
-    Shiny.setInputValue(
-      imageName + '_click',
-      true,
-      { priority: 'event' }
-    )
-  });
+  withSprite(imageName, (image) => {
+    if (image.shinyClickBound) return;
+
+    if (!image.input) image.setInteractive();
+    image.on('pointerdown', () => {
+      console.log(imageName + ' clicked!');
+      Shiny.setInputValue(
+        imageName + '_click',
+        true,
+        { priority: 'event' }
+      );
+    });
+    image.shinyClickBound = true;
+  }, "clickImage()");
 }
