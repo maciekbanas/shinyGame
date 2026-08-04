@@ -18,6 +18,7 @@ GameBridge.mapLoadQueue = GameBridge.mapLoadQueue || [];
 GameBridge.mapLoading = GameBridge.mapLoading || false;
 GameBridge.mapExits = GameBridge.mapExits || {};
 GameBridge.mapExitVisible = GameBridge.mapExitVisible || false;
+GameBridge.realmObjectVisibility = GameBridge.realmObjectVisibility || {};
 GameBridge.navigationOverlayVisible = GameBridge.navigationOverlayVisible || false;
 GameBridge.lastHeroOverlapState = GameBridge.lastHeroOverlapState || "";
 GameBridge.nextHeroOverlapSendAt = GameBridge.nextHeroOverlapSendAt || 0;
@@ -472,10 +473,7 @@ function activateMap(mapKey, playerName = null, x = null, y = null,
 
   [...visibleObjects.map((name) => [name, true]),
    ...hiddenObjects.map((name) => [name, false])].forEach(([name, visible]) => {
-    const object = scene.children.getByName(name);
-    if (!object) return;
-    object.setVisible(visible).setActive(visible);
-    if (object.body) object.body.enable = visible;
+    setRealmObjectVisibility(name, visible);
   });
 
   const player = playerName && scene.children.getByName(playerName);
@@ -486,6 +484,21 @@ function activateMap(mapKey, playerName = null, x = null, y = null,
 
   applyPendingTerrainColliders();
   updateMapExitVisibility();
+}
+
+function setRealmObjectVisibility(name, visible) {
+  GameBridge.realmObjectVisibility[name] = Boolean(visible);
+  applyRealmObjectVisibility(name);
+}
+
+function applyRealmObjectVisibility(name) {
+  if (!Object.prototype.hasOwnProperty.call(GameBridge.realmObjectVisibility, name)) return;
+  const object = scene && scene.children.getByName(name);
+  if (!object) return;
+
+  const visible = GameBridge.realmObjectVisibility[name];
+  object.setVisible(visible).setActive(visible);
+  if (object.body) object.body.enable = visible;
 }
 
 function setMapExit(mapKey, playerName, x, y, radius, elementId) {

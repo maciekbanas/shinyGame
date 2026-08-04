@@ -7,7 +7,7 @@
   )
   session$sendCustomMessage(
     "phaser",
-    list(js = "withSprite('blacksmith', function(sprite) { sprite.setVisible(false).setActive(false); if (sprite.body) sprite.body.enable = false; });")
+    list(js = "setRealmObjectVisibility('blacksmith', false);")
   )
 
   choose_castle <- function(event) {
