@@ -322,7 +322,19 @@
       "columns": 1,
       "image": "../terrain/grey_mountains/rock_1.png",
       "imagewidth": 100,
-      "imageheight": 100
+      "imageheight": 100,
+      "tiles": [
+        {
+          "id": 0,
+          "properties": [
+            {
+              "name": "collides",
+              "type": "bool",
+              "value": true
+            }
+          ]
+        }
+      ]
     }
   ],
   "version": 1.1,
