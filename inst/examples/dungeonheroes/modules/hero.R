@@ -72,7 +72,7 @@
     suffix = "elf_idle",
     url = "assets/dungeonheroes/sprites/hero/elf/hero_elf_idle.png",
     frame_width = 100, frame_height = 100,
-    frame_count = 25, frame_rate = 4
+    frame_count = 21, frame_rate = 4
   )
   lapply(c("down", "left", "right", "up"), function(direction) {
     source_direction <- if (direction %in% c("up", "down")) direction else "down"
