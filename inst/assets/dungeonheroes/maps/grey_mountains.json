@@ -1,8 +1,8 @@
 {
   "width": 20,
   "height": 14,
-  "tilewidth": 32,
-  "tileheight": 32,
+  "tilewidth": 100,
+  "tileheight": 100,
   "orientation": "orthogonal",
   "renderorder": "right-down",
   "infinite": false,
@@ -305,24 +305,24 @@
     {
       "firstgid": 1,
       "name": "hill_1",
-      "tilewidth": 32,
-      "tileheight": 32,
+      "tilewidth": 100,
+      "tileheight": 100,
       "tilecount": 1,
       "columns": 1,
-      "image": "data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAGQAAABkCAYAAABw4pVUAAACB0lEQVR4AeyTQYoDQRDDQp48/4fdH/ggcLeTKJBTYXeNRL2f5/nzv8Pg/fI3RUAhUzpeL4UoZIzA2DpeiELGCIyt44UoZIzA2DpeyE8IGfvIT1rHCxmzpRCFjBEYW8cLUcgYgbF1vBCFjBEYW8cLUcgYgbF1PulCxtB11lFIhytuVQhG1wkqpMMVtyoEo+sEFdLhilsVgtF1ggrpcMWtCsHoOkGFdLjiVoVgdJ2gQjpccatCMLpOUCEdrrhVIRhdJ6iQDlfcqhCMrhNUSIcrblUIRtcJKqTDFbcqBKOLQTxUCEbXCSqkwxW3KgSj6wQV0uGKWxWC0XWCCulwxa0Kweg6QYV0uOJWhWB0naBCOlxxaxSCWw1iAgrB6DpBhXS44laFYHSdoEI6XHGrQjC6TlAhHa64VSEYXSeokA5X3KoQjK4TvCCk8yHf0qqQMZMKUcgYgbF1vBCFjBEYW8cLUcgYgbF1vBCFjBEYW+drLmSMK15HIRhdJ6iQDlfcqhCMrhNUSIcrblUIRtcJKqTDFbcqBKPrBBXS4YpbFYLRdYIKiVzPDxVynnl8USERz/mhQs4zjy8qJOI5P1TIeebxRYVEPOeHCjnPPL6okIjn/FAh55nHFxUS8XSGqVUhic6FmUIuQE9PKiTRuTBTyAXo6UmFJDoXZgq5AD09qZBE58JMIRegpyf/AQAA//9EGQKCAAAABklEQVQDANyQ6f1rQxO7AAAAAElFTkSuQmCC",
-      "imagewidth": 32,
-      "imageheight": 32
+      "image": "../terrain/grey_mountains/hill_1.png",
+      "imagewidth": 100,
+      "imageheight": 100
     },
     {
       "firstgid": 2,
       "name": "rock_1",
-      "tilewidth": 32,
-      "tileheight": 32,
+      "tilewidth": 100,
+      "tileheight": 100,
       "tilecount": 1,
       "columns": 1,
-      "image": "data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAGQAAABkCAYAAABw4pVUAAAEL0lEQVR4AeycUU5jMQxFI/hiF/1ls2wP+OtGoCOLsbgtdV6cxHnmcUfKxCSO7dyjmA4j8fDy8nLhyKPBQ+GfVAoQSCocpRAIgSRTIFk5fCEEsq3A09NTmTW2s+Xy4AvJxYPf1JPxyAMEW9RMkaLizqwRY8W0LMxA26UAgbjkincmkHiNXRkIxCVXvDOBxGvsykAgLrninZcDwY+haI9e9XK5FB1WLMzXaluxotaXA4m6yFHiEkgykimBvL6+Fmt8fHwUHejz9vZWdCTT2FVOSiDGDf7EMoEkwxwGxPoUY90f24/lI+uPj49Fh3wdPbz3GK3nYTQAz89VgEDm6jkcbSoQfN7DlTUEeH5+LvdGw9G0LlOBpL3lLyqMQJLBGgayok1hW7L0+/z8LDrQx/r0huti45kW+3w+l/Od0XK25jMMpBace34FCMSvWegJNxBsUWLPqg7b0q1t5ZBWo+P9/b3osPx71rUNyqy5ZO6J1XLGDaQlKH36FSCQfu1CTqYEIi2hZaAi2OasdYyJPjVb26DMNT/dw09euuaZUwLxXOBovgSSjGgYEGwPaM+8v9WmZuZYHSsMyOqLHCUfgSQjSSAxQLqjTgXS8r0CfSy79TZ43jrT4iNn0Q9t2Vs5pgJZWfhRcxFIMrJNQOSHiDpG68ePqmi3xvWe8fq31hHl1wQkKjnj/lSAQH5qsuuKCURblMytFY60h9azqz8BtdbVqtGWnwlk6yD3YxQgkBhdu6OGAcGnjvbMlmPFxRxod6t05yDmRhtd8f9Gbm30Q7sKBB1pr1GAQNbo3JxlCRCrbVjr2AJqdvMtf5HjEiC/SI/dSyWQ3RFcF+AGgm1G7Otw/V9JLB2tUdRf5tYzlp/VGtEffXBd8uvA9R7bDaQnCc+0K0Ag7Vot8UwJRJ+/zkuUcCbR2mR2Hq26pwRSrfjgmzsAObiig9cjEIeA0p50OI65XAnEJVe8M4HEa+zKQCAuueKdr4Dgz+y1V8qMZeC/VsXGPcsWPx2WD66rr864p781TmZcb7E13r1Z7rk1WnLUfE6nUzn9H5bfFRDLievrFCCQdVo3ZboCos9JZjy99ZR1H89E2fpb42QeyaE16zwSC8+KdtZAP8u+AmI5cX2dAocBsk6y2ExTgejzr80918F4Pef1zKw4Gk9nbFG61jtPBdJbBM99K0Ag31qksEwg+AzRXlE1thaxV+T05ojSxATiLZD+cxQgkDk6ToviBoJPVexplSQKJPfaGlHluoFEFcK4XwoQyJcOaf4eBrL1tG/309z8phCs83trvTUMZH3Jx85IIMn4LgeCrSGTnYXLciBZLp61DgJJRoZACCSZAsnK4QshkGQKJCuHL2QHILWUBFJTZ4c9AtlB9FpKAqmps8Megewgei0lgdTU2WGPQHYQvZaSQGrq7LBHIDuIXkv5DwAA///XxdvyAAAABklEQVQDAJsObvpwq33qAAAAAElFTkSuQmCC",
-      "imagewidth": 32,
-      "imageheight": 32
+      "image": "../terrain/grey_mountains/rock_1.png",
+      "imagewidth": 100,
+      "imageheight": 100
     }
   ],
   "version": 1.1,
