@@ -35,6 +35,7 @@
           "document.getElementById('realm_character_marker').className = '%s %s';",
           marker_character, current_realm
         ),
+        sprintf("setNavigationRealm('%s');", current_realm),
         "setNavigationOverlayVisible(true);",
         "document.getElementById('character_select').style.display = 'none';",
         "document.getElementById('game_start').style.display = 'none';",

@@ -10,28 +10,33 @@
     x = 800, y = 400, width = 1600, height = 800,
     color = "0x000000", visible = FALSE
   )
+  castle_map_image <- game$add_image(
+    name = "choose_castle",
+    url = "assets/dungeonheroes/terrain/castle/castle_map.png",
+    x = 300, y = 200, visible = FALSE, clickable = TRUE
+  )
   mushroom_swamps_map_image <- game$add_image(
     name = "choose_mushroom_swamps",
     url = "assets/dungeonheroes/terrain/mushroom_swamps/mushroom_swamps_map.png",
-    x = 800, y = 400, visible = FALSE, clickable = TRUE
+    x = 500, y = 200, visible = FALSE, clickable = TRUE
   )
   wild_forests_map_image <- game$add_image(
     name = "choose_wild_forests",
     url = "assets/dungeonheroes/terrain/wild_forests/wild_forests_map.png",
-    x = 700, y = 400, visible = FALSE, clickable = TRUE
+    x = 400, y = 200, visible = FALSE, clickable = TRUE
   )
   grey_mountains_map_image <- game$add_image(
     name = "choose_grey_mountains",
     url = "assets/dungeonheroes/terrain/grey_mountains/grey_mountains_map.png",
-    x = 300, y = 700, visible = FALSE, clickable = TRUE
+    x = 300, y = 300, visible = FALSE, clickable = TRUE
   )
   magma_hills_map_image <- game$add_image(
     name = "choose_magma_hills",
     url = "assets/dungeonheroes/terrain/magma_hills/magma_hills_map.png",
-    x = 1300, y = 700, visible = FALSE, clickable = TRUE
+    x = 400, y = 300, visible = FALSE, clickable = TRUE
   )
   navigation_images <- list(
-    wild_forests_map_image, mushroom_swamps_map_image,
+    castle_map_image, wild_forests_map_image, mushroom_swamps_map_image,
     grey_mountains_map_image, magma_hills_map_image
   )
   map_navigation_background$set_scroll_factor(0)
@@ -39,6 +44,13 @@
   lapply(navigation_images, function(image) image$set_scroll_factor(0))
   lapply(navigation_images, function(image) image$set_depth(100))
 
+  game$add_map(
+    map_key = "castle",
+    map_url = "assets/dungeonheroes/maps/castle.json",
+    tileset_urls = "assets/dungeonheroes/terrain/castle/castle_map.png",
+    tileset_names = "castle_map",
+    layer_name = "terrain"
+  )
   game$add_map(
     map_key = "mushroom_swamps",
     map_url = "assets/dungeonheroes/maps/mushroom_swamps.json",

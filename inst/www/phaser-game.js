@@ -337,6 +337,12 @@ function setNavigationOverlayVisible(visible) {
     }
     marker.style.display = visible ? "block" : "none";
   }
+  const realmLabel = document.getElementById("realm_name_label");
+  if (realmLabel) {
+    const container = game?.canvas?.parentElement;
+    if (container && realmLabel.parentElement !== container) container.appendChild(realmLabel);
+    realmLabel.style.display = visible ? "block" : "none";
+  }
 }
 
 function applyWorldBounds(bounds) {

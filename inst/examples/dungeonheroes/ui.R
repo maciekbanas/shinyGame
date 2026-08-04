@@ -148,23 +148,46 @@ ui <- shiny::tagList(
     }
 
     #realm_character_marker.mushroom_swamps {
-      left: 800px;
-      top: 400px;
+      left: 500px;
+      top: 200px;
     }
 
     #realm_character_marker.magma_hills {
-      left: 1300px;
-      top: 700px;
+      left: 400px;
+      top: 300px;
     }
 
     #realm_character_marker.wild_forests {
-      left: 700px;
-      top: 400px;
+      left: 400px;
+      top: 200px;
     }
 
     #realm_character_marker.grey_mountains {
       left: 300px;
-      top: 700px;
+      top: 300px;
+    }
+
+    #realm_character_marker.castle {
+      left: 300px;
+      top: 200px;
+    }
+
+    #realm_name_label {
+      position: absolute;
+      z-index: 8600;
+      display: none;
+      left: 400px;
+      top: 365px;
+      min-width: 220px;
+      transform: translateX(-50%);
+      padding: 10px 18px;
+      border: 2px solid #f5d98b;
+      border-radius: 6px;
+      background: rgba(15, 22, 18, .94);
+      color: #f5d98b;
+      font: 700 22px Georgia, serif;
+      text-align: center;
+      pointer-events: none;
     }
 
     #leave_map {
@@ -242,6 +265,7 @@ ui <- shiny::tagList(
     htmltools::tags$div(class = "skeleton_loader_sprite"),
     htmltools::tags$div("Loading dungeon heroes...")
   ),
+  htmltools::tags$div(id = "realm_name_label", "Mushroom Swamps"),
   htmltools::tags$div(
     id = "game_start",
     htmltools::tags$div(
@@ -317,6 +341,40 @@ ui <- shiny::tagList(
   game$use_phaser(),
   htmltools::tags$script(htmltools::HTML("
     (function() {
+      var realms = {
+        castle: {name: 'Castle', x: 300, y: 200},
+        wild_forests: {name: 'Wild Forests', x: 400, y: 200},
+        mushroom_swamps: {name: 'Mushroom Swamps', x: 500, y: 200},
+        grey_mountains: {name: 'Grey Mountains', x: 300, y: 300},
+        magma_hills: {name: 'Magma Hills', x: 400, y: 300}
+      };
+      window.setNavigationRealm = function(realm) {
+        if (!realms[realm]) return;
+        var marker = document.getElementById('realm_character_marker');
+        Object.keys(realms).forEach(function(key) { marker.classList.remove(key); });
+        marker.classList.add(realm);
+        marker.dataset.realm = realm;
+        document.getElementById('realm_name_label').textContent = realms[realm].name;
+      };
+      document.addEventListener('keydown', function(event) {
+        if (!window.GameBridge || !GameBridge.navigationOverlayVisible) return;
+        var marker = document.getElementById('realm_character_marker');
+        var current = marker.dataset.realm || 'mushroom_swamps';
+        if (event.key === 'Enter') {
+          event.preventDefault();
+          Shiny.setInputValue('navigation_enter_realm', {realm: current, nonce: Date.now()}, {priority: 'event'});
+          return;
+        }
+        var delta = {ArrowLeft: [-100, 0], ArrowRight: [100, 0], ArrowUp: [0, -100], ArrowDown: [0, 100]}[event.key];
+        if (!delta) return;
+        event.preventDefault();
+        var target = Object.keys(realms).find(function(key) {
+          return realms[key].x === realms[current].x + delta[0] && realms[key].y === realms[current].y + delta[1];
+        });
+        if (!target) return;
+        setNavigationRealm(target);
+        Shiny.setInputValue('navigation_realm_selected', {realm: target, nonce: Date.now()}, {priority: 'event'});
+      });
       function renderSaves(items) {
         var host = document.getElementById('saved_games');
         host.innerHTML = '';

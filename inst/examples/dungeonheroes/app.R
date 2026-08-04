@@ -26,6 +26,7 @@ server <- function(input, output, session) {
     file.path("realms", "magma_hills.R"),
     file.path("realms", "wild_forests.R"),
     file.path("realms", "grey_mountains.R"),
+    file.path("realms", "castle.R"),
     "realm_routes.R"
   )
   # These files intentionally live outside an R/ directory. Shiny automatically

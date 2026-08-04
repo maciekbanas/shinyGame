@@ -32,7 +32,7 @@
     if (is.null(save$character) || !save$character %in% c("hero", "hero_orc", "hero_elf")) return()
 
     choose_character(save$character)
-    available_realms <- c("mushroom_swamps", "wild_forests", "grey_mountains", "magma_hills")
+    available_realms <- c("castle", "mushroom_swamps", "wild_forests", "grey_mountains", "magma_hills")
     current_realm <<- if (save$realm %in% available_realms) save$realm else "mushroom_swamps"
     life_points <<- max(0, min(max_life_points, as.numeric(save$lifePoints %||% max_life_points)))
     update_life_points()
@@ -60,10 +60,12 @@
       list(js = sprintf(
         paste(
           "document.getElementById('realm_character_marker').className = %s + ' ' + %s;",
+          "setNavigationRealm(%s);",
           "document.getElementById('game_start').style.display = 'none';",
           "document.getElementById('game_session_actions').style.display = 'flex';"
         ),
         jsonlite::toJSON(marker_character, auto_unbox = TRUE),
+        jsonlite::toJSON(current_realm, auto_unbox = TRUE),
         jsonlite::toJSON(current_realm, auto_unbox = TRUE)
       ))
     )
@@ -77,12 +79,17 @@
       persistent_objects <- c("dead_tree_1_bottom", "dead_tree_1_top", "wizard", "mushroom_spirit")
       available_objects <- c(enemy_names[enemy_is_alive], names(berries)[berry_is_available], persistent_objects)
       unavailable_objects <- c(enemy_names[!enemy_is_alive], names(berries)[!berry_is_available])
-      visible <- if (identical(current_realm, "mushroom_swamps")) available_objects else character()
+      visible <- if (identical(current_realm, "mushroom_swamps")) {
+        available_objects
+      } else if (identical(current_realm, "castle")) {
+        "blacksmith"
+      } else character()
       hidden <- if (!identical(current_realm, "mushroom_swamps")) {
-        c(mushroom_swamps_objects, "talk_bubble_text")
+        c(mushroom_swamps_objects, "talk_bubble_text", "blacksmith")
       } else {
-        unavailable_objects
+        c(unavailable_objects, "blacksmith")
       }
+      if (identical(current_realm, "castle")) hidden <- setdiff(hidden, "blacksmith")
       game$activate_map(current_realm, player_name = "hero", x = x, y = y,
                         visible_objects = visible, hidden_objects = hidden)
     }
