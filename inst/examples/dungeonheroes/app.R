@@ -28,7 +28,9 @@ server <- function(input, output, session) {
     file.path("realms", "grey_mountains.R"),
     "realm_routes.R"
   )
-  for (module in file.path("R", modules)) {
+  # These files intentionally live outside an R/ directory. Shiny automatically
+  # sources R/ before it evaluates app.R, when `game` does not exist yet.
+  for (module in file.path("modules", modules)) {
     sys.source(module, envir = server_env)
   }
 }
