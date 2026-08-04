@@ -598,6 +598,7 @@ test_that("browser feedback is configured for immediate visibility and audio", {
   expect_true(any(grepl("if (!scene.load.isLoading()) scene.load.start()", game_js, fixed = TRUE)))
   expect_true(any(grepl("() => addCollider(objectOneName", game_js, fixed = TRUE)))
   expect_true(any(grepl('typeof target !== "string"', game_js, fixed = TRUE)))
+  expect_true(any(grepl("groundLayer.setDepth(-1)", game_js, fixed = TRUE)))
 })
 
 test_that("runtime visual assets initialize when the loader batch completes", {

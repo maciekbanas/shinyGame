@@ -434,6 +434,9 @@ function loadNextMap() {
     const groundLayer = map.createLayer(layerName, phaserTilesets, 0, 0);
 
     groundLayer.setCollisionByProperty({ collides: true });
+    // Tilemaps are scenery. Keep them behind sprites and fixed HUD objects
+    // regardless of which asynchronous asset happens to finish loading first.
+    groundLayer.setDepth(-1);
     GameBridge.maps[mapKey] = { map, layer: groundLayer };
     groundLayer.setVisible(false).setActive(false);
 
