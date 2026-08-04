@@ -3,7 +3,7 @@
     url = "assets/dungeonheroes/sprites/npc/blacksmith/blacksmith.png",
     x = 800, y = 400,
     frame_width = 100, frame_height = 100,
-    frame_count = 72, frame_rate = 8
+    frame_count = 67, frame_rate = 8
   )
   session$sendCustomMessage(
     "phaser",
