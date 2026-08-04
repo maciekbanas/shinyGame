@@ -1,10 +1,13 @@
 # Dungeon Heroes example
 
-Run the application from the package sources with:
+Run the installed example with:
 
 ```r
-shiny::runApp("inst/examples/dungeonheroes")
+shinyphaser::run_dungeonheroes()
 ```
+
+Package developers can also use
+`shiny::runApp("inst/examples/dungeonheroes")` from the repository root.
 
 The entry point only establishes shared game state and loads focused modules:
 

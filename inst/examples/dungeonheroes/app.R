@@ -1,4 +1,4 @@
-devtools::load_all()
+library(shinyphaser)
 
 game <- PhaserGame$new(width = 1600, height = 800)
 map_tile_size <- 100

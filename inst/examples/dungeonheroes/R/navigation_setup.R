@@ -1,4 +1,7 @@
-  game$set_shiny_session()
+  # Pass the server session explicitly. When this module is sourced, relying on
+  # the default reactive domain can capture a non-session evaluation context,
+  # which makes send_js() fail when it calls sendCustomMessage().
+  game$set_shiny_session(session)
 
   game$set_world_bounds(world_width, world_height)
 
