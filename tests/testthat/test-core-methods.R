@@ -457,7 +457,7 @@ test_that("dungeonheroes can travel between mushroom swamps and magma hills", {
   expect_true(any(grepl('name = "map_navigation_background"', example, fixed = TRUE)))
   expect_true(any(grepl('name = "choose_mushroom_swamps"', example, fixed = TRUE)))
   expect_true(any(grepl('name = "choose_magma_hills"', example, fixed = TRUE)))
-  expect_true(any(grepl('x = 1300, y = 700', example, fixed = TRUE)))
+  expect_true(any(grepl('x = 400, y = 300', example, fixed = TRUE)))
   expect_true(any(grepl('mushroom_swamps_map_image$click(', example, fixed = TRUE)))
   expect_true(any(grepl('magma_hills_map_image$click(', example, fixed = TRUE)))
   expect_true(any(grepl('hero$set_depth(98)', example, fixed = TRUE)))
@@ -502,9 +502,9 @@ test_that("dungeonheroes includes the elf and new western realms", {
     'tileset_urls = "assets/dungeonheroes/terrain/grey_mountains/hill_1.png"',
     example, fixed = TRUE
   )))
-  expect_true(any(grepl('x = 700, y = 400', example, fixed = TRUE)))
-  expect_true(any(grepl('x = 300, y = 700', example, fixed = TRUE)))
-  expect_true(any(grepl('left: 700px;', example, fixed = TRUE)))
+  expect_true(any(grepl('x = 400, y = 200', example, fixed = TRUE)))
+  expect_true(any(grepl('x = 300, y = 300', example, fixed = TRUE)))
+  expect_true(any(grepl('left: 400px;', example, fixed = TRUE)))
   expect_false(any(grepl('border-radius: 50%;', example, fixed = TRUE)))
   expect_identical(vapply(wild_map$tilesets, `[[`, character(1), "name"),
                    sprintf("grass_%d", 1:5))
