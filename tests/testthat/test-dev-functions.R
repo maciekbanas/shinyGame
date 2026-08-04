@@ -4,6 +4,7 @@ test_that("run_sample_app is available", {
 
 test_that("run_dungeonheroes is available and its app is packaged", {
   expect_true(is.function(run_dungeonheroes))
+  expect_true("run_dungeonheroes" %in% getNamespaceExports("shinyphaser"))
   app_file <- system.file(
     "examples", "dungeonheroes", "app.R", package = "shinyphaser"
   )
