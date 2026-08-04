@@ -60,7 +60,7 @@
   hero_weapons <- list(
     sword = list(damage = 2, knockback = 28),
     axe = list(damage = 2, knockback = 52),
-    bow = list(damage = 2, knockback = 40)
+    staff = list(damage = 2, knockback = 40)
   )
   hero_weapon <- NULL
   health_bar_segment_count <- 10
