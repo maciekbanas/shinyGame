@@ -13,6 +13,7 @@ shinyphaser_version <- as.character(utils::packageVersion("shinyphaser"))
 source("ui.R", local = TRUE)
 
 server <- function(input, output, session) {
+  server_env <- environment()
   modules <- c(
     "game_state.R",
     "navigation_setup.R",
@@ -27,7 +28,9 @@ server <- function(input, output, session) {
     file.path("realms", "grey_mountains.R"),
     "realm_routes.R"
   )
-  lapply(file.path("R", modules), source, local = environment())
+  for (module in file.path("R", modules)) {
+    sys.source(module, envir = server_env)
+  }
 }
 
 shiny::shinyApp(ui, server)

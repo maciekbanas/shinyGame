@@ -1,13 +1,13 @@
 # Dungeon Heroes example
 
-Run the installed example with:
+When developing shinyphaser, load the working tree and run the example with:
 
 ```r
-shinyphaser::run_dungeonheroes()
+devtools::load_all()
+run_dungeonheroes()
 ```
 
-Package developers can also use
-`shiny::runApp("inst/examples/dungeonheroes")` from the repository root.
+Installed-package users can call `shinyphaser::run_dungeonheroes()` instead.
 
 The entry point only establishes shared game state and loads focused modules:
 
@@ -18,6 +18,6 @@ The entry point only establishes shared game state and loads focused modules:
 - `R/saving.R` owns save/load observers.
 - `R/realms/` contains realm-specific maps, objects, and entry handlers.
 
-Modules are sourced into the Shiny server environment in the order listed in
-`app.R`; this lets callbacks share session state without turning the example
+Modules are sourced into the active Shiny server invocation in the order listed
+in `app.R`; this lets callbacks share session state without turning the example
 back into one large file.

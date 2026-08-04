@@ -4,7 +4,15 @@ test_that("run_sample_app is available", {
 
 test_that("run_dungeonheroes is available and its app is packaged", {
   expect_true(is.function(run_dungeonheroes))
-  expect_true(file.exists(system.file(
+  app_file <- system.file(
     "examples", "dungeonheroes", "app.R", package = "shinyphaser"
+  )
+  expect_true(file.exists(app_file))
+
+  app <- readLines(app_file, warn = FALSE)
+  expect_true(any(grepl("server_env <- environment()", app, fixed = TRUE)))
+  expect_true(any(grepl("sys.source(module, envir = server_env)", app, fixed = TRUE)))
+  expect_false(any(grepl(
+    'lapply(file.path("R", modules), source', app, fixed = TRUE
   )))
 })
