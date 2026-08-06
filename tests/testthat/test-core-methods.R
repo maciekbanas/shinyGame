@@ -552,8 +552,8 @@ test_that("wild forests has passable foreground vegetation and berries", {
     "frame_width = 200, frame_height = 400", example, fixed = TRUE
   )))
   expect_true(any(grepl("decoration$set_depth(20)", example, fixed = TRUE)))
-  expect_true(sum(grepl("bush_[1-4]_[1-9] = c\\(asset", example)) >= 24)
-  expect_true(sum(grepl("big_tree_[1-9] = c\\(asset", example)) >= 8)
+  expect_true(sum(grepl("bush_[1-4]_[0-9]+ = c\\(asset", example)) >= 48)
+  expect_true(sum(grepl("big_tree_[0-9]+ = c\\(asset", example)) >= 16)
   expect_true(any(grepl("game$add_collision_rectangle(", example, fixed = TRUE)))
   expect_true(any(grepl(
     "game$add_collider(\"hero\", collision_name)", example, fixed = TRUE
@@ -596,6 +596,26 @@ test_that("collision rectangles create invisible static physics bodies", {
   expect_true(any(grepl(
     "scene.physics.add.existing(rectangle, true);", game_js, fixed = TRUE
   )))
+})
+
+test_that("image visibility waits for asynchronously loaded images", {
+  image_js <- readLines(
+    system.file("www", "phaser-image.js", package = "shinyphaser"), warn = FALSE
+  )
+  image_source <- paste(image_js, collapse = "\n")
+
+  expect_true(grepl(
+    'withSprite(imageName, (image) => image.setVisible(true), "showImage()")',
+    image_source, fixed = TRUE
+  ))
+  expect_true(grepl(
+    'withSprite(imageName, (image) => image.setVisible(false), "hideImage()")',
+    image_source, fixed = TRUE
+  ))
+  expect_lt(
+    regexpr("scene[imageName].setVisible(visible)", image_source, fixed = TRUE)[[1]],
+    regexpr("applyPendingSpriteActions(imageName)", image_source, fixed = TRUE)[[1]]
+  )
 })
 
 test_that("realm marker shares the navigation canvas coordinate space", {

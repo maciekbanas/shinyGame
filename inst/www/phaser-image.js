@@ -13,8 +13,8 @@ function addImage(imageName, imageUrl, x = null, y = null, visible = true, click
     if (clickable) {
       scene[imageName].setInteractive();
     }
-    applyPendingSpriteActions(imageName);
     scene[imageName].setVisible(visible);
+    applyPendingSpriteActions(imageName);
     if (typeof applyRealmObjectVisibility === "function") {
       applyRealmObjectVisibility(imageName);
     }
@@ -31,11 +31,11 @@ function addImage(imageName, imageUrl, x = null, y = null, visible = true, click
 }
 
 function showImage(imageName) {
-  scene[imageName].setVisible(true)
+  withSprite(imageName, (image) => image.setVisible(true), "showImage()");
 }
 
 function hideImage(imageName) {
-  scene[imageName].setVisible(false)
+  withSprite(imageName, (image) => image.setVisible(false), "hideImage()");
 }
 
 function clickImage(imageName) {
