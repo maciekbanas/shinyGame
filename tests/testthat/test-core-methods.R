@@ -522,7 +522,13 @@ test_that("dungeonheroes includes the elf and new western realms", {
   expect_true(any(grepl('left: 400px;', example, fixed = TRUE)))
   expect_false(any(grepl('border-radius: 50%;', example, fixed = TRUE)))
   expect_identical(vapply(wild_map$tilesets, `[[`, character(1), "name"),
-                   sprintf("grass_%d", 1:5))
+                   c(sprintf("grass_%d", 1:5), "forest_path_1"))
+  expect_true(any(grepl(
+    '"assets/dungeonheroes/terrain/wild_forests/forest_path_1.png"',
+    example, fixed = TRUE
+  )))
+  expect_identical(wild_map$tilesets[[6]]$firstgid, 6L)
+  expect_true(sum(unlist(wild_map$layers[[1]]$data) == 6L) >= 128)
   expect_identical(vapply(grey_map$tilesets, `[[`, character(1), "name"),
                    c("hill_1", "rock_1"))
   expect_true(grey_map$tilesets[[2]]$tiles[[1]]$properties[[1]]$value)

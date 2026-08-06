@@ -115,10 +115,11 @@
   game$add_map(
     map_key = "wild_forests",
     map_url = "assets/dungeonheroes/maps/wild_forests.json",
-    tileset_urls = sprintf(
-      "assets/dungeonheroes/terrain/wild_forests/grass_%d.png", 1:5
+    tileset_urls = c(
+      sprintf("assets/dungeonheroes/terrain/wild_forests/grass_%d.png", 1:5),
+      "assets/dungeonheroes/terrain/wild_forests/forest_path_1.png"
     ),
-    tileset_names = sprintf("grass_%d", 1:5),
+    tileset_names = c(sprintf("grass_%d", 1:5), "forest_path_1"),
     layer_name = "terrain"
   )
   game$add_map(
