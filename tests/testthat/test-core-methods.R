@@ -561,11 +561,17 @@ test_that("wild forests has passable foreground vegetation and berries", {
     'c("big_tree_1", "big_tree_4")', example, fixed = TRUE
   )))
   expect_true(any(grepl("decoration$set_depth(20)", example, fixed = TRUE)))
-  expect_true(sum(grepl("bush_[1-4]_[0-9]+ = c\\(asset", example)) >= 48)
-  expect_true(sum(grepl('asset = "big_tree_1"', example, fixed = TRUE)) >= 16)
-  expect_true(sum(grepl('asset = "big_tree_2"', example, fixed = TRUE)) >= 8)
-  expect_true(sum(grepl('asset = "big_tree_3"', example, fixed = TRUE)) >= 8)
-  expect_true(sum(grepl('asset = "big_tree_4"', example, fixed = TRUE)) >= 20)
+  expect_true(any(grepl(
+    "bush_1 = 36, bush_2 = 36, bush_3 = 36, bush_4 = 36",
+    example, fixed = TRUE
+  )))
+  expect_true(any(grepl(
+    "big_tree_1 = 48, big_tree_2 = 24, big_tree_3 = 24, big_tree_4 = 60",
+    example, fixed = TRUE
+  )))
+  expect_true(any(grepl(
+    "forest_decoration_candidates$path_distance >= 3", example, fixed = TRUE
+  )))
   expect_true(any(grepl("game$add_collision_rectangle(", example, fixed = TRUE)))
   expect_true(any(grepl(
     "game$add_collider(\"hero\", collision_name)", example, fixed = TRUE
