@@ -45,6 +45,7 @@ game <- PhaserGame$new(id = "my_game", width = 1024, height = 768)
 \item \href{#method-PhaserGame-set_world_bounds}{\code{PhaserGame$set_world_bounds()}}
 \item \href{#method-PhaserGame-enable_terrain_collision}{\code{PhaserGame$enable_terrain_collision()}}
 \item \href{#method-PhaserGame-add_sprite}{\code{PhaserGame$add_sprite()}}
+\item \href{#method-PhaserGame-add_collision_rectangle}{\code{PhaserGame$add_collision_rectangle()}}
 \item \href{#method-PhaserGame-add_group}{\code{PhaserGame$add_group()}}
 \item \href{#method-PhaserGame-add_static_sprite}{\code{PhaserGame$add_static_sprite()}}
 \item \href{#method-PhaserGame-add_static_group}{\code{PhaserGame$add_static_group()}}
@@ -385,6 +386,31 @@ Load a base spritesheet and create an "idle" animation.
 \item{\code{frame_count}}{Numeric. Number of frames in the spritesheet.}
 
 \item{\code{frame_rate}}{Numeric. Frames per second for the idle animation.}
+}
+\if{html}{\out{</div>}}
+}
+}
+\if{html}{\out{<hr>}}
+\if{html}{\out{<a id="method-PhaserGame-add_collision_rectangle"></a>}}
+\if{latex}{\out{\hypertarget{method-PhaserGame-add_collision_rectangle}{}}}
+\subsection{Method \code{add_collision_rectangle()}}{
+Add an invisible static collision rectangle to the world.
+\subsection{Usage}{
+\if{html}{\out{<div class="r">}}\preformatted{PhaserGame$add_collision_rectangle(name, x, y, width, height)}\if{html}{\out{</div>}}
+}
+
+\subsection{Arguments}{
+\if{html}{\out{<div class="arguments">}}
+\describe{
+\item{\code{name}}{Character. Unique name of the collision rectangle.}
+
+\item{\code{x}}{Numeric. X-coordinate of its center.}
+
+\item{\code{y}}{Numeric. Y-coordinate of its center.}
+
+\item{\code{width}}{Numeric. Collision width in pixels.}
+
+\item{\code{height}}{Numeric. Collision height in pixels.}
 }
 \if{html}{\out{</div>}}
 }

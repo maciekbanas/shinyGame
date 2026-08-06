@@ -299,6 +299,19 @@ PhaserGame <- R6::R6Class(
       ))
     },
 
+    #' @description Add an invisible static collision rectangle to the world.
+    #' @param name Character. Unique name of the collision rectangle.
+    #' @param x Numeric. X-coordinate of its center.
+    #' @param y Numeric. Y-coordinate of its center.
+    #' @param width Numeric. Collision width in pixels.
+    #' @param height Numeric. Collision height in pixels.
+    add_collision_rectangle = function(name, x, y, width, height) {
+      send_js(private, sprintf(
+        "addCollisionRectangle(%s, %f, %f, %f, %f);",
+        jsonlite::toJSON(name, auto_unbox = TRUE), x, y, width, height
+      ))
+    },
+
     #' @description Adds a dynamic group from a spritesheet.
     #' @param name Character. Unique name of the group.
     add_group = function(name) {

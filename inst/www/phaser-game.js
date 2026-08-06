@@ -724,6 +724,17 @@ function addRectangle(name, x, y, width, height, fillColor, visible = true, clic
   }
 }
 
+function addCollisionRectangle(name, x, y, width, height) {
+  const rectangle = scene.add.rectangle(x, y, width, height, 0x000000, 0)
+    .setName(name);
+  scene.physics.add.existing(rectangle, true);
+  scene[name] = rectangle;
+
+  if (typeof applyRealmObjectVisibility === "function") {
+    applyRealmObjectVisibility(name);
+  }
+}
+
 function addGraphics(name, x, y, width, height, fillColor) {
   scene[name] = scene.add.rectangle(x, y, width, height, fillColor);
 }

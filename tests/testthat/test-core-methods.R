@@ -552,7 +552,18 @@ test_that("wild forests has passable foreground vegetation and berries", {
     "frame_width = 200, frame_height = 400", example, fixed = TRUE
   )))
   expect_true(any(grepl("decoration$set_depth(20)", example, fixed = TRUE)))
-  expect_false(any(grepl('add_collider("hero", "forest_', example, fixed = TRUE)))
+  expect_true(sum(grepl("bush_[1-4]_[1-9] = c\\(asset", example)) >= 24)
+  expect_true(sum(grepl("big_tree_[1-9] = c\\(asset", example)) >= 8)
+  expect_true(any(grepl("game$add_collision_rectangle(", example, fixed = TRUE)))
+  expect_true(any(grepl(
+    "game$add_collider(\"hero\", collision_name)", example, fixed = TRUE
+  )))
+  expect_true(any(grepl(
+    "width = if (is_tree) 200 else 100", example, fixed = TRUE
+  )))
+  expect_true(any(grepl(
+    "height = if (is_tree) 50 else 20", example, fixed = TRUE
+  )))
   expect_true(any(grepl(
     'url = "assets/dungeonheroes/perks/berries.png"', example, fixed = TRUE
   )))
@@ -561,6 +572,29 @@ test_that("wild forests has passable foreground vegetation and berries", {
   )))
   expect_true(any(grepl(
     "visible_objects = wild_forests_objects", example, fixed = TRUE
+  )))
+})
+
+test_that("collision rectangles create invisible static physics bodies", {
+  session <- make_mock_session()
+  game <- PhaserGame$new()
+  game$set_shiny_session(session)
+  game$add_collision_rectangle("tree_base", 100, 175, 200, 50)
+  msgs <- vapply(session$get_messages(), function(m) m$message$js, character(1))
+  expect_true(any(grepl(
+    'addCollisionRectangle("tree_base", 100.000000, 175.000000, 200.000000, 50.000000);',
+    msgs, fixed = TRUE
+  )))
+
+  game_js <- readLines(
+    system.file("www", "phaser-game.js", package = "shinyphaser"), warn = FALSE
+  )
+  expect_true(any(grepl(
+    "scene.add.rectangle(x, y, width, height, 0x000000, 0)",
+    game_js, fixed = TRUE
+  )))
+  expect_true(any(grepl(
+    "scene.physics.add.existing(rectangle, true);", game_js, fixed = TRUE
   )))
 })
 
