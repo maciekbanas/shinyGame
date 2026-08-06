@@ -1,60 +1,105 @@
-  forest_path_waypoints <- data.frame(
-    x = c(1, 3, 9, 6, 16, 11, 22, 18, 29),
-    y = c(0, 7, 14, 22, 31, 39, 48, 55, 63)
+  forest_decoration_specs <- list(
+    bush_1_1 = c(asset = "bush_1", x = 450, y = 450),
+    bush_1_2 = c(asset = "bush_1", x = 2450, y = 1250),
+    bush_1_3 = c(asset = "bush_1", x = 750, y = 3550),
+    bush_1_4 = c(asset = "bush_1", x = 2750, y = 5150),
+    bush_1_5 = c(asset = "bush_1", x = 1650, y = 2350),
+    bush_1_6 = c(asset = "bush_1", x = 2350, y = 4550),
+    bush_1_7 = c(asset = "bush_1", x = 350, y = 2850),
+    bush_1_8 = c(asset = "bush_1", x = 1250, y = 850),
+    bush_1_9 = c(asset = "bush_1", x = 1950, y = 3250),
+    bush_1_10 = c(asset = "bush_1", x = 3050, y = 4250),
+    bush_1_11 = c(asset = "bush_1", x = 850, y = 4950),
+    bush_1_12 = c(asset = "bush_1", x = 2250, y = 6250),
+    bush_2_1 = c(asset = "bush_2", x = 1450, y = 750),
+    bush_2_2 = c(asset = "bush_2", x = 550, y = 2250),
+    bush_2_3 = c(asset = "bush_2", x = 2050, y = 4050),
+    bush_2_4 = c(asset = "bush_2", x = 1150, y = 5650),
+    bush_2_5 = c(asset = "bush_2", x = 3050, y = 2050),
+    bush_2_6 = c(asset = "bush_2", x = 350, y = 6050),
+    bush_2_7 = c(asset = "bush_2", x = 650, y = 1450),
+    bush_2_8 = c(asset = "bush_2", x = 1950, y = 950),
+    bush_2_9 = c(asset = "bush_2", x = 2550, y = 2550),
+    bush_2_10 = c(asset = "bush_2", x = 950, y = 3850),
+    bush_2_11 = c(asset = "bush_2", x = 2750, y = 4850),
+    bush_2_12 = c(asset = "bush_2", x = 1450, y = 6350),
+    bush_3_1 = c(asset = "bush_3", x = 2850, y = 550),
+    bush_3_2 = c(asset = "bush_3", x = 1750, y = 1850),
+    bush_3_3 = c(asset = "bush_3", x = 450, y = 4550),
+    bush_3_4 = c(asset = "bush_3", x = 2650, y = 5950),
+    bush_3_5 = c(asset = "bush_3", x = 1150, y = 4150),
+    bush_3_6 = c(asset = "bush_3", x = 2150, y = 5450),
+    bush_3_7 = c(asset = "bush_3", x = 250, y = 750),
+    bush_3_8 = c(asset = "bush_3", x = 2250, y = 650),
+    bush_3_9 = c(asset = "bush_3", x = 1350, y = 2050),
+    bush_3_10 = c(asset = "bush_3", x = 3050, y = 3250),
+    bush_3_11 = c(asset = "bush_3", x = 650, y = 4250),
+    bush_3_12 = c(asset = "bush_3", x = 1750, y = 5750),
+    bush_4_1 = c(asset = "bush_4", x = 950, y = 1250),
+    bush_4_2 = c(asset = "bush_4", x = 2750, y = 2850),
+    bush_4_3 = c(asset = "bush_4", x = 1450, y = 4750),
+    bush_4_4 = c(asset = "bush_4", x = 3050, y = 6250),
+    bush_4_5 = c(asset = "bush_4", x = 350, y = 1650),
+    bush_4_6 = c(asset = "bush_4", x = 1850, y = 6150),
+    bush_4_7 = c(asset = "bush_4", x = 1750, y = 550),
+    bush_4_8 = c(asset = "bush_4", x = 2650, y = 950),
+    bush_4_9 = c(asset = "bush_4", x = 750, y = 3050),
+    bush_4_10 = c(asset = "bush_4", x = 2250, y = 3650),
+    bush_4_11 = c(asset = "bush_4", x = 1250, y = 5250),
+    bush_4_12 = c(asset = "bush_4", x = 2850, y = 5750),
+    big_tree_1_1 = c(asset = "big_tree_1", x = 450, y = 1050),
+    big_tree_1_2 = c(asset = "big_tree_1", x = 2250, y = 1750),
+    big_tree_1_3 = c(asset = "big_tree_1", x = 1150, y = 2950),
+    big_tree_1_4 = c(asset = "big_tree_1", x = 2750, y = 3850),
+    big_tree_1_5 = c(asset = "big_tree_1", x = 650, y = 5350),
+    big_tree_1_6 = c(asset = "big_tree_1", x = 1550, y = 1450),
+    big_tree_1_7 = c(asset = "big_tree_1", x = 3050, y = 2450),
+    big_tree_1_8 = c(asset = "big_tree_1", x = 1850, y = 5050),
+    big_tree_1_9 = c(asset = "big_tree_1", x = 1050, y = 1950),
+    big_tree_1_10 = c(asset = "big_tree_1", x = 2650, y = 750),
+    big_tree_1_11 = c(asset = "big_tree_1", x = 450, y = 3450),
+    big_tree_1_12 = c(asset = "big_tree_1", x = 2050, y = 2850),
+    big_tree_1_13 = c(asset = "big_tree_1", x = 3050, y = 4450),
+    big_tree_1_14 = c(asset = "big_tree_1", x = 1050, y = 4650),
+    big_tree_1_15 = c(asset = "big_tree_1", x = 2450, y = 5550),
+    big_tree_1_16 = c(asset = "big_tree_1", x = 550, y = 6150),
+    big_tree_2_1 = c(asset = "big_tree_2", x = 350, y = 1250),
+    big_tree_2_2 = c(asset = "big_tree_2", x = 1350, y = 1050),
+    big_tree_2_3 = c(asset = "big_tree_2", x = 2450, y = 2150),
+    big_tree_2_4 = c(asset = "big_tree_2", x = 750, y = 3750),
+    big_tree_2_5 = c(asset = "big_tree_2", x = 1950, y = 4250),
+    big_tree_2_6 = c(asset = "big_tree_2", x = 2850, y = 5250),
+    big_tree_2_7 = c(asset = "big_tree_2", x = 1250, y = 5850),
+    big_tree_2_8 = c(asset = "big_tree_2", x = 3050, y = 6050),
+    big_tree_3_1 = c(asset = "big_tree_3", x = 850, y = 850),
+    big_tree_3_2 = c(asset = "big_tree_3", x = 1850, y = 1650),
+    big_tree_3_3 = c(asset = "big_tree_3", x = 2850, y = 1850),
+    big_tree_3_4 = c(asset = "big_tree_3", x = 350, y = 4050),
+    big_tree_3_5 = c(asset = "big_tree_3", x = 2150, y = 3950),
+    big_tree_3_6 = c(asset = "big_tree_3", x = 650, y = 4950),
+    big_tree_3_7 = c(asset = "big_tree_3", x = 1650, y = 5550),
+    big_tree_3_8 = c(asset = "big_tree_3", x = 2550, y = 6250),
+    big_tree_4_1 = c(asset = "big_tree_4", x = 650, y = 550),
+    big_tree_4_2 = c(asset = "big_tree_4", x = 1150, y = 1150),
+    big_tree_4_3 = c(asset = "big_tree_4", x = 2050, y = 1250),
+    big_tree_4_4 = c(asset = "big_tree_4", x = 2950, y = 1150),
+    big_tree_4_5 = c(asset = "big_tree_4", x = 550, y = 1850),
+    big_tree_4_6 = c(asset = "big_tree_4", x = 1550, y = 2150),
+    big_tree_4_7 = c(asset = "big_tree_4", x = 2550, y = 3050),
+    big_tree_4_8 = c(asset = "big_tree_4", x = 1050, y = 3350),
+    big_tree_4_9 = c(asset = "big_tree_4", x = 2950, y = 3550),
+    big_tree_4_10 = c(asset = "big_tree_4", x = 550, y = 4550),
+    big_tree_4_11 = c(asset = "big_tree_4", x = 1550, y = 4750),
+    big_tree_4_12 = c(asset = "big_tree_4", x = 2550, y = 4650),
+    big_tree_4_13 = c(asset = "big_tree_4", x = 350, y = 5550),
+    big_tree_4_14 = c(asset = "big_tree_4", x = 950, y = 6250),
+    big_tree_4_15 = c(asset = "big_tree_4", x = 2050, y = 5950),
+    big_tree_4_16 = c(asset = "big_tree_4", x = 2950, y = 5750),
+    big_tree_4_17 = c(asset = "big_tree_4", x = 2250, y = 2450),
+    big_tree_4_18 = c(asset = "big_tree_4", x = 750, y = 2650),
+    big_tree_4_19 = c(asset = "big_tree_4", x = 1750, y = 3650),
+    big_tree_4_20 = c(asset = "big_tree_4", x = 2750, y = 4150)
   )
-  forest_path_x <- stats::approx(
-    forest_path_waypoints$y, forest_path_waypoints$x,
-    xout = 0:63, method = "linear", rule = 2
-  )$y
-
-  forest_decoration_candidates <- expand.grid(
-    column = 2:30, row = 3:62, KEEP.OUT.ATTRS = FALSE
-  )
-  forest_decoration_candidates$path_distance <- apply(
-    vapply(0:2, function(row_offset) {
-      path_row <- pmin(forest_decoration_candidates$row + row_offset, 63)
-      abs(forest_decoration_candidates$column - forest_path_x[path_row + 1])
-    }, numeric(nrow(forest_decoration_candidates))),
-    1, min
-  )
-  # A deterministic tie-breaker spreads objects within the areas furthest from
-  # the path instead of arranging them in obvious rows.
-  forest_decoration_candidates$tie_breaker <- (
-    forest_decoration_candidates$column * 37 +
-      forest_decoration_candidates$row * 61
-  ) %% 101
-  forest_decoration_candidates <- forest_decoration_candidates[
-    forest_decoration_candidates$path_distance >= 3,
-  ]
-  forest_decoration_candidates$density_score <-
-    forest_decoration_candidates$path_distance +
-      forest_decoration_candidates$tie_breaker / 5
-  forest_decoration_candidates <- forest_decoration_candidates[order(
-    -forest_decoration_candidates$density_score
-  ), ]
-
-  forest_asset_counts <- c(
-    bush_1 = 36, bush_2 = 36, bush_3 = 36, bush_4 = 36,
-    big_tree_1 = 48, big_tree_2 = 24, big_tree_3 = 24, big_tree_4 = 60
-  )
-  forest_decoration_assets <- rep(
-    names(forest_asset_counts), times = forest_asset_counts
-  )
-  forest_decoration_specs <- lapply(
-    seq_along(forest_decoration_assets), function(index) {
-      position <- forest_decoration_candidates[index, ]
-      c(
-        asset = forest_decoration_assets[[index]],
-        x = position$column * 100 + 50,
-        y = position$row * 100 + 50
-      )
-    }
-  )
-  names(forest_decoration_specs) <- unlist(lapply(
-    names(forest_asset_counts), function(asset) {
-      sprintf("%s_%d", asset, seq_len(forest_asset_counts[[asset]]))
-    }
-  ))
 
   forest_decorations <- lapply(names(forest_decoration_specs), function(name) {
     spec <- forest_decoration_specs[[name]]
