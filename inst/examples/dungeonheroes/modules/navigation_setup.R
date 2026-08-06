@@ -124,7 +124,10 @@
   game$add_map(
     map_key = "grey_mountains",
     map_url = "assets/dungeonheroes/maps/grey_mountains.json",
-    tileset_urls = "assets/dungeonheroes/terrain/grey_mountains/hill_1.png",
-    tileset_names = "hill_1",
+    tileset_urls = c(
+      "assets/dungeonheroes/terrain/grey_mountains/hill_1.png",
+      "assets/dungeonheroes/terrain/grey_mountains/rock_1.png"
+    ),
+    tileset_names = c("hill_1", "rock_1"),
     layer_name = "terrain"
   )

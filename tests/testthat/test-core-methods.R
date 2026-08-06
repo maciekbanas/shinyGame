@@ -508,18 +508,27 @@ test_that("dungeonheroes includes the elf and new western realms", {
   expect_true(any(grepl('name = "choose_grey_mountains"', example, fixed = TRUE)))
   expect_true(any(grepl('map_key = "grey_mountains"', example, fixed = TRUE)))
   expect_true(any(grepl(
-    'tileset_urls = "assets/dungeonheroes/terrain/grey_mountains/hill_1.png"',
+    '"assets/dungeonheroes/terrain/grey_mountains/hill_1.png"',
     example, fixed = TRUE
   )))
+  expect_true(any(grepl(
+    '"assets/dungeonheroes/terrain/grey_mountains/rock_1.png"',
+    example, fixed = TRUE
+  )))
+  expect_true(any(grepl('tileset_names = c("hill_1", "rock_1")',
+                        example, fixed = TRUE)))
   expect_true(any(grepl('x = 400, y = 200', example, fixed = TRUE)))
   expect_true(any(grepl('x = 300, y = 300', example, fixed = TRUE)))
   expect_true(any(grepl('left: 400px;', example, fixed = TRUE)))
   expect_false(any(grepl('border-radius: 50%;', example, fixed = TRUE)))
   expect_identical(vapply(wild_map$tilesets, `[[`, character(1), "name"),
                    sprintf("grass_%d", 1:5))
-  expect_identical(vapply(grey_map$tilesets, `[[`, character(1), "name"), "hill_1")
+  expect_identical(vapply(grey_map$tilesets, `[[`, character(1), "name"),
+                   c("hill_1", "rock_1"))
+  expect_true(grey_map$tilesets[[2]]$tiles[[1]]$properties[[1]]$value)
   expect_length(wild_map$layers[[1]]$data, 32 * 64)
-  expect_length(grey_map$layers[[1]]$data, 32 * 64)
+  expect_length(grey_map$layers[[1]]$data,
+                grey_map$width * grey_map$height)
 })
 
 test_that("realm marker shares the navigation canvas coordinate space", {
