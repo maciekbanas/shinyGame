@@ -531,6 +531,39 @@ test_that("dungeonheroes includes the elf and new western realms", {
                 grey_map$width * grey_map$height)
 })
 
+test_that("wild forests has passable foreground vegetation and berries", {
+  example <- read_dungeonheroes_example()
+  asset_dir <- system.file(
+    "assets", "dungeonheroes", "terrain", "wild_forests",
+    package = "shinyphaser"
+  )
+
+  expect_true(all(file.exists(file.path(
+    asset_dir, c(sprintf("bush_%d.png", 1:4), "big_tree_1.png")
+  ))))
+  expect_true(any(grepl(
+    'file.path("realms", "wild_forests_world.R")', example, fixed = TRUE
+  )))
+  expect_true(any(grepl(
+    '"assets/dungeonheroes/terrain/wild_forests/%s.png", spec[["asset"]]',
+    example, fixed = TRUE
+  )))
+  expect_true(any(grepl(
+    "frame_width = 200, frame_height = 400", example, fixed = TRUE
+  )))
+  expect_true(any(grepl("decoration$set_depth(20)", example, fixed = TRUE)))
+  expect_false(any(grepl('add_collider("hero", "forest_', example, fixed = TRUE)))
+  expect_true(any(grepl(
+    'url = "assets/dungeonheroes/perks/berries.png"', example, fixed = TRUE
+  )))
+  expect_true(any(grepl(
+    "add_berry_handlers(names(forest_berries))", example, fixed = TRUE
+  )))
+  expect_true(any(grepl(
+    "visible_objects = wild_forests_objects", example, fixed = TRUE
+  )))
+})
+
 test_that("realm marker shares the navigation canvas coordinate space", {
   game_js <- readLines(
     system.file("www", "phaser-game.js", package = "shinyphaser"),

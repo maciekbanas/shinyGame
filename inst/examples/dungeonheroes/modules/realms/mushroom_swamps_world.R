@@ -258,7 +258,7 @@
   })
   names(berries) <- names(berry_specs)
 
-  lapply(names(berries), function(berry_name) {
+  add_berry_handlers <- function(berry_names) lapply(berry_names, function(berry_name) {
     force(berry_name)
     game$add_overlap(
       "hero", berry_name, input = input,
@@ -273,6 +273,9 @@
       }
     )
   })
+  add_berry_handlers(names(berries))
+
+  mushroom_swamps_berry_names <- names(berries)
 
 
   wizard <- game$add_sprite(
