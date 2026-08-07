@@ -139,18 +139,18 @@
     big_tree_5_14 = c(asset = "big_tree_5", x = 550, y = 1150),
     big_tree_5_15 = c(asset = "big_tree_5", x = 2850, y = 4350),
     big_tree_5_16 = c(asset = "big_tree_5", x = 850, y = 3050),
-    small_tree_6_1 = c(asset = "small_tree_6", x = 2150, y = 3050),
-    small_tree_6_2 = c(asset = "small_tree_6", x = 3050, y = 1450),
-    small_tree_6_3 = c(asset = "small_tree_6", x = 2450, y = 4950),
-    small_tree_6_4 = c(asset = "small_tree_6", x = 450, y = 3650),
-    small_tree_6_5 = c(asset = "small_tree_6", x = 750, y = 5550),
-    small_tree_6_6 = c(asset = "small_tree_6", x = 2250, y = 450),
-    small_tree_6_7 = c(asset = "small_tree_6", x = 1650, y = 3950),
-    small_tree_6_8 = c(asset = "small_tree_6", x = 2550, y = 2350),
-    small_tree_6_9 = c(asset = "small_tree_6", x = 1950, y = 5850),
-    small_tree_6_10 = c(asset = "small_tree_6", x = 550, y = 1050),
-    small_tree_6_11 = c(asset = "small_tree_6", x = 2850, y = 4250),
-    small_tree_6_12 = c(asset = "small_tree_6", x = 850, y = 2950)
+    small_tree_1_1 = c(asset = "small_tree_1", x = 2150, y = 3050),
+    small_tree_1_2 = c(asset = "small_tree_1", x = 3050, y = 1450),
+    small_tree_1_3 = c(asset = "small_tree_1", x = 2450, y = 4950),
+    small_tree_1_4 = c(asset = "small_tree_1", x = 450, y = 3650),
+    small_tree_1_5 = c(asset = "small_tree_1", x = 750, y = 5550),
+    small_tree_1_6 = c(asset = "small_tree_1", x = 2250, y = 450),
+    small_tree_1_7 = c(asset = "small_tree_1", x = 1650, y = 3950),
+    small_tree_1_8 = c(asset = "small_tree_1", x = 2550, y = 2350),
+    small_tree_1_9 = c(asset = "small_tree_1", x = 1950, y = 5850),
+    small_tree_1_10 = c(asset = "small_tree_1", x = 550, y = 1050),
+    small_tree_1_11 = c(asset = "small_tree_1", x = 2850, y = 4250),
+    small_tree_1_12 = c(asset = "small_tree_1", x = 850, y = 2950)
   )
 
   forest_decorations <- lapply(names(forest_decoration_specs), function(name) {
@@ -187,7 +187,7 @@
     )
     collision_y_offset <- if (is_tall_tree) {
       175
-    } else if (identical(spec[["asset"]], "small_tree_6")) {
+    } else if (identical(spec[["asset"]], "small_tree_1")) {
       75
     } else if (is_tree) {
       125

@@ -570,9 +570,9 @@ test_that("wild forests has passable foreground vegetation and berries", {
   expect_true(sum(grepl('asset = "bush_5"', example, fixed = TRUE)) >= 12)
   expect_true(sum(grepl('asset = "bush_6"', example, fixed = TRUE)) >= 12)
   expect_true(sum(grepl('asset = "big_tree_5"', example, fixed = TRUE)) >= 16)
-  expect_true(sum(grepl('asset = "small_tree_6"', example, fixed = TRUE)) >= 12)
+  expect_true(sum(grepl('asset = "small_tree_1"', example, fixed = TRUE)) >= 12)
   expect_true(any(grepl(
-    'identical(spec[["asset"]], "small_tree_6")', example, fixed = TRUE
+    'identical(spec[["asset"]], "small_tree_1")', example, fixed = TRUE
   )))
   expect_true(any(grepl("game$add_collision_rectangle(", example, fixed = TRUE)))
   expect_true(any(grepl(
