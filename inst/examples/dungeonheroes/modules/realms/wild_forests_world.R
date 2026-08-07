@@ -98,7 +98,59 @@
     big_tree_4_17 = c(asset = "big_tree_4", x = 2250, y = 2450),
     big_tree_4_18 = c(asset = "big_tree_4", x = 750, y = 2650),
     big_tree_4_19 = c(asset = "big_tree_4", x = 1750, y = 3650),
-    big_tree_4_20 = c(asset = "big_tree_4", x = 2750, y = 4150)
+    big_tree_4_20 = c(asset = "big_tree_4", x = 2750, y = 4150),
+    bush_5_1 = c(asset = "bush_5", x = 2250, y = 3150),
+    bush_5_2 = c(asset = "bush_5", x = 250, y = 1850),
+    bush_5_3 = c(asset = "bush_5", x = 2550, y = 5050),
+    bush_5_4 = c(asset = "bush_5", x = 550, y = 3750),
+    bush_5_5 = c(asset = "bush_5", x = 1450, y = 2150),
+    bush_5_6 = c(asset = "bush_5", x = 850, y = 5650),
+    bush_5_7 = c(asset = "bush_5", x = 2350, y = 550),
+    bush_5_8 = c(asset = "bush_5", x = 1750, y = 4050),
+    bush_5_9 = c(asset = "bush_5", x = 2650, y = 2450),
+    bush_5_10 = c(asset = "bush_5", x = 2950, y = 4350),
+    bush_5_11 = c(asset = "bush_5", x = 950, y = 3050),
+    bush_5_12 = c(asset = "bush_5", x = 1850, y = 1450),
+    bush_6_1 = c(asset = "bush_6", x = 1250, y = 4950),
+    bush_6_2 = c(asset = "bush_6", x = 2150, y = 3350),
+    bush_6_3 = c(asset = "bush_6", x = 3050, y = 1750),
+    bush_6_4 = c(asset = "bush_6", x = 2450, y = 5250),
+    bush_6_5 = c(asset = "bush_6", x = 1050, y = 450),
+    bush_6_6 = c(asset = "bush_6", x = 450, y = 3950),
+    bush_6_7 = c(asset = "bush_6", x = 1350, y = 2350),
+    bush_6_8 = c(asset = "bush_6", x = 750, y = 5850),
+    bush_6_9 = c(asset = "bush_6", x = 2250, y = 750),
+    bush_6_10 = c(asset = "bush_6", x = 2550, y = 2650),
+    bush_6_11 = c(asset = "bush_6", x = 1950, y = 6150),
+    bush_6_12 = c(asset = "bush_6", x = 550, y = 1350),
+    big_tree_5_1 = c(asset = "big_tree_5", x = 2950, y = 4150),
+    big_tree_5_2 = c(asset = "big_tree_5", x = 950, y = 2850),
+    big_tree_5_3 = c(asset = "big_tree_5", x = 1850, y = 1250),
+    big_tree_5_4 = c(asset = "big_tree_5", x = 1250, y = 4750),
+    big_tree_5_5 = c(asset = "big_tree_5", x = 2150, y = 3150),
+    big_tree_5_6 = c(asset = "big_tree_5", x = 3050, y = 1550),
+    big_tree_5_7 = c(asset = "big_tree_5", x = 2450, y = 5050),
+    big_tree_5_8 = c(asset = "big_tree_5", x = 450, y = 3750),
+    big_tree_5_9 = c(asset = "big_tree_5", x = 1350, y = 2150),
+    big_tree_5_10 = c(asset = "big_tree_5", x = 750, y = 5650),
+    big_tree_5_11 = c(asset = "big_tree_5", x = 2250, y = 550),
+    big_tree_5_12 = c(asset = "big_tree_5", x = 2550, y = 2450),
+    big_tree_5_13 = c(asset = "big_tree_5", x = 1950, y = 5950),
+    big_tree_5_14 = c(asset = "big_tree_5", x = 550, y = 1150),
+    big_tree_5_15 = c(asset = "big_tree_5", x = 2850, y = 4350),
+    big_tree_5_16 = c(asset = "big_tree_5", x = 850, y = 3050),
+    small_tree_6_1 = c(asset = "small_tree_6", x = 2150, y = 3050),
+    small_tree_6_2 = c(asset = "small_tree_6", x = 3050, y = 1450),
+    small_tree_6_3 = c(asset = "small_tree_6", x = 2450, y = 4950),
+    small_tree_6_4 = c(asset = "small_tree_6", x = 450, y = 3650),
+    small_tree_6_5 = c(asset = "small_tree_6", x = 750, y = 5550),
+    small_tree_6_6 = c(asset = "small_tree_6", x = 2250, y = 450),
+    small_tree_6_7 = c(asset = "small_tree_6", x = 1650, y = 3950),
+    small_tree_6_8 = c(asset = "small_tree_6", x = 2550, y = 2350),
+    small_tree_6_9 = c(asset = "small_tree_6", x = 1950, y = 5850),
+    small_tree_6_10 = c(asset = "small_tree_6", x = 550, y = 1050),
+    small_tree_6_11 = c(asset = "small_tree_6", x = 2850, y = 4250),
+    small_tree_6_12 = c(asset = "small_tree_6", x = 850, y = 2950)
   )
 
   forest_decorations <- lapply(names(forest_decoration_specs), function(name) {
@@ -106,8 +158,8 @@
     asset_url <- sprintf(
       "assets/dungeonheroes/terrain/wild_forests/%s.png", spec[["asset"]]
     )
-    is_tall_tree <- spec[["asset"]] %in% c("big_tree_1", "big_tree_4")
-    decoration <- if (is_tall_tree) {
+    is_animated_tree <- spec[["asset"]] %in% c("big_tree_1", "big_tree_4")
+    decoration <- if (is_animated_tree) {
       game$add_sprite(
         name = paste0("forest_", name), url = asset_url,
         x = as.numeric(spec[["x"]]), y = as.numeric(spec[["y"]]),
@@ -128,15 +180,26 @@
 
   forest_collision_names <- vapply(names(forest_decoration_specs), function(name) {
     spec <- forest_decoration_specs[[name]]
-    is_tree <- startsWith(spec[["asset"]], "big_tree_")
-    is_tall_tree <- spec[["asset"]] %in% c("big_tree_1", "big_tree_4")
-    collision_y_offset <- if (is_tall_tree) 175 else if (is_tree) 125 else 40
+    is_tree <- grepl("tree_", spec[["asset"]], fixed = TRUE)
+    is_big_tree <- startsWith(spec[["asset"]], "big_tree_")
+    is_tall_tree <- spec[["asset"]] %in% c(
+      "big_tree_1", "big_tree_4", "big_tree_5"
+    )
+    collision_y_offset <- if (is_tall_tree) {
+      175
+    } else if (identical(spec[["asset"]], "small_tree_6")) {
+      75
+    } else if (is_tree) {
+      125
+    } else {
+      40
+    }
     collision_name <- paste0("forest_", name, "_base")
     game$add_collision_rectangle(
       name = collision_name,
       x = as.numeric(spec[["x"]]),
       y = as.numeric(spec[["y"]]) + collision_y_offset,
-      width = if (is_tree) 120 else 60,
+      width = if (is_big_tree) 120 else 60,
       height = if (is_tree) 50 else 20
     )
     game$add_collider("hero", collision_name)

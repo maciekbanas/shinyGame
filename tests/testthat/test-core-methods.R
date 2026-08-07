@@ -558,7 +558,8 @@ test_that("wild forests has passable foreground vegetation and berries", {
     "frame_width = 200, frame_height = 400", example, fixed = TRUE
   )))
   expect_true(any(grepl(
-    'c("big_tree_1", "big_tree_4")', example, fixed = TRUE
+    'is_animated_tree <- spec[["asset"]] %in% c("big_tree_1", "big_tree_4")',
+    example, fixed = TRUE
   )))
   expect_true(any(grepl("decoration$set_depth(20)", example, fixed = TRUE)))
   expect_true(sum(grepl("bush_[1-4]_[0-9]+ = c\\(asset", example)) >= 48)
@@ -566,12 +567,19 @@ test_that("wild forests has passable foreground vegetation and berries", {
   expect_true(sum(grepl('asset = "big_tree_2"', example, fixed = TRUE)) >= 8)
   expect_true(sum(grepl('asset = "big_tree_3"', example, fixed = TRUE)) >= 8)
   expect_true(sum(grepl('asset = "big_tree_4"', example, fixed = TRUE)) >= 20)
+  expect_true(sum(grepl('asset = "bush_5"', example, fixed = TRUE)) >= 12)
+  expect_true(sum(grepl('asset = "bush_6"', example, fixed = TRUE)) >= 12)
+  expect_true(sum(grepl('asset = "big_tree_5"', example, fixed = TRUE)) >= 16)
+  expect_true(sum(grepl('asset = "small_tree_6"', example, fixed = TRUE)) >= 12)
+  expect_true(any(grepl(
+    'identical(spec[["asset"]], "small_tree_6")', example, fixed = TRUE
+  )))
   expect_true(any(grepl("game$add_collision_rectangle(", example, fixed = TRUE)))
   expect_true(any(grepl(
     "game$add_collider(\"hero\", collision_name)", example, fixed = TRUE
   )))
   expect_true(any(grepl(
-    "width = if (is_tree) 120 else 60", example, fixed = TRUE
+    "width = if (is_big_tree) 120 else 60", example, fixed = TRUE
   )))
   expect_true(any(grepl(
     "height = if (is_tree) 50 else 20", example, fixed = TRUE
