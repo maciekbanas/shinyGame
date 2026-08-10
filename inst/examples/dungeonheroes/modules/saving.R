@@ -86,15 +86,7 @@
       } else if (identical(current_realm, "castle")) {
         "blacksmith"
       } else character()
-      hidden <- if (identical(current_realm, "mushroom_swamps")) {
-        c(unavailable_objects, wild_forests_objects, "blacksmith")
-      } else if (identical(current_realm, "wild_forests")) {
-        c(mushroom_swamps_objects, unavailable_objects, "talk_bubble_text", "blacksmith")
-      } else {
-        c(mushroom_swamps_objects, wild_forests_objects, "talk_bubble_text", "blacksmith")
-      }
-      if (identical(current_realm, "castle")) hidden <- setdiff(hidden, "blacksmith")
       game$activate_map(current_realm, player_name = "hero", x = x, y = y,
-                        visible_objects = visible, hidden_objects = hidden)
+                        objects = visible)
     }
   }, ignoreInit = TRUE)

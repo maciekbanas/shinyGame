@@ -209,24 +209,24 @@ test_that("PhaserGame can create Sound objects", {
   expect_true(any(grepl("addSound\\(\\\"jump\\\", \\\"jump.wav\\\", 0.400000, true\\);", msgs)))
 })
 
-test_that("activate_map serializes realm object arguments as arrays", {
+test_that("activate_map serializes map objects as an array", {
   session <- make_mock_session()
   game <- PhaserGame$new()
   game$set_shiny_session(session)
 
   game$activate_map(
     "castle", player_name = "hero", x = 700, y = 500,
-    visible_objects = "blacksmith", hidden_objects = "dead_tree"
+    objects = "blacksmith"
   )
-  game$activate_map("mushroom_swamps", visible_objects = character())
+  game$activate_map("mushroom_swamps", objects = character())
 
   msgs <- vapply(session$get_messages(), function(m) m$message$js, character(1))
   expect_true(any(grepl(
-    'activateMap("castle", "hero", 700, 500, ["blacksmith"], ["dead_tree"]);',
+    'activateMap("castle", "hero", 700, 500, ["blacksmith"]);',
     msgs, fixed = TRUE
   )))
   expect_true(any(grepl(
-    'activateMap("mushroom_swamps", null, null, null, [], []);',
+    'activateMap("mushroom_swamps", null, null, null, []);',
     msgs, fixed = TRUE
   )))
 })
@@ -591,7 +591,7 @@ test_that("wild forests has passable foreground vegetation and berries", {
     "add_berry_handlers(names(forest_berries))", example, fixed = TRUE
   )))
   expect_true(any(grepl(
-    "visible_objects = wild_forests_objects", example, fixed = TRUE
+    "objects = wild_forests_objects", example, fixed = TRUE
   )))
 })
 

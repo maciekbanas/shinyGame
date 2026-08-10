@@ -19,6 +19,7 @@ GameBridge.mapLoading = GameBridge.mapLoading || false;
 GameBridge.mapExits = GameBridge.mapExits || {};
 GameBridge.mapExitVisible = GameBridge.mapExitVisible || false;
 GameBridge.realmObjectVisibility = GameBridge.realmObjectVisibility || {};
+GameBridge.mapObjects = GameBridge.mapObjects || new Set();
 GameBridge.navigationOverlayVisible = GameBridge.navigationOverlayVisible || false;
 GameBridge.lastHeroOverlapState = GameBridge.lastHeroOverlapState || "";
 GameBridge.nextHeroOverlapSendAt = GameBridge.nextHeroOverlapSendAt || 0;
@@ -453,22 +454,16 @@ function loadNextMap() {
 }
 
 function activateMap(mapKey, playerName = null, x = null, y = null,
-                     visibleObjects = [], hiddenObjects = []) {
+                     objects = []) {
   // R JSON serializers can simplify a one-item vector to a scalar. Normalize
-  // both arguments so realm activation remains safe for zero, one, or many
-  // objects, including messages produced by older shinyphaser versions.
-  visibleObjects = Array.isArray(visibleObjects)
-    ? visibleObjects
-    : (visibleObjects == null ? [] : [visibleObjects]);
-  hiddenObjects = Array.isArray(hiddenObjects)
-    ? hiddenObjects
-    : (hiddenObjects == null ? [] : [hiddenObjects]);
+  // the argument so map activation remains safe for zero, one, or many objects.
+  objects = Array.isArray(objects) ? objects : (objects == null ? [] : [objects]);
 
   const mapEntry = GameBridge.maps[mapKey];
   if (!mapEntry) {
     GameBridge.pendingActiveMap = {
       mapKey,
-      args: [mapKey, playerName, x, y, visibleObjects, hiddenObjects]
+      args: [mapKey, playerName, x, y, objects]
     };
     return;
   }
@@ -484,9 +479,9 @@ function activateMap(mapKey, playerName = null, x = null, y = null,
   scene.physics.world.setBounds(0, 0, mapEntry.map.widthInPixels, mapEntry.map.heightInPixels);
   scene.cameras.main.setBounds(0, 0, mapEntry.map.widthInPixels, mapEntry.map.heightInPixels);
 
-  [...visibleObjects.map((name) => [name, true]),
-   ...hiddenObjects.map((name) => [name, false])].forEach(([name, visible]) => {
-    setRealmObjectVisibility(name, visible);
+  objects.forEach((name) => GameBridge.mapObjects.add(name));
+  GameBridge.mapObjects.forEach((name) => {
+    setRealmObjectVisibility(name, objects.includes(name));
   });
 
   const player = playerName && scene.children.getByName(playerName);

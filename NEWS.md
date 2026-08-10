@@ -1,5 +1,8 @@
 # shinyphaser (development version)
 
+* Simplified `PhaserGame$activate_map()` object visibility: callers now list
+  only the objects that the activated map should show, and previously managed
+  map objects are hidden automatically.
 * Split event handling into explicit `browser_action` and `server_action`
   parameters. Browser-side calls must now be declared with `browser_actions()`,
   while arbitrary R logic belongs in a server action.

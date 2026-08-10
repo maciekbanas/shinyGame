@@ -229,17 +229,17 @@ PhaserGame <- R6::R6Class(
     #' @param player_name Character. Optional player sprite to reposition.
     #' @param x Numeric. Optional player x-coordinate.
     #' @param y Numeric. Optional player y-coordinate.
-    #' @param visible_objects Character vector. Scene objects to show and enable.
-    #' @param hidden_objects Character vector. Scene objects to hide and disable.
+    #' @param objects Character vector. Scene objects to show and enable. Objects
+    #'   shown by an earlier map activation are hidden automatically.
     #' @return Invisible; sends a custom message to the client.
     activate_map = function(map_key, player_name = NULL, x = NULL, y = NULL,
-                            visible_objects = character(), hidden_objects = character()) {
+                            objects = character()) {
       js_value <- function(value) jsonlite::toJSON(value, auto_unbox = TRUE, null = "null")
       js_array <- function(value) jsonlite::toJSON(value, auto_unbox = FALSE, null = "null")
       js <- sprintf(
-        "activateMap(%s, %s, %s, %s, %s, %s);",
+        "activateMap(%s, %s, %s, %s, %s);",
         js_value(map_key), js_value(player_name), js_value(x), js_value(y),
-        js_array(visible_objects), js_array(hidden_objects)
+        js_array(objects)
       )
       send_js(private, js)
     },
