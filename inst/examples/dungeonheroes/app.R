@@ -19,6 +19,7 @@ server <- function(input, output, session) {
     "navigation_setup.R",
     "hero.R",
     file.path("realms", "mushroom_swamps_world.R"),
+    file.path("realms", "wild_forests_world.R"),
     "navigation.R",
     "saving.R",
     "navigation_events.R",

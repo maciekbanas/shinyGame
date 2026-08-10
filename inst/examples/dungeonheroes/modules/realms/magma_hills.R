@@ -6,7 +6,7 @@
       # Magma hills has its own hill-top arrival point, separate from the
       # mushroom swamps entrance at (100, 100).
       "magma_hills", player_name = "hero", x = 1550, y = 650,
-      hidden_objects = c(mushroom_swamps_objects, "talk_bubble_text", "blacksmith")
+      hidden_objects = c(mushroom_swamps_objects, wild_forests_objects, "talk_bubble_text", "blacksmith")
     )
     enemy_status_text$set("enemies: none in magma hills")
     set_combat_status("Explore the hills. Lava is impassable.")

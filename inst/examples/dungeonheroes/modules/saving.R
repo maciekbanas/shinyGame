@@ -80,14 +80,18 @@
       available_objects <- c(enemy_names[enemy_is_alive], names(berries)[berry_is_available], persistent_objects)
       unavailable_objects <- c(enemy_names[!enemy_is_alive], names(berries)[!berry_is_available])
       visible <- if (identical(current_realm, "mushroom_swamps")) {
-        available_objects
+        intersect(available_objects, mushroom_swamps_objects)
+      } else if (identical(current_realm, "wild_forests")) {
+        c(names(forest_decorations), intersect(available_objects, names(forest_berries)))
       } else if (identical(current_realm, "castle")) {
         "blacksmith"
       } else character()
-      hidden <- if (!identical(current_realm, "mushroom_swamps")) {
-        c(mushroom_swamps_objects, "talk_bubble_text", "blacksmith")
+      hidden <- if (identical(current_realm, "mushroom_swamps")) {
+        c(unavailable_objects, wild_forests_objects, "blacksmith")
+      } else if (identical(current_realm, "wild_forests")) {
+        c(mushroom_swamps_objects, unavailable_objects, "talk_bubble_text", "blacksmith")
       } else {
-        c(unavailable_objects, "blacksmith")
+        c(mushroom_swamps_objects, wild_forests_objects, "talk_bubble_text", "blacksmith")
       }
       if (identical(current_realm, "castle")) hidden <- setdiff(hidden, "blacksmith")
       game$activate_map(current_realm, player_name = "hero", x = x, y = y,

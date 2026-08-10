@@ -522,13 +522,120 @@ test_that("dungeonheroes includes the elf and new western realms", {
   expect_true(any(grepl('left: 400px;', example, fixed = TRUE)))
   expect_false(any(grepl('border-radius: 50%;', example, fixed = TRUE)))
   expect_identical(vapply(wild_map$tilesets, `[[`, character(1), "name"),
-                   sprintf("grass_%d", 1:5))
+                   c(sprintf("grass_%d", 1:5), "forest_path_1"))
+  expect_true(any(grepl(
+    '"assets/dungeonheroes/terrain/wild_forests/forest_path_1.png"',
+    example, fixed = TRUE
+  )))
+  expect_identical(wild_map$tilesets[[6]]$firstgid, 6L)
+  expect_true(sum(unlist(wild_map$layers[[1]]$data) == 6L) >= 128)
   expect_identical(vapply(grey_map$tilesets, `[[`, character(1), "name"),
                    c("hill_1", "rock_1"))
   expect_true(grey_map$tilesets[[2]]$tiles[[1]]$properties[[1]]$value)
   expect_length(wild_map$layers[[1]]$data, 32 * 64)
   expect_length(grey_map$layers[[1]]$data,
                 grey_map$width * grey_map$height)
+})
+
+test_that("wild forests has passable foreground vegetation and berries", {
+  example <- read_dungeonheroes_example()
+  asset_dir <- system.file(
+    "assets", "dungeonheroes", "terrain", "wild_forests",
+    package = "shinyphaser"
+  )
+
+  expect_true(all(file.exists(file.path(
+    asset_dir, c(sprintf("bush_%d.png", 1:4), "big_tree_1.png")
+  ))))
+  expect_true(any(grepl(
+    'file.path("realms", "wild_forests_world.R")', example, fixed = TRUE
+  )))
+  expect_true(any(grepl(
+    '"assets/dungeonheroes/terrain/wild_forests/%s.png", spec[["asset"]]',
+    example, fixed = TRUE
+  )))
+  expect_true(any(grepl(
+    "frame_width = 200, frame_height = 400", example, fixed = TRUE
+  )))
+  expect_true(any(grepl(
+    'is_animated_tree <- spec[["asset"]] %in% c("big_tree_1", "big_tree_4")',
+    example, fixed = TRUE
+  )))
+  expect_true(any(grepl("decoration$set_depth(20)", example, fixed = TRUE)))
+  expect_true(sum(grepl("bush_[1-4]_[0-9]+ = c\\(asset", example)) >= 48)
+  expect_true(sum(grepl('asset = "big_tree_1"', example, fixed = TRUE)) >= 16)
+  expect_true(sum(grepl('asset = "big_tree_2"', example, fixed = TRUE)) >= 8)
+  expect_true(sum(grepl('asset = "big_tree_3"', example, fixed = TRUE)) >= 8)
+  expect_true(sum(grepl('asset = "big_tree_4"', example, fixed = TRUE)) >= 20)
+  expect_true(sum(grepl('asset = "bush_5"', example, fixed = TRUE)) >= 12)
+  expect_true(sum(grepl('asset = "bush_6"', example, fixed = TRUE)) >= 12)
+  expect_true(sum(grepl('asset = "big_tree_5"', example, fixed = TRUE)) >= 16)
+  expect_true(sum(grepl('asset = "small_tree_1"', example, fixed = TRUE)) >= 12)
+  expect_true(any(grepl(
+    'identical(spec[["asset"]], "small_tree_1")', example, fixed = TRUE
+  )))
+  expect_true(any(grepl("game$add_collision_rectangle(", example, fixed = TRUE)))
+  expect_true(any(grepl(
+    "game$add_collider(\"hero\", collision_name)", example, fixed = TRUE
+  )))
+  expect_true(any(grepl(
+    "width = if (is_big_tree) 120 else 60", example, fixed = TRUE
+  )))
+  expect_true(any(grepl(
+    "height = if (is_tree) 50 else 20", example, fixed = TRUE
+  )))
+  expect_true(any(grepl(
+    'url = "assets/dungeonheroes/perks/berries.png"', example, fixed = TRUE
+  )))
+  expect_true(any(grepl(
+    "add_berry_handlers(names(forest_berries))", example, fixed = TRUE
+  )))
+  expect_true(any(grepl(
+    "visible_objects = wild_forests_objects", example, fixed = TRUE
+  )))
+})
+
+test_that("collision rectangles create invisible static physics bodies", {
+  session <- make_mock_session()
+  game <- PhaserGame$new()
+  game$set_shiny_session(session)
+  game$add_collision_rectangle("tree_base", 100, 175, 200, 50)
+  msgs <- vapply(session$get_messages(), function(m) m$message$js, character(1))
+  expect_true(any(grepl(
+    'addCollisionRectangle("tree_base", 100.000000, 175.000000, 200.000000, 50.000000);',
+    msgs, fixed = TRUE
+  )))
+
+  game_js <- readLines(
+    system.file("www", "phaser-game.js", package = "shinyphaser"), warn = FALSE
+  )
+  expect_true(any(grepl(
+    "scene.add.rectangle(x, y, width, height, 0x000000, 0)",
+    game_js, fixed = TRUE
+  )))
+  expect_true(any(grepl(
+    "scene.physics.add.existing(rectangle, true);", game_js, fixed = TRUE
+  )))
+})
+
+test_that("image visibility waits for asynchronously loaded images", {
+  image_js <- readLines(
+    system.file("www", "phaser-image.js", package = "shinyphaser"), warn = FALSE
+  )
+  image_source <- paste(image_js, collapse = "\n")
+
+  expect_true(grepl(
+    'withSprite(imageName, (image) => image.setVisible(true), "showImage()")',
+    image_source, fixed = TRUE
+  ))
+  expect_true(grepl(
+    'withSprite(imageName, (image) => image.setVisible(false), "hideImage()")',
+    image_source, fixed = TRUE
+  ))
+  expect_lt(
+    regexpr("scene[imageName].setVisible(visible)", image_source, fixed = TRUE)[[1]],
+    regexpr("applyPendingSpriteActions(imageName)", image_source, fixed = TRUE)[[1]]
+  )
 })
 
 test_that("realm marker shares the navigation canvas coordinate space", {

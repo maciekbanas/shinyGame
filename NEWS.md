@@ -20,6 +20,9 @@
 * Queued sprite physics actions until sprites finish loading so setup calls such as `set_gravity()` are not lost during asynchronous asset initialization.
 
 ## New interface features
+* Added `PhaserGame$add_collision_rectangle()` for placing invisible static
+  Arcade Physics bodies that can make selected areas impassable without
+  rendering additional scene geometry.
 * Added `PhaserGame$save_game()` for persisting application state and live
   Phaser object snapshots to server-side JSON files. Saves default to a
   game-specific directory below `tempdir()` and can also accept an explicitly

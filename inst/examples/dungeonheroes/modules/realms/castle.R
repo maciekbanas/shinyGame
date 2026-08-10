@@ -17,7 +17,7 @@
     game$activate_map(
       current_realm, player_name = "hero", x = 700, y = 500,
       visible_objects = "blacksmith",
-      hidden_objects = c(mushroom_swamps_objects, "talk_bubble_text")
+      hidden_objects = c(mushroom_swamps_objects, wild_forests_objects, "talk_bubble_text")
     )
     enemy_status_text$set("enemies: none in the castle")
     set_combat_status("The castle blacksmith is at his forge.")
