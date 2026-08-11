@@ -1,0 +1,86 @@
+---
+title: "Mini-examples for development features"
+output: rmarkdown::html_vignette
+vignette: >
+  %\VignetteIndexEntry{Mini-examples for development features}
+  %\VignetteEngine{knitr::rmarkdown}
+  %\VignetteEncoding{UTF-8}
+---
+
+The development version adds small, composable features that do not require a
+full RPG example. The snippets below belong in a Shiny server function after
+`game$set_shiny_session(session)`.
+
+## Save and load
+
+`save_game()` captures live Phaser coordinates in the browser and writes them,
+together with arbitrary R state, to JSON on the server. Capturing is
+asynchronous, so call it from an observer and do not load the save until the
+browser has answered. `load_game()` restores captured objects and returns the R
+state.
+
+```r
+score <- shiny::reactiveVal(0)
+
+shiny::observeEvent(input$save, {
+  game$save_game(
+    "quick-save",
+    state = list(score = score()),
+    objects = "player"
+  )
+})
+
+shiny::observeEvent(input$load, {
+  restored <- game$load_game("quick-save")
+  score(restored$score)
+})
+```
+
+Run the complete, asset-light example with
+`shinyphaser::run_save_load_example()`. Saves are server-side: the default
+location is a game-specific directory under `tempdir()`. Pass the same explicit
+`directory` to save, list, and load when saves must survive R restarts.
+
+## World gravity and a fixed HUD
+
+Gravity is game configuration, while a scroll factor of zero fixes an object to
+the camera. These features work for platformers, simulations, and other genres.
+
+```r
+game <- PhaserGame$new(gravity_y = 1200)
+score_text <- game$add_text("Score: 0", "score", 20, 20)
+score_text$set_scroll_factor(0)
+```
+
+## Sound
+
+```r
+jump <- game$add_sound("jump", "assets/jump.wav", volume = 0.4)
+game$add_control(
+  "Space",
+  browser_action = browser_actions(jump$play()),
+  input = input
+)
+```
+
+## Invisible collision geometry
+
+```r
+game$add_collision_rectangle("floor", x = 400, y = 590,
+                             width = 800, height = 20)
+game$add_collider("player", "floor", input = input)
+```
+
+## Switching tilemaps
+
+Use `activate_map()` with only a map key for a simple tilemap switch. Optional
+player coordinates and object-visibility vectors are available when an
+application needs to perform those transition changes atomically.
+
+```r
+game$add_map("level_1", "assets/level-1.json", "assets/tiles.png",
+             "tiles", "ground")
+game$add_map("level_2", "assets/level-2.json", "assets/tiles.png",
+             "tiles", "ground")
+game$activate_map("level_2")
+```

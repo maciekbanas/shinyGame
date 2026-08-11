@@ -20,6 +20,8 @@ reference:
   - title: Utilities
     contents:
       - browser_actions
+      - run_save_load_example
+      - run_simple_rpg
       - run_sample_app
 
 articles:
@@ -28,3 +30,4 @@ articles:
     contents:
       - first-game
       - browser-server-actions
+      - new-features

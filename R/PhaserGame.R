@@ -225,6 +225,9 @@ PhaserGame <- R6::R6Class(
     },
 
     #' @description Activate a tilemap previously loaded with `add_map()`.
+    #'   With only `map_key`, this changes the visible tilemap and updates the
+    #'   physics-world and camera bounds. The optional arguments can also apply
+    #'   common scene-transition changes in the same browser operation.
     #' @param map_key Character. Key of the tilemap to activate.
     #' @param player_name Character. Optional player sprite to reposition.
     #' @param x Numeric. Optional player x-coordinate.

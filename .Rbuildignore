@@ -10,3 +10,4 @@ _\.new\.png$
 ^docs$
 ^CRAN-SUBMISSION$
 ^cran-comments\.md$
+^RELEASE-CHECKLIST\.md$

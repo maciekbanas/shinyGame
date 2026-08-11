@@ -20,6 +20,8 @@
 * Queued sprite physics actions until sprites finish loading so setup calls such as `set_gravity()` are not lost during asynchronous asset initialization.
 
 ## New interface features
+* Added a standalone save/load mini-example and focused development-feature
+  vignette so these APIs can be learned without the full RPG example.
 * Added `PhaserGame$add_collision_rectangle()` for placing invisible static
   Arcade Physics bodies that can make selected areas impassable without
   rendering additional scene geometry.
@@ -55,9 +57,8 @@
 
 ## Updates in examples
 * Added new arcade example game (bear).
-* Added new RPG game example (dungeonheroes).
-* Added weapon-specific knockback and directional mushroom-man damage
-  animations to dungeonheroes; the Elf Ranger currently uses a staff.
+* Added a focused Simple RPG example with one Wild Forest map, player movement,
+  camera following, terrain and tree collisions, and berry collection.
 * Updated the hedgehog examples so acknowledging a game-over dialog reloads the Shiny session and starts a fresh game instead of stopping the app.
 
 ## README

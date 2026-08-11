@@ -54,6 +54,20 @@ You can run the built-in sample app:
 shinyphaser::run_sample_app()
 ```
 
+The development version also includes a small save/load example. Move the bear
+with the arrow keys, save, move again, and load to restore both its position and
+the R-side score:
+
+```r
+shinyphaser::run_save_load_example()
+```
+
+For a compact RPG-style example using a single Wild Forest map:
+
+```r
+shinyphaser::run_simple_rpg()
+```
+
 ## Learn by example
 
 For a full walkthrough (from static background to movement, animation, overlap, and collision), see [**Build your first shinyphaser game**](https://maciekbanas.github.io/shinyphaser/articles/first-game.html)
