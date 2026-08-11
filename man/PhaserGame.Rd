@@ -33,6 +33,9 @@ game <- PhaserGame$new(id = "my_game", width = 1024, height = 768)
 \itemize{
 \item \href{#method-PhaserGame-new}{\code{PhaserGame$new()}}
 \item \href{#method-PhaserGame-set_shiny_session}{\code{PhaserGame$set_shiny_session()}}
+\item \href{#method-PhaserGame-save_game}{\code{PhaserGame$save_game()}}
+\item \href{#method-PhaserGame-list_saved_games}{\code{PhaserGame$list_saved_games()}}
+\item \href{#method-PhaserGame-load_game}{\code{PhaserGame$load_game()}}
 \item \href{#method-PhaserGame-use_phaser}{\code{PhaserGame$use_phaser()}}
 \item \href{#method-PhaserGame-add_text}{\code{PhaserGame$add_text()}}
 \item \href{#method-PhaserGame-add_rectangle}{\code{PhaserGame$add_rectangle()}}
@@ -42,6 +45,7 @@ game <- PhaserGame$new(id = "my_game", width = 1024, height = 768)
 \item \href{#method-PhaserGame-set_world_bounds}{\code{PhaserGame$set_world_bounds()}}
 \item \href{#method-PhaserGame-enable_terrain_collision}{\code{PhaserGame$enable_terrain_collision()}}
 \item \href{#method-PhaserGame-add_sprite}{\code{PhaserGame$add_sprite()}}
+\item \href{#method-PhaserGame-add_collision_rectangle}{\code{PhaserGame$add_collision_rectangle()}}
 \item \href{#method-PhaserGame-add_group}{\code{PhaserGame$add_group()}}
 \item \href{#method-PhaserGame-add_static_sprite}{\code{PhaserGame$add_static_sprite()}}
 \item \href{#method-PhaserGame-add_static_group}{\code{PhaserGame$add_static_group()}}
@@ -105,6 +109,37 @@ Set the Shiny session used to send Phaser custom messages.
 }
 \if{html}{\out{</div>}}
 }
+}
+\if{html}{\out{<hr>}}
+\if{html}{\out{<a id="method-PhaserGame-save_game"></a>}}
+\subsection{Method \code{save_game()}}{
+Save application state and live Phaser object transforms to server-side JSON.
+\subsection{Usage}{\preformatted{PhaserGame$save_game(
+  name,
+  state = list(),
+  objects = NULL,
+  snapshot = NULL,
+  directory = NULL
+)}}
+\subsection{Arguments}{\describe{
+\item{\code{name}}{Human-readable save name.}
+\item{\code{state}}{Named list of application state.}
+\item{\code{objects}}{Named Phaser objects to capture; \code{NULL} captures all named objects.}
+\item{\code{snapshot}}{Optional Phaser object snapshot already captured by the browser.}
+\item{\code{directory}}{Server directory; defaults below \code{tempdir()}.}
+}}
+}
+\if{html}{\out{<hr>}}
+\if{html}{\out{<a id="method-PhaserGame-list_saved_games"></a>}}
+\subsection{Method \code{list_saved_games()}}{
+List server-side saves, newest first.
+\subsection{Usage}{\preformatted{PhaserGame$list_saved_games(directory = NULL)}}
+}
+\if{html}{\out{<hr>}}
+\if{html}{\out{<a id="method-PhaserGame-load_game"></a>}}
+\subsection{Method \code{load_game()}}{
+Load application state and optionally restore captured Phaser objects.
+\subsection{Usage}{\preformatted{PhaserGame$load_game(name, restore = TRUE, directory = NULL)}}
 }
 \if{html}{\out{<hr>}}
 \if{html}{\out{<a id="method-PhaserGame-use_phaser"></a>}}
@@ -351,6 +386,31 @@ Load a base spritesheet and create an "idle" animation.
 \item{\code{frame_count}}{Numeric. Number of frames in the spritesheet.}
 
 \item{\code{frame_rate}}{Numeric. Frames per second for the idle animation.}
+}
+\if{html}{\out{</div>}}
+}
+}
+\if{html}{\out{<hr>}}
+\if{html}{\out{<a id="method-PhaserGame-add_collision_rectangle"></a>}}
+\if{latex}{\out{\hypertarget{method-PhaserGame-add_collision_rectangle}{}}}
+\subsection{Method \code{add_collision_rectangle()}}{
+Add an invisible static collision rectangle to the world.
+\subsection{Usage}{
+\if{html}{\out{<div class="r">}}\preformatted{PhaserGame$add_collision_rectangle(name, x, y, width, height)}\if{html}{\out{</div>}}
+}
+
+\subsection{Arguments}{
+\if{html}{\out{<div class="arguments">}}
+\describe{
+\item{\code{name}}{Character. Unique name of the collision rectangle.}
+
+\item{\code{x}}{Numeric. X-coordinate of its center.}
+
+\item{\code{y}}{Numeric. Y-coordinate of its center.}
+
+\item{\code{width}}{Numeric. Collision width in pixels.}
+
+\item{\code{height}}{Numeric. Collision height in pixels.}
 }
 \if{html}{\out{</div>}}
 }

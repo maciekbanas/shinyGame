@@ -16,6 +16,7 @@ PhaserGame$add_rectangle() method.
 \item \href{#method-Rectangle-follow_camera}{\code{Rectangle$follow_camera()}}
 \item \href{#method-Rectangle-stop_camera_follow}{\code{Rectangle$stop_camera_follow()}}
 \item \href{#method-Rectangle-set_scroll_factor}{\code{Rectangle$set_scroll_factor()}}
+\item \href{#method-Rectangle-set_depth}{\code{Rectangle$set_depth()}}
 \item \href{#method-Rectangle-click}{\code{Rectangle$click()}}
 \item \href{#method-Rectangle-clone}{\code{Rectangle$clone()}}
 }
@@ -129,6 +130,24 @@ Set how much this rectangle scrolls with the camera.
 \item{\code{x}}{Numeric. Horizontal scroll factor (0 = fixed to viewport, 1 = scrolls with world).}
 
 \item{\code{y}}{Numeric. Vertical scroll factor. Defaults to \code{x}.}
+}
+\if{html}{\out{</div>}}
+}
+}
+\if{html}{\out{<hr>}}
+\if{html}{\out{<a id="method-Rectangle-set_depth"></a>}}
+\if{latex}{\out{\hypertarget{method-Rectangle-set_depth}{}}}
+\subsection{Method \code{set_depth()}}{
+Set the rectangle's rendering depth. Objects with a larger
+depth are rendered in front of objects with a smaller depth.
+\subsection{Usage}{
+\if{html}{\out{<div class="r">}}\preformatted{Rectangle$set_depth(depth)}\if{html}{\out{</div>}}
+}
+
+\subsection{Arguments}{
+\if{html}{\out{<div class="arguments">}}
+\describe{
+\item{\code{depth}}{Numeric. Phaser rendering depth.}
 }
 \if{html}{\out{</div>}}
 }
