@@ -37,7 +37,13 @@
 ## Updates in examples
 * Added new arcade example game (bear).
 * Added new RPG game example (dungeonheroes).
+* Added a minimal save/load example that keeps authoritative game state in R,
+  persists it with `saveRDS()`, and reapplies it through the public scene API.
 * Updated the hedgehog examples so acknowledging a game-over dialog reloads the Shiny session and starts a fresh game instead of stopping the app.
+
+## Release preparation
+* Added a release checklist and public-API audit, including methods that should
+  be generalized or moved out of the package before the next release.
 
 ## README
 * Added CRAN downloads badge to README.
