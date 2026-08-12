@@ -30,182 +30,6 @@ ui <- shiny::tagList(
       image-rendering: pixelated;
     }
 
-    #character_select {
-      position: fixed;
-      inset: 0;
-      z-index: 9500;
-      display: none;
-      flex-direction: column;
-      align-items: center;
-      justify-content: center;
-      gap: 28px;
-      overflow: hidden;
-      background:
-        radial-gradient(circle at 50% 35%, rgba(61, 81, 70, 0.9), transparent 38%),
-        linear-gradient(180deg, #17221e 0%, #080d0b 100%);
-      color: #f6e7bd;
-      font-family: Georgia, serif;
-    }
-
-    #character_select h1 {
-      margin: 0;
-      color: #f5d98b;
-      font-size: clamp(42px, 6vw, 76px);
-      letter-spacing: 0.08em;
-      text-shadow: 0 4px 0 #51351e, 0 8px 18px #000;
-    }
-
-    #character_select .select_prompt {
-      margin: -16px 0 4px;
-      color: #d8c9a3;
-      font: 600 22px sans-serif;
-      letter-spacing: 0.12em;
-      text-transform: uppercase;
-    }
-
-    #character_select .character_choices {
-      display: flex;
-      gap: clamp(24px, 6vw, 80px);
-    }
-
-    #character_select .character_choice {
-      width: 260px;
-      padding: 24px 20px 20px;
-      border: 3px solid #8f7140;
-      border-radius: 12px;
-      background: rgba(20, 27, 23, 0.94);
-      box-shadow: 0 10px 28px #000;
-      color: #f6e7bd;
-      cursor: pointer;
-      transition: transform 120ms ease, border-color 120ms ease, background 120ms ease;
-    }
-
-    #character_select .character_choice:hover,
-    #character_select .character_choice:focus-visible {
-      transform: translateY(-7px) scale(1.02);
-      border-color: #f5d98b;
-      background: #28352e;
-      outline: none;
-    }
-
-    #character_select .character_portrait {
-      display: block;
-      width: 100px;
-      height: 100px;
-      margin: 0 auto 16px;
-      background-repeat: no-repeat;
-      image-rendering: pixelated;
-      transform: scale(1.35);
-    }
-
-    #choose_hero .character_portrait {
-      background-image: url('assets/dungeonheroes/sprites/hero/human/hero_sword_idle.png');
-    }
-
-    #choose_orc .character_portrait {
-      background-image: url('assets/dungeonheroes/sprites/hero/orc/hero_orc_idle.png');
-    }
-
-    #choose_elf .character_portrait {
-      background-image: url('assets/dungeonheroes/sprites/hero/elf/hero_elf_idle.png');
-    }
-
-    #character_select .character_name {
-      display: block;
-      font: 700 28px Georgia, serif;
-      letter-spacing: 0.05em;
-    }
-
-    #character_select .character_description {
-      display: block;
-      margin-top: 7px;
-      color: #bcb59e;
-      font: 15px sans-serif;
-    }
-
-    #realm_character_marker {
-      position: absolute;
-      z-index: 8500;
-      display: none;
-      width: 100px;
-      height: 100px;
-      background-repeat: no-repeat;
-      image-rendering: pixelated;
-      pointer-events: none;
-      transform: translate(-50%, -50%);
-    }
-
-    #realm_character_marker.human {
-      background-image: url('assets/dungeonheroes/sprites/hero/human/hero_sword_idle.png');
-    }
-
-    #realm_character_marker.orc {
-      background-image: url('assets/dungeonheroes/sprites/hero/orc/hero_orc_idle.png');
-    }
-
-    #realm_character_marker.elf {
-      background-image: url('assets/dungeonheroes/sprites/hero/elf/hero_elf_idle.png');
-    }
-
-    #realm_character_marker.mushroom_swamps {
-      left: 500px;
-      top: 200px;
-    }
-
-    #realm_character_marker.magma_hills {
-      left: 400px;
-      top: 300px;
-    }
-
-    #realm_character_marker.wild_forests {
-      left: 400px;
-      top: 200px;
-    }
-
-    #realm_character_marker.grey_mountains {
-      left: 300px;
-      top: 300px;
-    }
-
-    #realm_character_marker.castle {
-      left: 300px;
-      top: 200px;
-    }
-
-    #realm_name_label {
-      position: absolute;
-      z-index: 8600;
-      display: none;
-      left: 400px;
-      top: 365px;
-      min-width: 220px;
-      transform: translateX(-50%);
-      padding: 10px 18px;
-      border: 2px solid #f5d98b;
-      border-radius: 6px;
-      background: rgba(15, 22, 18, .94);
-      color: #f5d98b;
-      font: 700 22px Georgia, serif;
-      text-align: center;
-      pointer-events: none;
-    }
-
-    #leave_map {
-      position: fixed;
-      display: none;
-      top: 18px;
-      left: 50%;
-      z-index: 9000;
-      transform: translateX(-50%);
-      padding: 12px 24px;
-      border: 2px solid #f9fafb;
-      border-radius: 6px;
-      background: #111827;
-      color: #f9fafb;
-      font: 700 18px sans-serif;
-      cursor: pointer;
-    }
-
     #game_start, #save_game_dialog {
       position: fixed;
       inset: 0;
@@ -265,7 +89,6 @@ ui <- shiny::tagList(
     htmltools::tags$div(class = "skeleton_loader_sprite"),
     htmltools::tags$div("Loading dungeon heroes...")
   ),
-  htmltools::tags$div(id = "realm_name_label", "Mushroom Swamps"),
   htmltools::tags$div(
     id = "game_start",
     htmltools::tags$div(
@@ -275,44 +98,6 @@ ui <- shiny::tagList(
       htmltools::tags$button(id = "show_load_game", class = "game_menu_button", type = "button", "Load game"),
       htmltools::tags$div(id = "saved_games", style = "display:none;")
     )
-  ),
-  htmltools::tags$div(
-    id = "character_select",
-    htmltools::tags$h1("DUNGEON HEROES"),
-    htmltools::tags$p(class = "select_prompt", "Choose your champion"),
-    htmltools::tags$div(
-      class = "character_choices",
-      htmltools::tags$button(
-        id = "choose_hero", class = "character_choice action-button",
-        type = "button",
-        htmltools::tags$span(class = "character_portrait"),
-        htmltools::tags$span(class = "character_name", "Human Knight"),
-        htmltools::tags$span(class = "character_description", "Courage against the darkness")
-      ),
-      htmltools::tags$button(
-        id = "choose_orc", class = "character_choice action-button",
-        type = "button",
-        htmltools::tags$span(class = "character_portrait"),
-        htmltools::tags$span(class = "character_name", "Orc Hunter"),
-        htmltools::tags$span(class = "character_description", "Strength born of the wilds")
-      ),
-      htmltools::tags$button(
-        id = "choose_elf", class = "character_choice action-button",
-        type = "button",
-        htmltools::tags$span(class = "character_portrait"),
-        htmltools::tags$span(class = "character_name", "Elf Ranger"),
-        htmltools::tags$span(class = "character_description", "Fleet guardian of the forest")
-      )
-    )
-  ),
-  htmltools::tags$div(
-    id = "realm_character_marker",
-    class = "mushroom_swamps",
-    `aria-hidden` = "true"
-  ),
-  shiny::actionButton(
-    "leave_map", "Leave map",
-    onclick = "this.style.display = 'none';"
   ),
   htmltools::tags$div(
     id = "game_session_actions",
@@ -341,40 +126,6 @@ ui <- shiny::tagList(
   game$use_phaser(),
   htmltools::tags$script(htmltools::HTML("
     (function() {
-      var realms = {
-        castle: {name: 'Castle', x: 300, y: 200},
-        wild_forests: {name: 'Wild Forests', x: 400, y: 200},
-        mushroom_swamps: {name: 'Mushroom Swamps', x: 500, y: 200},
-        grey_mountains: {name: 'Grey Mountains', x: 300, y: 300},
-        magma_hills: {name: 'Magma Hills', x: 400, y: 300}
-      };
-      window.setNavigationRealm = function(realm) {
-        if (!realms[realm]) return;
-        var marker = document.getElementById('realm_character_marker');
-        Object.keys(realms).forEach(function(key) { marker.classList.remove(key); });
-        marker.classList.add(realm);
-        marker.dataset.realm = realm;
-        document.getElementById('realm_name_label').textContent = realms[realm].name;
-      };
-      document.addEventListener('keydown', function(event) {
-        if (!window.GameBridge || !GameBridge.navigationOverlayVisible) return;
-        var marker = document.getElementById('realm_character_marker');
-        var current = marker.dataset.realm || 'mushroom_swamps';
-        if (event.key === 'Enter') {
-          event.preventDefault();
-          Shiny.setInputValue('navigation_enter_realm', {realm: current, nonce: Date.now()}, {priority: 'event'});
-          return;
-        }
-        var delta = {ArrowLeft: [-100, 0], ArrowRight: [100, 0], ArrowUp: [0, -100], ArrowDown: [0, 100]}[event.key];
-        if (!delta) return;
-        event.preventDefault();
-        var target = Object.keys(realms).find(function(key) {
-          return realms[key].x === realms[current].x + delta[0] && realms[key].y === realms[current].y + delta[1];
-        });
-        if (!target) return;
-        setNavigationRealm(target);
-        Shiny.setInputValue('navigation_realm_selected', {realm: target, nonce: Date.now()}, {priority: 'event'});
-      });
       function renderSaves(items) {
         var host = document.getElementById('saved_games');
         host.innerHTML = '';
@@ -411,7 +162,7 @@ ui <- shiny::tagList(
           if (!name) { document.getElementById('save_game_name').focus(); return; }
           capturePhaserGameState('save_game_requested', String(Date.now()), name, {
             objects: ['hero'],
-            state: {navigation: !!GameBridge.navigationOverlayVisible}
+            state: {}
           });
         };
       });

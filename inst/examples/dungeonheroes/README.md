@@ -22,10 +22,10 @@ The entry point only establishes shared game state and loads focused modules:
 
 - `ui.R` contains menus, styles, and browser-side save controls.
 - `modules/game_state.R` contains combat state and status helpers.
-- `modules/hero.R` configures playable character sprites and animations.
-- `modules/navigation*.R` configures the realm map and navigation events.
+- `modules/hero.R` configures the Orc hero sprite and animations.
+- `modules/navigation_setup.R` loads the Mushroom Swamps map, while `modules/navigation.R` starts the game directly in that realm.
 - `modules/saving.R` owns save/load observers.
-- `modules/realms/` contains realm-specific maps, objects, and entry handlers.
+- `modules/realms/mushroom_swamps_world.R` contains the swamp enemies, perks, and NPCs.
 
 Modules are sourced into the active Shiny server invocation in the order listed
 in `app.R`; this lets callbacks share session state without turning the example

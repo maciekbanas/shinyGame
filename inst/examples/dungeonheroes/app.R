@@ -19,16 +19,8 @@ server <- function(input, output, session) {
     "navigation_setup.R",
     "hero.R",
     file.path("realms", "mushroom_swamps_world.R"),
-    file.path("realms", "wild_forests_world.R"),
     "navigation.R",
-    "saving.R",
-    "navigation_events.R",
-    file.path("realms", "mushroom_swamps.R"),
-    file.path("realms", "magma_hills.R"),
-    file.path("realms", "wild_forests.R"),
-    file.path("realms", "grey_mountains.R"),
-    file.path("realms", "castle.R"),
-    "realm_routes.R"
+    "saving.R"
   )
   # These files intentionally live outside an R/ directory. Shiny automatically
   # sources R/ before it evaluates app.R, when `game` does not exist yet.

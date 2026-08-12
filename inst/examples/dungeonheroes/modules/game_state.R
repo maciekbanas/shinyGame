@@ -58,9 +58,7 @@
   hero_last_attack_time <- as.numeric(Sys.time()) - 1
   hero_attack_cooldown <- 0.75
   hero_weapons <- list(
-    sword = list(damage = 2, knockback = 28),
-    axe = list(damage = 2, knockback = 52),
-    staff = list(damage = 2, knockback = 40)
+    axe = list(damage = 2, knockback = 52)
   )
   hero_weapon <- NULL
   health_bar_segment_count <- 10
@@ -70,7 +68,6 @@
   game_over_shown <- FALSE
   defeated_enemy_count <- 0
   selected_character <- NULL
-  current_realm <- "mushroom_swamps"
 
   enemy_animation_key <- function(enemy_name, suffix) {
     paste(enemy_name, suffix, sep = "_")
@@ -153,21 +150,10 @@
     enemy_status_text$set(paste("enemies:", paste(enemy_summaries, collapse = " | ")))
   }
 
-  hero_attack_animation <- function() {
-    if (identical(selected_character, "hero_orc")) {
-      return("hero_orc_attack")
-    }
-    if (identical(selected_character, "hero_elf")) {
-      return("hero_elf_idle")
-    }
-    "hero_sword_attack"
-  }
+  hero_attack_animation <- function() "hero_attack"
 
-  hero_attack_duration <- function() {
-    # At four frames per second, the Orc needs 750 ms to display all three
-    # attack frames before player controls resume the movement animation.
-    if (identical(selected_character, "hero_orc")) 750 else 500
-  }
+  # At four frames per second, the Orc needs 750 ms for all attack frames.
+  hero_attack_duration <- function() 750
 
   play_hero_attack_animation <- function() {
     hero$play_animation(
