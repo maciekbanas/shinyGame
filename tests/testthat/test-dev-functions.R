@@ -2,11 +2,11 @@ test_that("run_sample_app is available", {
   expect_true(is.function(run_sample_app))
 })
 
-test_that("run_dungeonheroes is available and its app is packaged", {
-  expect_true(is.function(run_dungeonheroes))
-  expect_true("run_dungeonheroes" %in% getNamespaceExports("shinyphaser"))
+test_that("run_swamps_rpg is available and its app is packaged", {
+  expect_true(is.function(run_swamps_rpg))
+  expect_true("run_swamps_rpg" %in% getNamespaceExports("shinyphaser"))
   app_file <- system.file(
-    "examples", "dungeonheroes", "app.R", package = "shinyphaser"
+    "examples", "swamps_rpg", "app.R", package = "shinyphaser"
   )
   expect_true(file.exists(app_file))
   expect_false(dir.exists(file.path(dirname(app_file), "R")))

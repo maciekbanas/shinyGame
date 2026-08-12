@@ -1,5 +1,5 @@
-read_dungeonheroes_example <- function() {
-  example_dir <- system.file("examples", "dungeonheroes", package = "shinyphaser")
+read_swamps_rpg_example <- function() {
+  example_dir <- system.file("examples", "swamps_rpg", package = "shinyphaser")
   files <- list.files(example_dir, pattern = "[.]R$", recursive = TRUE, full.names = TRUE)
   unlist(lapply(files, readLines, warn = FALSE), use.names = FALSE)
 }
@@ -421,16 +421,12 @@ test_that("hedgehog action events retain game progress alerts", {
   expect_false(any(grepl("callback_fun", example, fixed = TRUE)))
 })
 
-test_that("dungeonheroes Space action retains interactions and combat", {
-  example <- read_dungeonheroes_example()
+test_that("swamps_rpg Space action retains interactions and combat", {
+  example <- read_swamps_rpg_example()
 
   expect_false(any(grepl("sword_in_range", example, fixed = TRUE)))
-  expect_true(any(grepl(
-    'weapon <- switch(character, hero_orc = "axe", hero_elf = "staff", "sword")',
-    example,
-    fixed = TRUE
-  )))
-  expect_true(any(grepl('inventory_text$set(sprintf("weapon: %s", weapon))', example, fixed = TRUE)))
+  expect_true(any(grepl('hero_weapon <<- hero_weapons$axe', example, fixed = TRUE)))
+  expect_true(any(grepl('inventory_text$set("weapon: axe")', example, fixed = TRUE)))
   expect_true(any(grepl("if (wizard_in_range)", example, fixed = TRUE)))
   expect_true(any(grepl("server_action = handle_space", example, fixed = TRUE)))
   expect_true(any(grepl("server_action", example, fixed = TRUE)))
@@ -447,170 +443,9 @@ test_that("dungeonheroes Space action retains interactions and combat", {
   expect_true(any(grepl('duration = 1', example, fixed = TRUE)))
   expect_true(any(grepl('title = "Game over"', example, fixed = TRUE)))
   expect_false(any(grepl("client_action", example, fixed = TRUE)))
-  expect_false(any(grepl("dungeonheroes_version", example, fixed = TRUE)))
-  expect_false(any(grepl("dungeonheroes v", example, fixed = TRUE)))
+  expect_false(any(grepl("swamps_rpg_version", example, fixed = TRUE)))
+  expect_false(any(grepl("swamps_rpg v", example, fixed = TRUE)))
   expect_true(any(grepl('text = sprintf("shinyphaser v%s"', example, fixed = TRUE)))
-})
-
-test_that("dungeonheroes tree has a collidable base and foreground top", {
-  example <- read_dungeonheroes_example()
-
-  expect_true(any(grepl('name = "dead_tree_1_bottom"', example, fixed = TRUE)))
-  expect_true(any(grepl('name = "dead_tree_1_top"', example, fixed = TRUE)))
-  expect_true(any(grepl('url = "assets/dungeonheroes/terrain/mushroom_swamps/dead_tree_1_bottom.png"', example, fixed = TRUE)))
-  expect_true(any(grepl('url = "assets/dungeonheroes/terrain/mushroom_swamps/dead_tree_1_top.png"', example, fixed = TRUE)))
-  expect_true(any(grepl("y = 650", example, fixed = TRUE)))
-  expect_true(any(grepl('game$add_collider("hero", "dead_tree_1_bottom")', example, fixed = TRUE)))
-  expect_false(any(grepl('game$add_collider("hero", "dead_tree_1_top")', example, fixed = TRUE)))
-  expect_true(any(grepl("dead_tree_top$set_depth(20)", example, fixed = TRUE)))
-})
-
-test_that("dungeonheroes can travel between mushroom swamps and magma hills", {
-  example <- read_dungeonheroes_example()
-  magma_map <- jsonlite::read_json(
-    system.file("assets", "dungeonheroes", "maps", "magma_hills.json",
-                package = "shinyphaser"),
-    simplifyVector = FALSE
-  )
-
-  expect_true(any(grepl('"leave_map", "Leave map"', example, fixed = TRUE)))
-  expect_true(any(grepl("onclick = \"this.style.display = 'none';\"", example, fixed = TRUE)))
-  expect_true(any(grepl('name = "map_navigation_background"', example, fixed = TRUE)))
-  expect_true(any(grepl('name = "choose_mushroom_swamps"', example, fixed = TRUE)))
-  expect_true(any(grepl('name = "choose_magma_hills"', example, fixed = TRUE)))
-  expect_true(any(grepl('x = 400, y = 300', example, fixed = TRUE)))
-  expect_true(any(grepl('mushroom_swamps_map_image$click(', example, fixed = TRUE)))
-  expect_true(any(grepl('magma_hills_map_image$click(', example, fixed = TRUE)))
-  expect_true(any(grepl('hero$set_depth(98)', example, fixed = TRUE)))
-  expect_true(any(grepl('map_key = "magma_hills"', example, fixed = TRUE)))
-  expect_true(any(grepl('game$activate_map(', example, fixed = TRUE)))
-  expect_true(any(grepl('game$add_proximity_trigger("mushroom_swamps_exit", "hero", x = 100, y = 100,',
-                        example, fixed = TRUE)))
-  expect_true(any(grepl('game$add_proximity_trigger("magma_hills_exit", "hero", x = 1550, y = 650,',
-                        example, fixed = TRUE)))
-  expect_true(any(grepl('"magma_hills", player_name = "hero", x = 1550, y = 650',
-                        example, fixed = TRUE)))
-  expect_identical(magma_map$layers[[1]]$name, "terrain")
-  expect_identical(vapply(magma_map$tilesets, `[[`, character(1), "name"),
-                   c("hill_1", "lava_1"))
-  expect_true(magma_map$tilesets[[2]]$tiles[[1]]$properties[[1]]$value)
-  expect_true(all(unlist(magma_map$layers[[1]]$data) %in% c(1L, 2L)))
-})
-
-test_that("dungeonheroes includes the elf and new western realms", {
-  example <- read_dungeonheroes_example()
-  wild_map <- jsonlite::read_json(
-    system.file("assets", "dungeonheroes", "maps", "wild_forests.json",
-                package = "shinyphaser"),
-    simplifyVector = FALSE
-  )
-  grey_map <- jsonlite::read_json(
-    system.file("assets", "dungeonheroes", "maps", "grey_mountains.json",
-                package = "shinyphaser"),
-    simplifyVector = FALSE
-  )
-
-  expect_true(any(grepl('class = "character_name", "Elf Ranger"', example, fixed = TRUE)))
-  expect_true(any(grepl('class = "character_name", "Human Knight"', example, fixed = TRUE)))
-  expect_true(any(grepl('class = "character_name", "Orc Hunter"', example, fixed = TRUE)))
-  expect_true(any(grepl('suffix = "elf_idle"', example, fixed = TRUE)))
-  expect_true(any(grepl('frame_count = 21, frame_rate = 4', example, fixed = TRUE)))
-  expect_true(any(grepl(
-    'hero_orc = "grey_mountains", hero_elf = "wild_forests", "castle"',
-    example, fixed = TRUE
-  )))
-  expect_true(any(grepl('frame_count = 2, frame_rate = 8', example, fixed = TRUE)))
-  expect_true(any(grepl('frame_count = 4, frame_rate = 6', example, fixed = TRUE)))
-  expect_true(any(grepl('choose_character("hero_elf")', example, fixed = TRUE)))
-  expect_true(any(grepl('name = "choose_wild_forests"', example, fixed = TRUE)))
-  expect_true(any(grepl('name = "choose_grey_mountains"', example, fixed = TRUE)))
-  expect_true(any(grepl('map_key = "grey_mountains"', example, fixed = TRUE)))
-  expect_true(any(grepl(
-    '"assets/dungeonheroes/terrain/grey_mountains/hill_1.png"',
-    example, fixed = TRUE
-  )))
-  expect_true(any(grepl(
-    '"assets/dungeonheroes/terrain/grey_mountains/rock_1.png"',
-    example, fixed = TRUE
-  )))
-  expect_true(any(grepl('tileset_names = c("hill_1", "rock_1")',
-                        example, fixed = TRUE)))
-  expect_true(any(grepl('x = 400, y = 200', example, fixed = TRUE)))
-  expect_true(any(grepl('x = 300, y = 300', example, fixed = TRUE)))
-  expect_true(any(grepl('left: 400px;', example, fixed = TRUE)))
-  expect_false(any(grepl('border-radius: 50%;', example, fixed = TRUE)))
-  expect_identical(vapply(wild_map$tilesets, `[[`, character(1), "name"),
-                   c(sprintf("grass_%d", 1:5), "forest_path_1"))
-  expect_true(any(grepl(
-    '"assets/dungeonheroes/terrain/wild_forests/forest_path_1.png"',
-    example, fixed = TRUE
-  )))
-  expect_identical(wild_map$tilesets[[6]]$firstgid, 6L)
-  expect_true(sum(unlist(wild_map$layers[[1]]$data) == 6L) >= 128)
-  expect_identical(vapply(grey_map$tilesets, `[[`, character(1), "name"),
-                   c("hill_1", "rock_1"))
-  expect_true(grey_map$tilesets[[2]]$tiles[[1]]$properties[[1]]$value)
-  expect_length(wild_map$layers[[1]]$data, 32 * 64)
-  expect_length(grey_map$layers[[1]]$data,
-                grey_map$width * grey_map$height)
-})
-
-test_that("wild forests has passable foreground vegetation and berries", {
-  example <- read_dungeonheroes_example()
-  asset_dir <- system.file(
-    "assets", "dungeonheroes", "terrain", "wild_forests",
-    package = "shinyphaser"
-  )
-
-  expect_true(all(file.exists(file.path(
-    asset_dir, c(sprintf("bush_%d.png", 1:4), "big_tree_1.png")
-  ))))
-  expect_true(any(grepl(
-    'file.path("realms", "wild_forests_world.R")', example, fixed = TRUE
-  )))
-  expect_true(any(grepl(
-    '"assets/dungeonheroes/terrain/wild_forests/%s.png", spec[["asset"]]',
-    example, fixed = TRUE
-  )))
-  expect_true(any(grepl(
-    "frame_width = 200, frame_height = 400", example, fixed = TRUE
-  )))
-  expect_true(any(grepl(
-    'is_animated_tree <- spec[["asset"]] %in% c("big_tree_1", "big_tree_4")',
-    example, fixed = TRUE
-  )))
-  expect_true(any(grepl("decoration$set_depth(20)", example, fixed = TRUE)))
-  expect_true(sum(grepl("bush_[1-4]_[0-9]+ = c\\(asset", example)) >= 48)
-  expect_true(sum(grepl('asset = "big_tree_1"', example, fixed = TRUE)) >= 16)
-  expect_true(sum(grepl('asset = "big_tree_2"', example, fixed = TRUE)) >= 8)
-  expect_true(sum(grepl('asset = "big_tree_3"', example, fixed = TRUE)) >= 8)
-  expect_true(sum(grepl('asset = "big_tree_4"', example, fixed = TRUE)) >= 20)
-  expect_true(sum(grepl('asset = "bush_5"', example, fixed = TRUE)) >= 12)
-  expect_true(sum(grepl('asset = "bush_6"', example, fixed = TRUE)) >= 12)
-  expect_true(sum(grepl('asset = "big_tree_5"', example, fixed = TRUE)) >= 16)
-  expect_true(sum(grepl('asset = "small_tree_1"', example, fixed = TRUE)) >= 12)
-  expect_true(any(grepl(
-    'identical(spec[["asset"]], "small_tree_1")', example, fixed = TRUE
-  )))
-  expect_true(any(grepl("game$add_collision_rectangle(", example, fixed = TRUE)))
-  expect_true(any(grepl(
-    "game$add_collider(\"hero\", collision_name)", example, fixed = TRUE
-  )))
-  expect_true(any(grepl(
-    "width = if (is_big_tree) 120 else 60", example, fixed = TRUE
-  )))
-  expect_true(any(grepl(
-    "height = if (is_tree) 50 else 20", example, fixed = TRUE
-  )))
-  expect_true(any(grepl(
-    'url = "assets/dungeonheroes/perks/berries.png"', example, fixed = TRUE
-  )))
-  expect_true(any(grepl(
-    "add_berry_handlers(names(forest_berries))", example, fixed = TRUE
-  )))
-  expect_true(any(grepl(
-    "visible_objects = wild_forests_objects", example, fixed = TRUE
-  )))
 })
 
 test_that("collision rectangles create invisible static physics bodies", {
@@ -656,17 +491,6 @@ test_that("image visibility waits for asynchronously loaded images", {
   )
 })
 
-test_that("realm marker shares the navigation canvas coordinate space", {
-  game_js <- readLines(
-    system.file("www", "phaser-game.js", package = "shinyphaser"),
-    warn = FALSE
-  )
-
-  expect_true(any(grepl('const container = game?.canvas?.parentElement;',
-                        game_js, fixed = TRUE)))
-  expect_true(any(grepl('container.appendChild(marker);', game_js, fixed = TRUE)))
-})
-
 test_that("sight approach does not restart active movement or hide alerts", {
   sprite_js <- readLines(
     system.file("www", "phaser-sprite.js", package = "shinyphaser"),
@@ -691,10 +515,25 @@ test_that("sight approach does not restart active movement or hide alerts", {
   expect_lt(movement_guard, approach_move[[length(approach_move)]])
 })
 
+test_that("swamps_rpg is limited to the Orc and Mushroom Swamps", {
+  example <- read_swamps_rpg_example()
+  asset_dir <- system.file("assets", "swamps_rpg", package = "shinyphaser")
+
+  expect_true(any(grepl('url = "assets/swamps_rpg/sprites/hero/orc/hero_orc_idle.png"',
+                        example, fixed = TRUE)))
+  expect_true(any(grepl('map_key = "mushroom_swamps"', example, fixed = TRUE)))
+  expect_true(any(grepl('selected_character <<- "hero_orc"', example, fixed = TRUE)))
+  expect_false(any(grepl("dead_tree", example, fixed = TRUE)))
+  expect_false(any(grepl("wild_forests|magma_hills|grey_mountains|castle", example)))
+  expect_false(file.exists(file.path(
+    asset_dir, "terrain", "mushroom_swamps", "dead_tree_1_bottom.png"
+  )))
+})
+
 test_that("recent movement selects four-way directional attack animations", {
   game_js <- readLines(system.file("www", "phaser-game.js", package = "shinyphaser"), warn = FALSE)
   sprite_js <- readLines(system.file("www", "phaser-sprite.js", package = "shinyphaser"), warn = FALSE)
-  example <- read_dungeonheroes_example()
+  example <- read_swamps_rpg_example()
 
   expect_true(any(grepl("GameBridge.directionalAttackMemory = 1500", game_js, fixed = TRUE)))
   expect_true(any(grepl('rememberMovementDirection(sprite, "left", time)', game_js, fixed = TRUE)))
@@ -705,8 +544,6 @@ test_that("recent movement selects four-way directional attack animations", {
   expect_true(any(grepl('forcedKey + "_" + movementSuffix', game_js, fixed = TRUE)))
   expect_true(any(grepl("targetAnim !== animationPrefix + '_idle'", game_js, fixed = TRUE)))
   expect_true(any(grepl('rememberMovementDirection(sprite, movementDirection, now)', sprite_js, fixed = TRUE)))
-  expect_true(any(grepl('suffix = paste0("sword_attack_", direction)', example, fixed = TRUE)))
-  expect_true(any(grepl('suffix = paste0("orc_attack_", direction)', example, fixed = TRUE)))
   expect_true(any(grepl('hero_orc_attack_%s.png', example, fixed = TRUE)))
   expect_true(any(grepl('suffix = paste0("attack_", direction)', example, fixed = TRUE)))
 })
@@ -780,7 +617,7 @@ test_that("bear uses Arcade world gravity", {
 
 test_that("saved games use Phaser snapshots and server disk persistence", {
   game_js <- readLines(system.file("www", "phaser-game.js", package = "shinyphaser"), warn = FALSE)
-  example <- read_dungeonheroes_example()
+  example <- read_swamps_rpg_example()
 
   expect_true(any(grepl("function capturePhaserGameState", game_js, fixed = TRUE)))
   expect_true(any(grepl("object.body.reset(saved.x, saved.y)", game_js, fixed = TRUE)))
@@ -799,8 +636,8 @@ test_that("save file helpers replace named JSON records", {
   expect_equal(read_phaser_saves(path), saves)
 })
 
-test_that("dungeonheroes captures its hero before the synchronous disk save", {
-  example <- read_dungeonheroes_example()
+test_that("swamps_rpg captures its hero before the synchronous disk save", {
+  example <- read_swamps_rpg_example()
 
   expect_true(any(grepl("capturePhaserGameState('save_game_requested'", example, fixed = TRUE)))
   expect_true(any(grepl("snapshot = request$objects", example, fixed = TRUE)))
@@ -826,21 +663,17 @@ test_that("save_game writes a supplied Phaser snapshot immediately", {
   expect_equal(loaded$score, 12)
 })
 
-test_that("dungeonheroes is organized into focused modules and sprite directories", {
-  example_dir <- system.file("examples", "dungeonheroes", package = "shinyphaser")
-  asset_dir <- system.file("assets", "dungeonheroes", "sprites", package = "shinyphaser")
+test_that("swamps_rpg is organized into focused modules and sprite directories", {
+  example_dir <- system.file("examples", "swamps_rpg", package = "shinyphaser")
+  asset_dir <- system.file("assets", "swamps_rpg", "sprites", package = "shinyphaser")
 
   expect_true(file.exists(file.path(example_dir, "app.R")))
   expect_true(file.exists(file.path(example_dir, "modules", "saving.R")))
   expect_true(file.exists(file.path(example_dir, "modules", "navigation.R")))
-  expect_true(file.exists(file.path(example_dir, "modules", "realms", "magma_hills.R")))
-  expect_true(file.exists(file.path(example_dir, "modules", "realms", "mushroom_swamps.R")))
-  expect_true(file.exists(file.path(example_dir, "modules", "realms", "wild_forests.R")))
-  expect_true(file.exists(file.path(example_dir, "modules", "realms", "grey_mountains.R")))
-  expect_true(file.exists(file.path(asset_dir, "hero", "human", "hero_sword_idle.png")))
-  expect_true(file.exists(file.path(asset_dir, "hero", "elf", "hero_elf_idle.png")))
+  expect_true(file.exists(file.path(
+    example_dir, "modules", "realms", "mushroom_swamps_world.R"
+  )))
   expect_true(file.exists(file.path(asset_dir, "hero", "orc", "hero_orc_idle.png")))
   expect_true(file.exists(file.path(asset_dir, "enemies", "mushroom_man", "mushroom_man_idle.png")))
-  expect_true(file.exists(file.path(asset_dir, "enemies", "skeleton", "skeleton_idle.png")))
   expect_true(file.exists(file.path(asset_dir, "npc", "wizard", "wizard_idle.png")))
 })
