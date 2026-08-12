@@ -231,6 +231,26 @@ test_that("activate_map serializes realm object arguments as arrays", {
   )))
 })
 
+test_that("add_proximity_trigger sends generic trigger configuration", {
+  session <- make_mock_session()
+  game <- PhaserGame$new()
+  game$set_shiny_session(session)
+
+  game$add_proximity_trigger(
+    "checkpoint", "vehicle", x = 120, y = 240, radius = 75,
+    element_id = "checkpoint_prompt", input_id = "checkpoint_state"
+  )
+
+  msgs <- vapply(session$get_messages(), function(m) m$message$js, character(1))
+  expect_true(any(grepl(
+    paste0(
+      'addProximityTrigger("checkpoint", "vehicle", 120.000000, 240.000000, ',
+      '75.000000, "checkpoint_prompt", null, "checkpoint_state");'
+    ),
+    msgs, fixed = TRUE
+  )))
+})
+
 test_that("browser_actions compile R6 calls for immediate execution", {
   session <- make_mock_session()
   game <- PhaserGame$new()
@@ -466,9 +486,9 @@ test_that("dungeonheroes can travel between mushroom swamps and magma hills", {
   expect_true(any(grepl('hero$set_depth(98)', example, fixed = TRUE)))
   expect_true(any(grepl('map_key = "magma_hills"', example, fixed = TRUE)))
   expect_true(any(grepl('game$activate_map(', example, fixed = TRUE)))
-  expect_true(any(grepl('game$set_map_exit("mushroom_swamps", "hero", x = 100, y = 100)',
+  expect_true(any(grepl('game$add_proximity_trigger("mushroom_swamps_exit", "hero", x = 100, y = 100,',
                         example, fixed = TRUE)))
-  expect_true(any(grepl('game$set_map_exit("magma_hills", "hero", x = 1550, y = 650)',
+  expect_true(any(grepl('game$add_proximity_trigger("magma_hills_exit", "hero", x = 1550, y = 650,',
                         example, fixed = TRUE)))
   expect_true(any(grepl('"magma_hills", player_name = "hero", x = 1550, y = 650',
                         example, fixed = TRUE)))

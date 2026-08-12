@@ -10,10 +10,14 @@
   )
   hero$follow_camera()
   hero$set_depth(10)
-  game$set_map_exit("mushroom_swamps", "hero", x = 100, y = 100)
-  game$set_map_exit("magma_hills", "hero", x = 1550, y = 650)
-  game$set_map_exit("wild_forests", "hero", x = 100, y = 100)
-  game$set_map_exit("grey_mountains", "hero", x = 100, y = 100)
+  game$add_proximity_trigger("mushroom_swamps_exit", "hero", x = 100, y = 100,
+                             element_id = "leave_map", context = "mushroom_swamps")
+  game$add_proximity_trigger("magma_hills_exit", "hero", x = 1550, y = 650,
+                             element_id = "leave_map", context = "magma_hills")
+  game$add_proximity_trigger("wild_forests_exit", "hero", x = 100, y = 100,
+                             element_id = "leave_map", context = "wild_forests")
+  game$add_proximity_trigger("grey_mountains_exit", "hero", x = 100, y = 100,
+                             element_id = "leave_map", context = "grey_mountains")
   Sys.sleep(0.1)
   game$enable_terrain_collision("hero")
   hero$add_animation(
