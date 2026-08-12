@@ -45,8 +45,8 @@
   maps registered with `PhaserGame$add_map()` are loaded in sequence, and map
   activation updates terrain collision, camera and world bounds, the player
   position, and map-specific scene-object visibility.
-* Added `PhaserGame$set_map_exit()` for showing a map-exit HTML control only
-  while a player is within a configurable distance of a map-specific exit.
+* Added `PhaserGame$add_proximity_trigger()` for monitoring when a scene object
+  is near a point, optionally showing an HTML element or notifying a Shiny input.
 * Added `StaticSprite$destroy()` for removing static sprites from the Phaser scene.
 * Added `Sprite$stop_motion()` for immediately cancelling scripted sprite
   movement, including from `browser_actions()`.

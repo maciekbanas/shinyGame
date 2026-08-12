@@ -244,22 +244,30 @@ PhaserGame <- R6::R6Class(
       send_js(private, js)
     },
 
-    #' @description Show a map-exit element while the player is near it.
-    #' @param map_key Character. Key of a tilemap loaded with `add_map()`.
-    #' @param player_name Character. Player sprite whose position is monitored.
-    #' @param x Numeric. Map-exit x-coordinate.
-    #' @param y Numeric. Map-exit y-coordinate.
-    #' @param radius Numeric. Maximum distance at which the exit is available.
-    #' @param element_id Character. ID of the HTML element to show near the exit.
+    #' @description Add a trigger that monitors when a scene object is near a point.
+    #' @param id Character. Unique trigger identifier.
+    #' @param object_name Character. Scene object whose position is monitored.
+    #' @param x Numeric. Target x-coordinate.
+    #' @param y Numeric. Target y-coordinate.
+    #' @param radius Numeric. Maximum distance at which the trigger is active.
+    #' @param element_id Character or `NULL`. ID of an HTML element to show while
+    #'   the trigger is active.
+    #' @param context Character or `NULL`. Optional map key that must be active for
+    #'   the trigger to be evaluated.
+    #' @param input_id Character or `NULL`. Optional Shiny input that receives a
+    #'   payload whenever the trigger is entered or exited.
     #' @return Invisible; sends a custom message to the client.
-    set_map_exit = function(map_key, player_name, x, y, radius = 180,
-                            element_id = "leave_map") {
+    add_proximity_trigger = function(id, object_name, x, y, radius = 180,
+                                     element_id = NULL, context = NULL,
+                                     input_id = NULL) {
       js <- sprintf(
-        "setMapExit(%s, %s, %f, %f, %f, %s);",
-        jsonlite::toJSON(map_key, auto_unbox = TRUE),
-        jsonlite::toJSON(player_name, auto_unbox = TRUE),
+        "addProximityTrigger(%s, %s, %f, %f, %f, %s, %s, %s);",
+        jsonlite::toJSON(id, auto_unbox = TRUE),
+        jsonlite::toJSON(object_name, auto_unbox = TRUE),
         x, y, radius,
-        jsonlite::toJSON(element_id, auto_unbox = TRUE)
+        jsonlite::toJSON(element_id, auto_unbox = TRUE, null = "null"),
+        jsonlite::toJSON(context, auto_unbox = TRUE, null = "null"),
+        jsonlite::toJSON(input_id, auto_unbox = TRUE, null = "null")
       )
       send_js(private, js)
     },

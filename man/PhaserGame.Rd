@@ -42,6 +42,8 @@ game <- PhaserGame$new(id = "my_game", width = 1024, height = 768)
 \item \href{#method-PhaserGame-add_image}{\code{PhaserGame$add_image()}}
 \item \href{#method-PhaserGame-add_sound}{\code{PhaserGame$add_sound()}}
 \item \href{#method-PhaserGame-add_map}{\code{PhaserGame$add_map()}}
+\item \href{#method-PhaserGame-activate_map}{\code{PhaserGame$activate_map()}}
+\item \href{#method-PhaserGame-add_proximity_trigger}{\code{PhaserGame$add_proximity_trigger()}}
 \item \href{#method-PhaserGame-set_world_bounds}{\code{PhaserGame$set_world_bounds()}}
 \item \href{#method-PhaserGame-enable_terrain_collision}{\code{PhaserGame$enable_terrain_collision()}}
 \item \href{#method-PhaserGame-add_sprite}{\code{PhaserGame$add_sprite()}}
@@ -304,6 +306,89 @@ Add a background (tilemap) layer from Tiled JSON + tileset image(s).
 \item{\code{tileset_names}}{Character vector. Names of tilesets as defined in Tiled.}
 
 \item{\code{layer_name}}{Character. Name of the layer to render from Tiled.}
+}
+\if{html}{\out{</div>}}
+}
+\subsection{Returns}{
+Invisible; sends a custom message to the client.
+}
+}
+\if{html}{\out{<hr>}}
+\if{html}{\out{<a id="method-PhaserGame-activate_map"></a>}}
+\if{latex}{\out{\hypertarget{method-PhaserGame-activate_map}{}}}
+\subsection{Method \code{activate_map()}}{
+Activate a tilemap previously loaded with \code{add_map()}.
+\subsection{Usage}{
+\if{html}{\out{<div class="r">}}\preformatted{PhaserGame$activate_map(
+  map_key,
+  player_name = NULL,
+  x = NULL,
+  y = NULL,
+  visible_objects = character(),
+  hidden_objects = character()
+)}\if{html}{\out{</div>}}
+}
+
+\subsection{Arguments}{
+\if{html}{\out{<div class="arguments">}}
+\describe{
+\item{\code{map_key}}{Character. Key of the tilemap to activate.}
+
+\item{\code{player_name}}{Character. Optional player sprite to reposition.}
+
+\item{\code{x}}{Numeric. Optional player x-coordinate.}
+
+\item{\code{y}}{Numeric. Optional player y-coordinate.}
+
+\item{\code{visible_objects}}{Character vector. Scene objects to show and enable.}
+
+\item{\code{hidden_objects}}{Character vector. Scene objects to hide and disable.}
+}
+\if{html}{\out{</div>}}
+}
+\subsection{Returns}{
+Invisible; sends a custom message to the client.
+}
+}
+\if{html}{\out{<hr>}}
+\if{html}{\out{<a id="method-PhaserGame-add_proximity_trigger"></a>}}
+\if{latex}{\out{\hypertarget{method-PhaserGame-add_proximity_trigger}{}}}
+\subsection{Method \code{add_proximity_trigger()}}{
+Add a trigger that monitors when a scene object is near a point.
+\subsection{Usage}{
+\if{html}{\out{<div class="r">}}\preformatted{PhaserGame$add_proximity_trigger(
+  id,
+  object_name,
+  x,
+  y,
+  radius = 180,
+  element_id = NULL,
+  context = NULL,
+  input_id = NULL
+)}\if{html}{\out{</div>}}
+}
+
+\subsection{Arguments}{
+\if{html}{\out{<div class="arguments">}}
+\describe{
+\item{\code{id}}{Character. Unique trigger identifier.}
+
+\item{\code{object_name}}{Character. Scene object whose position is monitored.}
+
+\item{\code{x}}{Numeric. Target x-coordinate.}
+
+\item{\code{y}}{Numeric. Target y-coordinate.}
+
+\item{\code{radius}}{Numeric. Maximum distance at which the trigger is active.}
+
+\item{\code{element_id}}{Character or \code{NULL}. ID of an HTML element to show while
+the trigger is active.}
+
+\item{\code{context}}{Character or \code{NULL}. Optional map key that must be active for
+the trigger to be evaluated.}
+
+\item{\code{input_id}}{Character or \code{NULL}. Optional Shiny input that receives a
+payload whenever the trigger is entered or exited.}
 }
 \if{html}{\out{</div>}}
 }

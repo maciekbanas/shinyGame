@@ -16,8 +16,8 @@ GameBridge.activeMapKey = GameBridge.activeMapKey || null;
 GameBridge.pendingActiveMap = GameBridge.pendingActiveMap || null;
 GameBridge.mapLoadQueue = GameBridge.mapLoadQueue || [];
 GameBridge.mapLoading = GameBridge.mapLoading || false;
-GameBridge.mapExits = GameBridge.mapExits || {};
-GameBridge.mapExitVisible = GameBridge.mapExitVisible || false;
+GameBridge.proximityTriggers = GameBridge.proximityTriggers || {};
+GameBridge.proximityElementVisibility = GameBridge.proximityElementVisibility || {};
 GameBridge.realmObjectVisibility = GameBridge.realmObjectVisibility || {};
 GameBridge.navigationOverlayVisible = GameBridge.navigationOverlayVisible || false;
 GameBridge.lastHeroOverlapState = GameBridge.lastHeroOverlapState || "";
@@ -148,7 +148,7 @@ function initPhaserGame(containerId, config) {
   function update(time, delta) {
       applyPendingCameraFollows();
       applyPendingScrollFactors();
-      updateMapExitVisibility();
+      updateProximityTriggers();
       sendHeroOverlapState(time);
 
       Object.entries(GameBridge.playerControls).forEach(([name, opts]) => {
@@ -325,7 +325,10 @@ function setPlayerAnimationPrefix(name, prefix) {
 function setNavigationOverlayVisible(visible) {
   GameBridge.navigationOverlayVisible = Boolean(visible);
   const element = document.getElementById("leave_map");
-  if (visible && element) element.style.display = "none";
+  if (visible && element) {
+    element.style.display = "none";
+    GameBridge.proximityElementVisibility.leave_map = false;
+  }
 
   const marker = document.getElementById("realm_character_marker");
   if (marker) {
@@ -496,7 +499,7 @@ function activateMap(mapKey, playerName = null, x = null, y = null,
   }
 
   applyPendingTerrainColliders();
-  updateMapExitVisibility();
+  updateProximityTriggers();
 }
 
 function setRealmObjectVisibility(name, visible) {
@@ -514,30 +517,48 @@ function applyRealmObjectVisibility(name) {
   if (object.body) object.body.enable = visible;
 }
 
-function setMapExit(mapKey, playerName, x, y, radius, elementId) {
-  GameBridge.mapExits[mapKey] = { playerName, x, y, radius, elementId };
-  updateMapExitVisibility();
+function addProximityTrigger(id, objectName, x, y, radius, elementId, context, inputId) {
+  GameBridge.proximityTriggers[id] = {
+    objectName, x, y, radius, elementId, context, inputId, active: false
+  };
+  updateProximityTriggers();
 }
 
-function updateMapExitVisibility() {
-  if (GameBridge.navigationOverlayVisible) {
-    const navigationExit = document.getElementById("leave_map");
-    if (navigationExit) navigationExit.style.display = "none";
-    GameBridge.mapExitVisible = false;
-    return;
-  }
+function updateProximityTriggers() {
+  const elementVisibility = Object.fromEntries(
+    Object.keys(GameBridge.proximityElementVisibility).map((elementId) => [elementId, false])
+  );
 
-  const exit = GameBridge.mapExits[GameBridge.activeMapKey];
-  const player = exit && scene && scene.children.getByName(exit.playerName);
-  const nearby = Boolean(player && Phaser.Math.Distance.Between(
-    player.x, player.y, exit.x, exit.y
-  ) <= exit.radius);
-  const element = exit && document.getElementById(exit.elementId);
+  Object.entries(GameBridge.proximityTriggers).forEach(([id, trigger]) => {
+    const contextActive = trigger.context === null ||
+      trigger.context === GameBridge.activeMapKey;
+    const object = contextActive && scene && scene.children.getByName(trigger.objectName);
+    const active = Boolean(object && Phaser.Math.Distance.Between(
+      object.x, object.y, trigger.x, trigger.y
+    ) <= trigger.radius);
 
-  if (element && nearby !== GameBridge.mapExitVisible) {
-    element.style.display = nearby ? "block" : "none";
-  }
-  GameBridge.mapExitVisible = nearby;
+    if (trigger.elementId) {
+      elementVisibility[trigger.elementId] = Boolean(
+        elementVisibility[trigger.elementId] || active
+      );
+    }
+
+    if (active !== trigger.active) {
+      trigger.active = active;
+      sendPhaserEvent(trigger.inputId, {
+        id, active, objectName: trigger.objectName,
+        x: object?.x, y: object?.y,
+        evt_nonce: Date.now() + Math.random()
+      });
+    }
+  });
+
+  Object.entries(elementVisibility).forEach(([elementId, visible]) => {
+    if (GameBridge.proximityElementVisibility[elementId] === visible) return;
+    const element = document.getElementById(elementId);
+    if (element) element.style.display = visible ? "block" : "none";
+    GameBridge.proximityElementVisibility[elementId] = visible;
+  });
 }
 
 function applyPendingTerrainColliders() {
