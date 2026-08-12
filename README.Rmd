@@ -46,6 +46,27 @@ Install the development version from GitHub:
 pak::pak("maciekbanas/shinyphaser")
 ```
 
+## API scope
+
+`shinyphaser` is intentionally more than a one-to-one translation of the
+Phaser API. Alongside wrappers for scene objects and physics operations, it
+includes reusable, browser-side behaviours when they remove substantial Shiny
+round trips and are useful across game genres. For example,
+`Sprite$start_approach_on_sight()` can drive guards, animals, vehicles, or
+simulation agents.
+
+Higher-level helpers belong in the package when they:
+
+- operate on generic Phaser concepts rather than an example's story or rules,
+- need browser-speed updates that would be inefficient through the Shiny
+  server, and
+- remain composable with lower-level methods such as `set_in_motion()` and
+  `stop_motion()`.
+
+Example-specific quests, combat rules, dialogue, and map progression remain in
+example applications. This keeps the core API broadly useful without limiting
+it to thin Phaser bindings.
+
 ## Quick start
 
 You can run the built-in sample app:

@@ -20,6 +20,8 @@
 * Queued sprite physics actions until sprites finish loading so setup calls such as `set_gravity()` are not lost during asynchronous asset initialization.
 
 ## New interface features
+* Added `Sprite$start_approach_on_sight()` for browser-side wandering, sight
+  checks, alerts, and movement toward a target sprite.
 * Added `PhaserGame$add_collision_rectangle()` for placing invisible static
   Arcade Physics bodies that can make selected areas impassable without
   rendering additional scene geometry.
