@@ -201,36 +201,10 @@ Sprite <- R6::R6Class(
       send_js(private, js)
     },
 
-    #' @description Move sprite randomly unless a target sprite is nearby, then move toward it.
-    #' @param target_name Character. Name of the target sprite to approach.
-    #' @param sight_range Numeric. Maximum distance in pixels at which the target is noticed.
-    #' @param dir_x Numeric. Fallback horizontal direction (-1 = left, +1 = right, 0 = none).
-    #' @param dir_y Numeric. Fallback vertical direction (-1 = up, +1 = down, 0 = none).
-    #' @param speed Numeric. Speed in pixels/second.
-    #' @param distance Numeric. Distance in pixels to travel before stopping.
-    #' @param approach_speed_multiplier Numeric. Multiplier applied to speed while moving toward the target.
-    #' @param approach_distance_multiplier Numeric. Multiplier applied to distance while moving toward the target.
-    #' @param lag Numeric. Optional delay before sending the command (defaults to distance/speed).
-    set_in_motion_random_or_toward = function(target_name,
-                                              sight_range,
-                                              dir_x,
-                                              dir_y,
-                                              speed,
-                                              distance,
-                                              approach_speed_multiplier = 1,
-                                              approach_distance_multiplier = 1,
-                                              lag = distance/speed) {
-      js <- sprintf(
-        "window.setTimeout(function() { setSpriteInMotionRandomOrToward(%s, %s, %f, %f, %f, %f, %f, %f, %f); }, %f);",
-        jsonlite::toJSON(private$name, auto_unbox = TRUE),
-        jsonlite::toJSON(target_name, auto_unbox = TRUE),
-        sight_range, dir_x, dir_y, speed, distance,
-        approach_speed_multiplier, approach_distance_multiplier, lag * 1000
-      )
-      send_js(private, js)
-    },
-
-    #' @description Start client-side sight checks that make this sprite alert, then approach a target.
+    #' @description Start client-side sight checks that make this sprite alert,
+    #'   wander while the target is out of range, and approach the target when
+    #'   it is in range. This is a reusable browser-side behaviour rather than
+    #'   an RPG-specific rule.
     #' @param target_name Character. Name of the target sprite to approach.
     #' @param sight_range Numeric. Maximum distance in pixels at which the target is noticed.
     #' @param speed Numeric. Approach speed in pixels/second.

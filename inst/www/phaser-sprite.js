@@ -431,39 +431,6 @@ function setSpriteInMotion(name, dirX, dirY, speed, distance) {
   });
 }
 
-function setSpriteInMotionRandomOrToward(
-  name,
-  targetName,
-  sightRange,
-  dirX,
-  dirY,
-  speed,
-  distance,
-  approachSpeedMultiplier = 1,
-  approachDistanceMultiplier = 1
-) {
-  const sprite = scene.children.getByName(name);
-  const target = scene.children.getByName(targetName);
-  if (!sprite || !target) {
-    setSpriteInMotion(name, dirX, dirY, speed, distance);
-    return;
-  }
-
-  const targetDistance = Phaser.Math.Distance.Between(sprite.x, sprite.y, target.x, target.y);
-  if (targetDistance > 0 && targetDistance <= sightRange) {
-    setSpriteInMotion(
-      name,
-      (target.x - sprite.x) / targetDistance,
-      (target.y - sprite.y) / targetDistance,
-      speed * approachSpeedMultiplier,
-      Math.min(distance * approachDistanceMultiplier, targetDistance)
-    );
-    return;
-  }
-
-  setSpriteInMotion(name, dirX, dirY, speed, distance);
-}
-
 function startSpriteApproachOnSight(
   name,
   targetName,
