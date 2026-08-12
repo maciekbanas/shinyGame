@@ -67,9 +67,6 @@
 ## Updates in examples
 * Added new arcade example game (bear).
 * Added new RPG game example (dungeonheroes).
-* Added weapon-specific knockback and directional mushroom-man damage
-  animations to dungeonheroes; the Elf Ranger currently uses a staff.
-* Updated the hedgehog examples so acknowledging a game-over dialog reloads the Shiny session and starts a fresh game instead of stopping the app.
 
 ## README
 * Added CRAN downloads badge to README.
