@@ -66,7 +66,7 @@
 
 ## Updates in examples
 * Added new arcade example game (bear).
-* Added new RPG game example (dungeonheroes).
+* Added the Swamps RPG game example (`swamps_rpg`).
 
 ## README
 * Added CRAN downloads badge to README.
