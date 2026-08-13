@@ -623,6 +623,35 @@ Text <- R6::R6Class(
     set_scroll_factor = function(x, y = x) {
       js <- sprintf("setScrollFactor('%s', %f, %f);", private$id, x, y)
       send_js(private, js)
+    },
+    #' @description Set the text object's rendering depth. Objects with a
+    #'   larger depth are rendered in front of objects with a smaller depth.
+    #' @param depth Numeric. Phaser rendering depth.
+    #' @return This text object, invisibly, to support method chaining.
+    #' @details Every individually renderable object wrapper supports
+    #'   `set_depth()`. Larger values draw in front of smaller values. The
+    #'   method invisibly returns its object, so it can be chained with other
+    #'   object methods.
+    #' @examples
+    #' \dontrun{
+    #' background <- game$add_image(
+    #'   "background", "assets/background.png", x = 400, y = 300
+    #' )
+    #' background$set_depth(-10)
+    #'
+    #' control <- game$add_rectangle(
+    #'   "jump_control", x = 720, y = 540, width = 120, height = 48,
+    #'   color = "0x223344"
+    #' )
+    #' control$set_depth(50)$set_scroll_factor(0)
+    #'
+    #' label <- game$add_text("Jump", "jump_label", x = 690, y = 528)
+    #' label$set_depth(51)$set_scroll_factor(0)
+    #' }
+    set_depth = function(depth) {
+      js <- sprintf("setSpriteDepth('%s', %f);", private$id, depth)
+      send_js(private, js)
+      invisible(self)
     }
   ),
   private = list(

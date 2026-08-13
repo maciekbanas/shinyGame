@@ -15,6 +15,7 @@ with PhaserGame$add_static_sprite() method.
 \item \href{#method-StaticSprite-follow_camera}{\code{StaticSprite$follow_camera()}}
 \item \href{#method-StaticSprite-stop_camera_follow}{\code{StaticSprite$stop_camera_follow()}}
 \item \href{#method-StaticSprite-set_scroll_factor}{\code{StaticSprite$set_scroll_factor()}}
+\item \href{#method-StaticSprite-set_depth}{\code{StaticSprite$set_depth()}}
 \item \href{#method-StaticSprite-clone}{\code{StaticSprite$clone()}}
 }
 }
@@ -42,6 +43,27 @@ Add a non-animated static sprite to the scene.
 }
 \if{html}{\out{</div>}}
 }
+}
+\if{html}{\out{<hr>}}
+\if{html}{\out{<a id="method-StaticSprite-set_depth"></a>}}
+\if{latex}{\out{\hypertarget{method-StaticSprite-set_depth}{}}}
+\subsection{Method \code{set_depth()}}{
+Set the static sprite's rendering depth. Objects with a larger
+depth are rendered in front of objects with a smaller depth.
+\subsection{Usage}{
+\if{html}{\out{<div class="r">}}\preformatted{StaticSprite$set_depth(depth)}\if{html}{\out{</div>}}
+}
+
+\subsection{Arguments}{
+\if{html}{\out{<div class="arguments">}}
+\describe{
+\item{\code{depth}}{Numeric. Phaser rendering depth.}
+}
+\if{html}{\out{</div>}}
+}
+}
+\subsection{Returns}{
+This static sprite object, invisibly, to support method chaining.
 }
 \if{html}{\out{<hr>}}
 \if{html}{\out{<a id="method-StaticSprite-destroy"></a>}}

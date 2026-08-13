@@ -132,9 +132,11 @@ Sprite <- R6::R6Class(
     #' @description Set the sprite's rendering depth. Objects with a larger
     #'   depth are rendered in front of objects with a smaller depth.
     #' @param depth Numeric. Phaser rendering depth.
+    #' @return This sprite object, invisibly, to support method chaining.
     set_depth = function(depth) {
       js <- sprintf("setSpriteDepth('%s', %f);", private$name, depth)
       send_js(private, js)
+      invisible(self)
     },
 
     #' @description Set the sprite's velocity in the x direction.
@@ -289,9 +291,11 @@ StaticSprite <- R6::R6Class(
     #' @description Set the static sprite's rendering depth. Objects with a
     #'   larger depth are rendered in front of objects with a smaller depth.
     #' @param depth Numeric. Phaser rendering depth.
+    #' @return This static sprite object, invisibly, to support method chaining.
     set_depth = function(depth) {
       js <- sprintf("setSpriteDepth('%s', %f);", private$name, depth)
       send_js(private, js)
+      invisible(self)
     }
   ),
   private = list(

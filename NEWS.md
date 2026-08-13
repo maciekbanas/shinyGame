@@ -56,9 +56,9 @@
 
 * Added sound support with `PhaserGame$add_sound()` and a new `Sound` API for loading, playing, pausing, resuming, stopping, and configuring audio.
 * Added `set_scroll_factor()` helpers for scene objects so HUD-style elements can stay fixed while the camera follows another target.
-* Added `set_depth()` helpers for sprites, static sprites, images, and rectangles
+* Added `set_depth()` helpers for sprites, static sprites, images, rectangles, and text
   to control their rendering order, including when depth is set before an asset
-  finishes loading.
+  finishes loading. These methods invisibly return their object for chaining.
 * Added camera follow helpers for sprites, images, rectangles, static sprites, and text scene objects so the Phaser camera can move with scene objects.
 * Added `StaticSprite$destroy()` for removing static sprites from the Phaser scene.
 * Added initial visibility control for text objects via `PhaserGame$add_text(..., visible = FALSE)` and `Text$new(..., visible = FALSE)`.
@@ -67,6 +67,8 @@
 ## Updates in examples
 * Added new arcade example game (bear).
 * Added the Swamps RPG game example (`swamps_rpg`).
+* Updated the sample game to layer its background and score display with
+  `set_depth()`.
 
 ## README
 * Added CRAN downloads badge to README.

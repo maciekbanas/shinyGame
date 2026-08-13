@@ -59,9 +59,11 @@ Image <- R6::R6Class(
     #' @description Set the image's rendering depth. Objects with a larger
     #'   depth are rendered in front of objects with a smaller depth.
     #' @param depth Numeric. Phaser rendering depth.
+    #' @return This image object, invisibly, to support method chaining.
     set_depth = function(depth) {
       js <- sprintf("setSpriteDepth('%s', %f);", private$name, depth)
       send_js(private, js)
+      invisible(self)
     },
     #' @description Add a click event listener to the image that triggers an R
     #'   function when clicked.

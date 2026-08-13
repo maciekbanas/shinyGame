@@ -17,6 +17,7 @@ dynamic updates to its content. Created with PhaserGame$add_text() method.
 \item \href{#method-Text-follow_camera}{\code{Text$follow_camera()}}
 \item \href{#method-Text-stop_camera_follow}{\code{Text$stop_camera_follow()}}
 \item \href{#method-Text-set_scroll_factor}{\code{Text$set_scroll_factor()}}
+\item \href{#method-Text-set_depth}{\code{Text$set_depth()}}
 \item \href{#method-Text-clone}{\code{Text$clone()}}
 }
 }
@@ -143,6 +144,53 @@ Set how much this text object scrolls with the camera.
 }
 \if{html}{\out{</div>}}
 }
+}
+\if{html}{\out{<hr>}}
+\if{html}{\out{<a id="method-Text-set_depth"></a>}}
+\if{latex}{\out{\hypertarget{method-Text-set_depth}{}}}
+\subsection{Method \code{set_depth()}}{
+Set the text object's rendering depth. Objects with a
+larger depth are rendered in front of objects with a smaller depth.
+\subsection{Usage}{
+\if{html}{\out{<div class="r">}}\preformatted{Text$set_depth(depth)}\if{html}{\out{</div>}}
+}
+
+\subsection{Arguments}{
+\if{html}{\out{<div class="arguments">}}
+\describe{
+\item{\code{depth}}{Numeric. Phaser rendering depth.}
+}
+\if{html}{\out{</div>}}
+}
+}
+\subsection{Returns}{
+This text object, invisibly, to support method chaining.
+}
+\subsection{Details}{
+Every individually renderable object wrapper supports \code{set_depth()}. Larger
+values draw in front of smaller values. The method invisibly returns its object,
+so it can be chained with other object methods.
+}
+\subsection{Examples}{
+\if{html}{\out{<div class="r example copy">}}
+\preformatted{\dontrun{
+background <- game$add_image(
+  "background", "assets/background.png", x = 400, y = 300
+)
+background$set_depth(-10)
+
+control <- game$add_rectangle(
+  "jump_control", x = 720, y = 540, width = 120, height = 48,
+  color = "0x223344"
+)
+control$set_depth(50)$set_scroll_factor(0)
+
+label <- game$add_text("Jump", "jump_label", x = 690, y = 528)
+label$set_depth(51)$set_scroll_factor(0)
+}
+}
+\if{html}{\out{</div>}}
+
 }
 \if{html}{\out{<hr>}}
 \if{html}{\out{<a id="method-Text-clone"></a>}}
