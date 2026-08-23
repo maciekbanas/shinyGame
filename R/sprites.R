@@ -101,6 +101,18 @@ Sprite <- R6::R6Class(
       send_js(private, js)
     },
 
+    #' @description Choose the animation prefix used by player controls.
+    #' @param prefix Character. Prefix for idle and directional movement animation keys.
+    #' @return Invisible; sends a custom message to the client.
+    set_player_animation_prefix = function(prefix) {
+      js <- sprintf(
+        "setPlayerAnimationPrefix(%s, %s);",
+        jsonlite::toJSON(private$name, auto_unbox = TRUE),
+        jsonlite::toJSON(prefix, auto_unbox = TRUE)
+      )
+      send_js(private, js)
+    },
+
     #' @description Make the camera follow this sprite as it moves through the world.
     #' @param lerp_x Numeric. Horizontal interpolation factor from 0 to 1 (default: 1).
     #' @param lerp_y Numeric. Vertical interpolation factor from 0 to 1 (default: 1).
@@ -132,9 +144,11 @@ Sprite <- R6::R6Class(
     #' @description Set the sprite's rendering depth. Objects with a larger
     #'   depth are rendered in front of objects with a smaller depth.
     #' @param depth Numeric. Phaser rendering depth.
+    #' @return This sprite object, invisibly, to support method chaining.
     set_depth = function(depth) {
       js <- sprintf("setSpriteDepth('%s', %f);", private$name, depth)
       send_js(private, js)
+      invisible(self)
     },
 
     #' @description Set the sprite's velocity in the x direction.
@@ -200,36 +214,10 @@ Sprite <- R6::R6Class(
       send_js(private, js)
     },
 
-    #' @description Move sprite randomly unless a target sprite is nearby, then move toward it.
-    #' @param target_name Character. Name of the target sprite to approach.
-    #' @param sight_range Numeric. Maximum distance in pixels at which the target is noticed.
-    #' @param dir_x Numeric. Fallback horizontal direction (-1 = left, +1 = right, 0 = none).
-    #' @param dir_y Numeric. Fallback vertical direction (-1 = up, +1 = down, 0 = none).
-    #' @param speed Numeric. Speed in pixels/second.
-    #' @param distance Numeric. Distance in pixels to travel before stopping.
-    #' @param approach_speed_multiplier Numeric. Multiplier applied to speed while moving toward the target.
-    #' @param approach_distance_multiplier Numeric. Multiplier applied to distance while moving toward the target.
-    #' @param lag Numeric. Optional delay before sending the command (defaults to distance/speed).
-    set_in_motion_random_or_toward = function(target_name,
-                                              sight_range,
-                                              dir_x,
-                                              dir_y,
-                                              speed,
-                                              distance,
-                                              approach_speed_multiplier = 1,
-                                              approach_distance_multiplier = 1,
-                                              lag = distance/speed) {
-      js <- sprintf(
-        "window.setTimeout(function() { setSpriteInMotionRandomOrToward(%s, %s, %f, %f, %f, %f, %f, %f, %f); }, %f);",
-        jsonlite::toJSON(private$name, auto_unbox = TRUE),
-        jsonlite::toJSON(target_name, auto_unbox = TRUE),
-        sight_range, dir_x, dir_y, speed, distance,
-        approach_speed_multiplier, approach_distance_multiplier, lag * 1000
-      )
-      send_js(private, js)
-    },
-
-    #' @description Start client-side sight checks that make this sprite alert, then approach a target.
+    #' @description Start client-side sight checks that make this sprite alert,
+    #'   wander while the target is out of range, and approach the target when
+    #'   it is in range. This is a reusable browser-side behaviour rather than
+    #'   an RPG-specific rule.
     #' @param target_name Character. Name of the target sprite to approach.
     #' @param sight_range Numeric. Maximum distance in pixels at which the target is noticed.
     #' @param speed Numeric. Approach speed in pixels/second.
@@ -324,9 +312,11 @@ StaticSprite <- R6::R6Class(
     #' @description Set the static sprite's rendering depth. Objects with a
     #'   larger depth are rendered in front of objects with a smaller depth.
     #' @param depth Numeric. Phaser rendering depth.
+    #' @return This static sprite object, invisibly, to support method chaining.
     set_depth = function(depth) {
       js <- sprintf("setSpriteDepth('%s', %f);", private$name, depth)
       send_js(private, js)
+      invisible(self)
     }
   ),
   private = list(

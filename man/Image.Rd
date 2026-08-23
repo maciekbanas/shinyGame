@@ -16,6 +16,7 @@ PhaserGame$add_image() method.
 \item \href{#method-Image-follow_camera}{\code{Image$follow_camera()}}
 \item \href{#method-Image-stop_camera_follow}{\code{Image$stop_camera_follow()}}
 \item \href{#method-Image-set_scroll_factor}{\code{Image$set_scroll_factor()}}
+\item \href{#method-Image-set_depth}{\code{Image$set_depth()}}
 \item \href{#method-Image-click}{\code{Image$click()}}
 \item \href{#method-Image-clone}{\code{Image$clone()}}
 }
@@ -126,6 +127,27 @@ Set how much this image scrolls with the camera.
 }
 \if{html}{\out{</div>}}
 }
+}
+\if{html}{\out{<hr>}}
+\if{html}{\out{<a id="method-Image-set_depth"></a>}}
+\if{latex}{\out{\hypertarget{method-Image-set_depth}{}}}
+\subsection{Method \code{set_depth()}}{
+Set the image's rendering depth. Objects with a larger
+depth are rendered in front of objects with a smaller depth.
+\subsection{Usage}{
+\if{html}{\out{<div class="r">}}\preformatted{Image$set_depth(depth)}\if{html}{\out{</div>}}
+}
+
+\subsection{Arguments}{
+\if{html}{\out{<div class="arguments">}}
+\describe{
+\item{\code{depth}}{Numeric. Phaser rendering depth.}
+}
+\if{html}{\out{</div>}}
+}
+}
+\subsection{Returns}{
+This image object, invisibly, to support method chaining.
 }
 \if{html}{\out{<hr>}}
 \if{html}{\out{<a id="method-Image-click"></a>}}

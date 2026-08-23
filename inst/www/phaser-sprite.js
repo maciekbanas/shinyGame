@@ -78,6 +78,9 @@ function addSprite(name, url, x, y, frameWidth, frameHeight, frameCount, frameRa
 
     scene[name] = sprite;
     applyPendingSpriteActions(name);
+    if (typeof applyRealmObjectVisibility === "function") {
+      applyRealmObjectVisibility(name);
+    }
 
     if (typeof applyPendingCameraFollows === "function") {
       applyPendingCameraFollows();
@@ -102,6 +105,9 @@ function addStaticSprite(name, url, x, y) {
     }
     scene[name] = staticSprite;
     applyPendingSpriteActions(name);
+    if (typeof applyRealmObjectVisibility === "function") {
+      applyRealmObjectVisibility(name);
+    }
 
     if (typeof applyPendingCameraFollows === "function") {
       applyPendingCameraFollows();
@@ -452,39 +458,6 @@ function setSpriteInMotion(name, dirX, dirY, speed, distance) {
       }
     });
   });
-}
-
-function setSpriteInMotionRandomOrToward(
-  name,
-  targetName,
-  sightRange,
-  dirX,
-  dirY,
-  speed,
-  distance,
-  approachSpeedMultiplier = 1,
-  approachDistanceMultiplier = 1
-) {
-  const sprite = scene.children.getByName(name);
-  const target = scene.children.getByName(targetName);
-  if (!sprite || !target) {
-    setSpriteInMotion(name, dirX, dirY, speed, distance);
-    return;
-  }
-
-  const targetDistance = Phaser.Math.Distance.Between(sprite.x, sprite.y, target.x, target.y);
-  if (targetDistance > 0 && targetDistance <= sightRange) {
-    setSpriteInMotion(
-      name,
-      (target.x - sprite.x) / targetDistance,
-      (target.y - sprite.y) / targetDistance,
-      speed * approachSpeedMultiplier,
-      Math.min(distance * approachDistanceMultiplier, targetDistance)
-    );
-    return;
-  }
-
-  setSpriteInMotion(name, dirX, dirY, speed, distance);
 }
 
 function startSpriteApproachOnSight(

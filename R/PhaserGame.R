@@ -39,6 +39,77 @@ PhaserGame <- R6::R6Class(
     #' @param session Shiny session object (default: shiny::getDefaultReactiveDomain()).
     set_shiny_session = function(session = shiny::getDefaultReactiveDomain()) {
       private$session <- session
+      private$register_save_handler()
+    },
+
+    #' @description Save game data and Phaser object state to a JSON file on the
+    #'   server. Positions are read directly from Phaser immediately before the
+    #'   save request, avoiding stale Shiny coordinates.
+    #' @param name Character. Human-readable name of the save.
+    #' @param state Named list. Additional JSON-serializable application state.
+    #' @param objects Character vector. Named Phaser scene objects to capture. By
+    #'   default all named scene objects are captured.
+    #' @param snapshot Named list. Optional Phaser object snapshot already
+    #'   captured in the browser. Supplying it writes the save synchronously.
+    #' @param directory Character. Server-side directory. Defaults to a
+    #'   game-specific folder below [tempdir()].
+    #' @return Invisible request identifier. The disk write completes
+    #'   asynchronously after Phaser returns its snapshot.
+    save_game = function(name, state = list(), objects = NULL, snapshot = NULL,
+                         directory = NULL) {
+      private$set_save_directory(directory)
+      private$register_save_handler()
+      name <- trimws(as.character(name)[1])
+      if (!nzchar(name)) stop("name must not be empty.", call. = FALSE)
+      if (!is.null(snapshot)) {
+        record <- private$write_save(name, state, snapshot)
+        if (!is.null(private$session)) {
+          private$session$sendCustomMessage("phaser-save-complete", record)
+        }
+        return(invisible(record))
+      }
+      if (is.null(private$save_observer)) {
+        stop("A Shiny session must be set before save_game() is called.", call. = FALSE)
+      }
+      request_id <- paste0(as.integer(Sys.time()), "-", sample.int(1e9, 1))
+      js <- sprintf(
+        "capturePhaserGameState(%s, %s, %s, %s);",
+        jsonlite::toJSON(private$save_input_id, auto_unbox = TRUE),
+        jsonlite::toJSON(request_id, auto_unbox = TRUE),
+        jsonlite::toJSON(name, auto_unbox = TRUE),
+        jsonlite::toJSON(list(state = state, objects = objects), auto_unbox = TRUE, null = "null")
+      )
+      send_js(private, js)
+      invisible(request_id)
+    },
+
+    #' @description List saves stored on the server for this game.
+    #' @param directory Character. Server-side save directory.
+    #' @return A list of saved game records, newest first.
+    list_saved_games = function(directory = NULL) {
+      private$set_save_directory(directory)
+      saves <- read_phaser_saves(private$save_file)
+      if (!length(saves)) return(saves)
+      saves[order(vapply(saves, function(x) x$savedAt %||% "", character(1)), decreasing = TRUE)]
+    },
+
+    #' @description Load a saved game from server disk.
+    #' @param name Character. Save name.
+    #' @param restore Logical. Restore captured Phaser object properties.
+    #' @param directory Character. Server-side save directory.
+    #' @return The additional application state stored with the save, invisibly.
+    load_game = function(name, restore = TRUE, directory = NULL) {
+      saves <- self$list_saved_games(directory)
+      matches <- which(vapply(saves, function(x) identical(x$name, as.character(name)[1]), logical(1)))
+      if (!length(matches)) stop(sprintf("Saved game '%s' was not found.", name), call. = FALSE)
+      save <- saves[[matches[1]]]
+      if (isTRUE(restore)) {
+        send_js(private, sprintf("restorePhaserGameState(%s);",
+          jsonlite::toJSON(save$phaser, auto_unbox = TRUE, null = "null")))
+      }
+      state <- save$state %||% list()
+      state$phaser <- save$phaser %||% list(objects = list())
+      invisible(state)
     },
 
     #' @description Load dependencies and initialize the Phaser game in the UI.
@@ -153,6 +224,54 @@ PhaserGame <- R6::R6Class(
       send_js(private, js)
     },
 
+    #' @description Activate a tilemap previously loaded with `add_map()`.
+    #' @param map_key Character. Key of the tilemap to activate.
+    #' @param player_name Character. Optional player sprite to reposition.
+    #' @param x Numeric. Optional player x-coordinate.
+    #' @param y Numeric. Optional player y-coordinate.
+    #' @param visible_objects Character vector. Scene objects to show and enable.
+    #' @param hidden_objects Character vector. Scene objects to hide and disable.
+    #' @return Invisible; sends a custom message to the client.
+    activate_map = function(map_key, player_name = NULL, x = NULL, y = NULL,
+                            visible_objects = character(), hidden_objects = character()) {
+      js_value <- function(value) jsonlite::toJSON(value, auto_unbox = TRUE, null = "null")
+      js_array <- function(value) jsonlite::toJSON(value, auto_unbox = FALSE, null = "null")
+      js <- sprintf(
+        "activateMap(%s, %s, %s, %s, %s, %s);",
+        js_value(map_key), js_value(player_name), js_value(x), js_value(y),
+        js_array(visible_objects), js_array(hidden_objects)
+      )
+      send_js(private, js)
+    },
+
+    #' @description Add a trigger that monitors when a scene object is near a point.
+    #' @param id Character. Unique trigger identifier.
+    #' @param object_name Character. Scene object whose position is monitored.
+    #' @param x Numeric. Target x-coordinate.
+    #' @param y Numeric. Target y-coordinate.
+    #' @param radius Numeric. Maximum distance at which the trigger is active.
+    #' @param element_id Character or `NULL`. ID of an HTML element to show while
+    #'   the trigger is active.
+    #' @param context Character or `NULL`. Optional map key that must be active for
+    #'   the trigger to be evaluated.
+    #' @param input_id Character or `NULL`. Optional Shiny input that receives a
+    #'   payload whenever the trigger is entered or exited.
+    #' @return Invisible; sends a custom message to the client.
+    add_proximity_trigger = function(id, object_name, x, y, radius = 180,
+                                     element_id = NULL, context = NULL,
+                                     input_id = NULL) {
+      js <- sprintf(
+        "addProximityTrigger(%s, %s, %f, %f, %f, %s, %s, %s);",
+        jsonlite::toJSON(id, auto_unbox = TRUE),
+        jsonlite::toJSON(object_name, auto_unbox = TRUE),
+        x, y, radius,
+        jsonlite::toJSON(element_id, auto_unbox = TRUE, null = "null"),
+        jsonlite::toJSON(context, auto_unbox = TRUE, null = "null"),
+        jsonlite::toJSON(input_id, auto_unbox = TRUE, null = "null")
+      )
+      send_js(private, js)
+    },
+
     #' @description Set the Phaser physics world and camera bounds.
     #' @param width Numeric. World width in pixels.
     #' @param height Numeric. World height in pixels.
@@ -185,6 +304,19 @@ PhaserGame <- R6::R6Class(
       return(Sprite$new(
         name, url, x, y, frame_width, frame_height, frame_count, frame_rate,
         session = private$session %||% shiny::getDefaultReactiveDomain()
+      ))
+    },
+
+    #' @description Add an invisible static collision rectangle to the world.
+    #' @param name Character. Unique name of the collision rectangle.
+    #' @param x Numeric. X-coordinate of its center.
+    #' @param y Numeric. Y-coordinate of its center.
+    #' @param width Numeric. Collision width in pixels.
+    #' @param height Numeric. Collision height in pixels.
+    add_collision_rectangle = function(name, x, y, width, height) {
+      send_js(private, sprintf(
+        "addCollisionRectangle(%s, %f, %f, %f, %f);",
+        jsonlite::toJSON(name, auto_unbox = TRUE), x, y, width, height
       ))
     },
 
@@ -385,7 +517,44 @@ PhaserGame <- R6::R6Class(
   private = list(
     config = list(),
     input = NULL,
-    session = NULL
+    session = NULL,
+    save_directory = NULL,
+    save_file = NULL,
+    save_input_id = NULL,
+    save_observer = NULL,
+    write_save = function(name, state, objects) {
+      saves <- read_phaser_saves(private$save_file)
+      record <- list(
+        name = as.character(name),
+        savedAt = format(Sys.time(), "%Y-%m-%dT%H:%M:%OS3Z", tz = "UTC"),
+        state = state %||% list(),
+        phaser = list(objects = objects %||% list())
+      )
+      keep <- !vapply(saves, function(x) identical(x$name, record$name), logical(1))
+      write_phaser_saves(c(saves[keep], list(record)), private$save_file)
+      record
+    },
+    set_save_directory = function(directory = NULL) {
+      if (!is.null(directory)) private$save_directory <- normalizePath(directory, mustWork = FALSE)
+      if (is.null(private$save_directory)) {
+        private$save_directory <- file.path(tempdir(), "shinyphaser", self$id)
+      }
+      dir.create(private$save_directory, recursive = TRUE, showWarnings = FALSE)
+      private$save_file <- file.path(private$save_directory, "save-games.json")
+    },
+    register_save_handler = function() {
+      if (!is.null(private$save_observer) || is.null(private$session) ||
+          is.null(private$session$input)) return(invisible(NULL))
+      private$save_input_id <- paste0(self$id, "_save_game_state")
+      private$set_save_directory()
+      private$save_observer <- shiny::observeEvent(
+        private$session$input[[private$save_input_id]], {
+          request <- private$session$input[[private$save_input_id]]
+          record <- private$write_save(request$name, request$state, request$objects)
+          private$session$sendCustomMessage("phaser-save-complete", record)
+        }, ignoreInit = TRUE
+      )
+    }
   )
 )
 
@@ -454,6 +623,35 @@ Text <- R6::R6Class(
     set_scroll_factor = function(x, y = x) {
       js <- sprintf("setScrollFactor('%s', %f, %f);", private$id, x, y)
       send_js(private, js)
+    },
+    #' @description Set the text object's rendering depth. Objects with a
+    #'   larger depth are rendered in front of objects with a smaller depth.
+    #' @param depth Numeric. Phaser rendering depth.
+    #' @return This text object, invisibly, to support method chaining.
+    #' @details Every individually renderable object wrapper supports
+    #'   `set_depth()`. Larger values draw in front of smaller values. The
+    #'   method invisibly returns its object, so it can be chained with other
+    #'   object methods.
+    #' @examples
+    #' \dontrun{
+    #' background <- game$add_image(
+    #'   "background", "assets/background.png", x = 400, y = 300
+    #' )
+    #' background$set_depth(-10)
+    #'
+    #' control <- game$add_rectangle(
+    #'   "jump_control", x = 720, y = 540, width = 120, height = 48,
+    #'   color = "0x223344"
+    #' )
+    #' control$set_depth(50)$set_scroll_factor(0)
+    #'
+    #' label <- game$add_text("Jump", "jump_label", x = 690, y = 528)
+    #' label$set_depth(51)$set_scroll_factor(0)
+    #' }
+    set_depth = function(depth) {
+      js <- sprintf("setSpriteDepth('%s', %f);", private$id, depth)
+      send_js(private, js)
+      invisible(self)
     }
   ),
   private = list(

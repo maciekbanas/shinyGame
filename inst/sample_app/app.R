@@ -16,6 +16,7 @@ server <- function(input, output, session) {
     x = 800,
     y = 300
   )
+  floor$set_depth(-10)
 
   hedgehog <- game$add_sprite(
     name = "hedgehog",
@@ -63,6 +64,7 @@ server <- function(input, output, session) {
   rocks$create(200, 300)
 
   score_text <- game$add_text(text = "Score: 0", id = "score", x = 20, y = 20)
+  score_text$set_depth(100)$set_scroll_factor(0)
   browser_score <- game$add_state("sample_score", 0)
 
   game$add_overlap(

@@ -1,3 +1,9 @@
+read_swamps_rpg_example <- function() {
+  example_dir <- system.file("examples", "swamps_rpg", package = "shinyphaser")
+  files <- list.files(example_dir, pattern = "[.]R$", recursive = TRUE, full.names = TRUE)
+  unlist(lapply(files, readLines, warn = FALSE), use.names = FALSE)
+}
+
 make_mock_session <- function() {
   msgs <- list()
   env <- new.env(parent = emptyenv())
@@ -16,7 +22,7 @@ test_that("Image and Rectangle methods send expected JS", {
   img$follow_camera(lerp_x = 0.2, lerp_y = 0.3, round_pixels = FALSE)
   img$stop_camera_follow()
   img$set_scroll_factor(0)
-  img$set_depth(20)
+  expect_identical(img$set_depth(20), img)
 
   rect <- Rectangle$new("hitbox", 1, 2, 3, 4, "0xff00ff", TRUE, TRUE, session = session)
   rect$show()
@@ -24,6 +30,7 @@ test_that("Image and Rectangle methods send expected JS", {
   rect$follow_camera(lerp_x = 0.4, lerp_y = 0.5, round_pixels = TRUE)
   rect$stop_camera_follow()
   rect$set_scroll_factor(0.25, 0.75)
+  expect_identical(rect$set_depth(30), rect)
 
   msgs <- vapply(session$get_messages(), function(m) m$message$js, character(1))
   expect_true(any(grepl("addImage\\('ground', 'ground.png', 10, 20, true, false\\);", msgs)))
@@ -39,6 +46,7 @@ test_that("Image and Rectangle methods send expected JS", {
   expect_true(any(grepl("followSpriteWithCamera\\('hitbox', 0.400000, 0.500000, true\\);", msgs)))
   expect_true(any(grepl("stopCameraFollow\\('hitbox'\\);", msgs)))
   expect_true(any(grepl("setScrollFactor\\('hitbox', 0.250000, 0.750000\\);", msgs)))
+  expect_true(any(grepl("setSpriteDepth\\('hitbox', 30.000000\\);", msgs)))
 })
 
 test_that("Group and StaticGroup methods send expected JS", {
@@ -76,6 +84,7 @@ test_that("StaticSprite destroy sends expected JS", {
   static_sprite$set_depth(10)
   static_sprite$hide()
   static_sprite$show()
+  expect_identical(static_sprite$set_depth(10), static_sprite)
   static_sprite$destroy()
 
   msgs <- vapply(session$get_messages(), function(m) m$message$js, character(1))
@@ -99,13 +108,12 @@ test_that("Sprite utility methods send expected JS", {
   s$follow_camera(lerp_x = 0.5, lerp_y = 0.75, round_pixels = FALSE)
   s$stop_camera_follow()
   s$set_scroll_factor(1, 0.5)
-  s$set_depth(15)
+  expect_identical(s$set_depth(15), s)
   s$set_velocity_x(120)
   s$set_velocity_y(140)
   s$set_gravity(1, 2)
   s$set_bounce(0.5)
   s$set_in_motion(1, 0, 90, 45, lag = 0)
-  s$set_in_motion_random_or_toward("mushroom_man", 300, 0, 1, 90, 45, 1.35, 2, lag = 0)
   s$start_approach_on_sight("mushroom_man", 500, 120, 80, 250, 1200)
   s$destroy()
 
@@ -123,7 +131,6 @@ test_that("Sprite utility methods send expected JS", {
   expect_true(any(grepl("setGravity\\('hero', 1, 2\\);", msgs)))
   expect_true(any(grepl("setBounce\\('hero', 0.500000\\);", msgs)))
   expect_true(any(grepl("setSpriteInMotion\\('hero', 1, 0, 90, 45\\);", msgs)))
-  expect_true(any(grepl('setSpriteInMotionRandomOrToward("hero", "mushroom_man", 300.000000', msgs, fixed = TRUE)))
   expect_true(any(grepl('startSpriteApproachOnSight("hero", "mushroom_man", 500.000000, 120.000000, 80.000000, 250.000000, 1200.000000, 1500.000000);', msgs, fixed = TRUE)))
   expect_true(any(grepl("destroySprite\\('hero'\\);", msgs)))
 })
@@ -138,6 +145,7 @@ test_that("Text methods send expected JS", {
   txt$follow_camera(lerp_x = 0.8, lerp_y = 0.9, round_pixels = TRUE)
   txt$stop_camera_follow()
   txt$set_scroll_factor(0)
+  expect_identical(txt$set_depth(100), txt)
 
   msgs <- vapply(session$get_messages(), function(m) m$message$js, character(1))
   expect_true(any(grepl("addText\\('Score', 'score_text', 15, 25, .*false\\);", msgs)))
@@ -147,12 +155,27 @@ test_that("Text methods send expected JS", {
   expect_true(any(grepl("followSpriteWithCamera\\('score_text', 0.800000, 0.900000, true\\);", msgs)))
   expect_true(any(grepl("stopCameraFollow\\('score_text'\\);", msgs)))
   expect_true(any(grepl("setScrollFactor\\('score_text', 0.000000, 0.000000\\);", msgs)))
+  expect_true(any(grepl("setSpriteDepth\\('score_text', 100.000000\\);", msgs)))
+})
+
+test_that("text and rectangle creation applies queued depth actions", {
+  game_js <- readLines(system.file("www", "phaser-game.js", package = "shinyphaser"), warn = FALSE)
+
+  expect_gte(sum(grepl("applyPendingSpriteActions", game_js, fixed = TRUE)), 2)
 })
 
 test_that("sample app and hedgehog assets are available", {
   sample_app <- system.file("sample_app", "app.R", package = "shinyphaser")
   expect_true(file.exists(sample_app))
   expect_true(file.exists(system.file("assets", "hedgehog", "terrain", "grass.png", package = "shinyphaser")))
+
+  sample_code <- readLines(sample_app, warn = FALSE)
+  expect_true(any(grepl("floor$set_depth(-10)", sample_code, fixed = TRUE)))
+  expect_true(any(grepl(
+    "score_text$set_depth(100)$set_scroll_factor(0)",
+    sample_code,
+    fixed = TRUE
+  )))
 })
 
 test_that("PhaserGame set_world_bounds sends expected JS", {
@@ -211,6 +234,48 @@ test_that("PhaserGame can create Sound objects", {
   expect_s3_class(sound, "Sound")
   msgs <- vapply(session$get_messages(), function(m) m$message$js, character(1))
   expect_true(any(grepl("addSound\\(\\\"jump\\\", \\\"jump.wav\\\", 0.400000, true\\);", msgs)))
+})
+
+test_that("activate_map serializes realm object arguments as arrays", {
+  session <- make_mock_session()
+  game <- PhaserGame$new()
+  game$set_shiny_session(session)
+
+  game$activate_map(
+    "castle", player_name = "hero", x = 700, y = 500,
+    visible_objects = "blacksmith", hidden_objects = "dead_tree"
+  )
+  game$activate_map("mushroom_swamps", visible_objects = character())
+
+  msgs <- vapply(session$get_messages(), function(m) m$message$js, character(1))
+  expect_true(any(grepl(
+    'activateMap("castle", "hero", 700, 500, ["blacksmith"], ["dead_tree"]);',
+    msgs, fixed = TRUE
+  )))
+  expect_true(any(grepl(
+    'activateMap("mushroom_swamps", null, null, null, [], []);',
+    msgs, fixed = TRUE
+  )))
+})
+
+test_that("add_proximity_trigger sends generic trigger configuration", {
+  session <- make_mock_session()
+  game <- PhaserGame$new()
+  game$set_shiny_session(session)
+
+  game$add_proximity_trigger(
+    "checkpoint", "vehicle", x = 120, y = 240, radius = 75,
+    element_id = "checkpoint_prompt", input_id = "checkpoint_state"
+  )
+
+  msgs <- vapply(session$get_messages(), function(m) m$message$js, character(1))
+  expect_true(any(grepl(
+    paste0(
+      'addProximityTrigger("checkpoint", "vehicle", 120.000000, 240.000000, ',
+      '75.000000, "checkpoint_prompt", null, "checkpoint_state");'
+    ),
+    msgs, fixed = TRUE
+  )))
 })
 
 test_that("browser_actions compile R6 calls for immediate execution", {
@@ -389,18 +454,19 @@ test_that("hedgehog action events retain game progress alerts", {
   expect_false(any(grepl("callback_fun", example, fixed = TRUE)))
 })
 
-test_that("dungeonheroes Space action retains interactions and combat", {
-  example <- readLines(
-    system.file("examples", "dungeonheroes.R", package = "shinyphaser"),
-    warn = FALSE
-  )
+test_that("swamps_rpg Space action retains interactions and combat", {
+  example <- read_swamps_rpg_example()
 
-  expect_true(any(grepl("if (sword_in_range && !has_sword)", example, fixed = TRUE)))
-  expect_true(any(grepl('inventory_text$set("weapon: sword")', example, fixed = TRUE)))
+  expect_false(any(grepl("sword_in_range", example, fixed = TRUE)))
+  expect_true(any(grepl('hero_weapon <<- hero_weapons$axe', example, fixed = TRUE)))
+  expect_true(any(grepl('inventory_text$set("weapon: axe")', example, fixed = TRUE)))
   expect_true(any(grepl("if (wizard_in_range)", example, fixed = TRUE)))
   expect_true(any(grepl("server_action = handle_space", example, fixed = TRUE)))
   expect_true(any(grepl("server_action", example, fixed = TRUE)))
-  expect_true(any(grepl("enemy_hit_points[[enemy_in_range]]", example, fixed = TRUE)))
+  expect_true(any(grepl("damage <- hero_weapon$damage", example, fixed = TRUE)))
+  expect_true(any(grepl("enemy_hit_points[[hit_enemy]]", example, fixed = TRUE)))
+  expect_true(any(grepl("distance = hero_weapon$knockback", example, fixed = TRUE)))
+  expect_true(any(grepl('paste0("damage_", knockback_direction)', example, fixed = TRUE)))
   expect_true(any(grepl("mushroom_reaction_check_interval <- 16", example, fixed = TRUE)))
   expect_true(any(grepl("enemies[[enemy_name]]$stop_motion()", example, fixed = TRUE)))
   expect_true(any(grepl("browser_action = browser_actions", example, fixed = TRUE)))
@@ -410,25 +476,52 @@ test_that("dungeonheroes Space action retains interactions and combat", {
   expect_true(any(grepl('duration = 1', example, fixed = TRUE)))
   expect_true(any(grepl('title = "Game over"', example, fixed = TRUE)))
   expect_false(any(grepl("client_action", example, fixed = TRUE)))
-  expect_false(any(grepl("dungeonheroes_version", example, fixed = TRUE)))
-  expect_false(any(grepl("dungeonheroes v", example, fixed = TRUE)))
+  expect_false(any(grepl("swamps_rpg_version", example, fixed = TRUE)))
+  expect_false(any(grepl("swamps_rpg v", example, fixed = TRUE)))
   expect_true(any(grepl('text = sprintf("shinyphaser v%s"', example, fixed = TRUE)))
 })
 
-test_that("dungeonheroes tree has a collidable base and foreground top", {
-  example <- readLines(
-    system.file("examples", "dungeonheroes.R", package = "shinyphaser"),
-    warn = FALSE
-  )
+test_that("collision rectangles create invisible static physics bodies", {
+  session <- make_mock_session()
+  game <- PhaserGame$new()
+  game$set_shiny_session(session)
+  game$add_collision_rectangle("tree_base", 100, 175, 200, 50)
+  msgs <- vapply(session$get_messages(), function(m) m$message$js, character(1))
+  expect_true(any(grepl(
+    'addCollisionRectangle("tree_base", 100.000000, 175.000000, 200.000000, 50.000000);',
+    msgs, fixed = TRUE
+  )))
 
-  expect_true(any(grepl('name = "dead_tree_1_bottom"', example, fixed = TRUE)))
-  expect_true(any(grepl('name = "dead_tree_1_top"', example, fixed = TRUE)))
-  expect_true(any(grepl('url = "assets/dungeonheroes/terrain/ms/dead_tree_1_bottom.png"', example, fixed = TRUE)))
-  expect_true(any(grepl('url = "assets/dungeonheroes/terrain/ms/dead_tree_1_top.png"', example, fixed = TRUE)))
-  expect_true(any(grepl("y = 650", example, fixed = TRUE)))
-  expect_true(any(grepl('game$add_collider("hero", "dead_tree_1_bottom")', example, fixed = TRUE)))
-  expect_false(any(grepl('game$add_collider("hero", "dead_tree_1_top")', example, fixed = TRUE)))
-  expect_true(any(grepl("dead_tree_top$set_depth(20)", example, fixed = TRUE)))
+  game_js <- readLines(
+    system.file("www", "phaser-game.js", package = "shinyphaser"), warn = FALSE
+  )
+  expect_true(any(grepl(
+    "scene.add.rectangle(x, y, width, height, 0x000000, 0)",
+    game_js, fixed = TRUE
+  )))
+  expect_true(any(grepl(
+    "scene.physics.add.existing(rectangle, true);", game_js, fixed = TRUE
+  )))
+})
+
+test_that("image visibility waits for asynchronously loaded images", {
+  image_js <- readLines(
+    system.file("www", "phaser-image.js", package = "shinyphaser"), warn = FALSE
+  )
+  image_source <- paste(image_js, collapse = "\n")
+
+  expect_true(grepl(
+    'withSprite(imageName, (image) => image.setVisible(true), "showImage()")',
+    image_source, fixed = TRUE
+  ))
+  expect_true(grepl(
+    'withSprite(imageName, (image) => image.setVisible(false), "hideImage()")',
+    image_source, fixed = TRUE
+  ))
+  expect_lt(
+    regexpr("scene[imageName].setVisible(visible)", image_source, fixed = TRUE)[[1]],
+    regexpr("applyPendingSpriteActions(imageName)", image_source, fixed = TRUE)[[1]]
+  )
 })
 
 test_that("sight approach does not restart active movement or hide alerts", {
@@ -455,10 +548,25 @@ test_that("sight approach does not restart active movement or hide alerts", {
   expect_lt(movement_guard, approach_move[[length(approach_move)]])
 })
 
+test_that("swamps_rpg is limited to the Orc and Mushroom Swamps", {
+  example <- read_swamps_rpg_example()
+  asset_dir <- system.file("assets", "swamps_rpg", package = "shinyphaser")
+
+  expect_true(any(grepl('url = "assets/swamps_rpg/sprites/hero/orc/hero_orc_idle.png"',
+                        example, fixed = TRUE)))
+  expect_true(any(grepl('map_key = "mushroom_swamps"', example, fixed = TRUE)))
+  expect_true(any(grepl('selected_character <<- "hero_orc"', example, fixed = TRUE)))
+  expect_false(any(grepl("dead_tree", example, fixed = TRUE)))
+  expect_false(any(grepl("wild_forests|magma_hills|grey_mountains|castle", example)))
+  expect_false(file.exists(file.path(
+    asset_dir, "terrain", "mushroom_swamps", "dead_tree_1_bottom.png"
+  )))
+})
+
 test_that("recent movement selects four-way directional attack animations", {
   game_js <- readLines(system.file("www", "phaser-game.js", package = "shinyphaser"), warn = FALSE)
   sprite_js <- readLines(system.file("www", "phaser-sprite.js", package = "shinyphaser"), warn = FALSE)
-  example <- readLines(system.file("examples", "dungeonheroes.R", package = "shinyphaser"), warn = FALSE)
+  example <- read_swamps_rpg_example()
 
   expect_true(any(grepl("GameBridge.directionalAttackMemory = 1500", game_js, fixed = TRUE)))
   expect_true(any(grepl('rememberMovementDirection(sprite, "left", time)', game_js, fixed = TRUE)))
@@ -467,9 +575,9 @@ test_that("recent movement selects four-way directional attack animations", {
   expect_true(any(grepl('rememberMovementDirection(sprite, "down", time)', game_js, fixed = TRUE)))
   expect_true(any(grepl('animationKey + "_" + direction', game_js, fixed = TRUE)))
   expect_true(any(grepl('forcedKey + "_" + movementSuffix', game_js, fixed = TRUE)))
-  expect_true(any(grepl("targetAnim !== name + '_idle'", game_js, fixed = TRUE)))
+  expect_true(any(grepl("targetAnim !== animationPrefix + '_idle'", game_js, fixed = TRUE)))
   expect_true(any(grepl('rememberMovementDirection(sprite, movementDirection, now)', sprite_js, fixed = TRUE)))
-  expect_true(any(grepl('suffix = paste0("sword_attack_", direction)', example, fixed = TRUE)))
+  expect_true(any(grepl('hero_orc_attack_%s.png', example, fixed = TRUE)))
   expect_true(any(grepl('suffix = paste0("attack_", direction)', example, fixed = TRUE)))
 })
 
@@ -505,6 +613,7 @@ test_that("browser feedback is configured for immediate visibility and audio", {
   expect_true(any(grepl("if (!scene.load.isLoading()) scene.load.start()", game_js, fixed = TRUE)))
   expect_true(any(grepl("() => addCollider(objectOneName", game_js, fixed = TRUE)))
   expect_true(any(grepl('typeof target !== "string"', game_js, fixed = TRUE)))
+  expect_true(any(grepl("groundLayer.setDepth(-1)", game_js, fixed = TRUE)))
 })
 
 test_that("runtime visual assets initialize when the loader batch completes", {
@@ -517,6 +626,17 @@ test_that("runtime visual assets initialize when the loader batch completes", {
   expect_true(any(grepl("applyPendingSpriteActions(imageName)", image_js, fixed = TRUE)))
   expect_true(any(grepl("scene.load.once('complete'", image_js, fixed = TRUE)))
   expect_false(any(grepl("if (!scene.load.isLoading())", sprite_js, fixed = TRUE)))
+
+  interactive <- grep("scene[imageName].setInteractive();", image_js, fixed = TRUE)
+  pending <- grep("applyPendingSpriteActions(imageName);", image_js, fixed = TRUE)
+  expect_length(interactive, 1)
+  expect_length(pending, 1)
+  expect_lt(interactive, pending)
+  expect_true(any(grepl(
+    'withSprite(imageName, (image) => {', image_js, fixed = TRUE
+  )))
+  expect_true(any(grepl('}, "clickImage()");', image_js, fixed = TRUE)))
+  expect_false(any(grepl("scene[imageName].on('pointerdown'", image_js, fixed = TRUE)))
 })
 
 test_that("bear uses Arcade world gravity", {
@@ -526,4 +646,67 @@ test_that("bear uses Arcade world gravity", {
   expect_true(any(grepl("gravity: {", game_js, fixed = TRUE)))
   expect_true(any(grepl("gravity_y = 1200", bear, fixed = TRUE)))
   expect_false(any(grepl("$set_gravity", bear, fixed = TRUE)))
+})
+
+test_that("saved games use Phaser snapshots and server disk persistence", {
+  game_js <- readLines(system.file("www", "phaser-game.js", package = "shinyphaser"), warn = FALSE)
+  example <- read_swamps_rpg_example()
+
+  expect_true(any(grepl("function capturePhaserGameState", game_js, fixed = TRUE)))
+  expect_true(any(grepl("object.body.reset(saved.x, saved.y)", game_js, fixed = TRUE)))
+  expect_false(any(grepl("localStorage", example, fixed = TRUE)))
+  expect_true(any(grepl('game$save_game(', example, fixed = TRUE)))
+  expect_true(any(grepl('game$load_game(input$load_game$name', example, fixed = TRUE)))
+})
+
+test_that("save file helpers replace named JSON records", {
+  directory <- tempfile("shinyphaser-saves-")
+  path <- file.path(directory, "save-games.json")
+  saves <- list(list(name = "first", savedAt = "2026-01-01", state = list(score = 1)))
+
+  write_phaser_saves(saves, path)
+  expect_true(file.exists(path))
+  expect_equal(read_phaser_saves(path), saves)
+})
+
+test_that("swamps_rpg captures its hero before the synchronous disk save", {
+  example <- read_swamps_rpg_example()
+
+  expect_true(any(grepl("capturePhaserGameState('save_game_requested'", example, fixed = TRUE)))
+  expect_true(any(grepl("snapshot = request$objects", example, fixed = TRUE)))
+  expect_true(any(grepl('id = "toggle_game_menu"', example, fixed = TRUE)))
+  expect_true(any(grepl('position: fixed; left: 18px; top: 18px', example, fixed = TRUE)))
+})
+
+test_that("save_game writes a supplied Phaser snapshot immediately", {
+  directory <- tempfile("shinyphaser-game-")
+  game <- PhaserGame$new(id = "save-test")
+
+  game$save_game(
+    "checkpoint",
+    state = list(score = 12),
+    snapshot = list(hero = list(x = 321, y = 654)),
+    directory = directory
+  )
+
+  saves <- game$list_saved_games(directory)
+  expect_length(saves, 1)
+  expect_equal(saves[[1]]$phaser$objects$hero$x, 321)
+  loaded <- game$load_game("checkpoint", restore = FALSE, directory = directory)
+  expect_equal(loaded$score, 12)
+})
+
+test_that("swamps_rpg is organized into focused modules and sprite directories", {
+  example_dir <- system.file("examples", "swamps_rpg", package = "shinyphaser")
+  asset_dir <- system.file("assets", "swamps_rpg", "sprites", package = "shinyphaser")
+
+  expect_true(file.exists(file.path(example_dir, "app.R")))
+  expect_true(file.exists(file.path(example_dir, "modules", "saving.R")))
+  expect_true(file.exists(file.path(example_dir, "modules", "navigation.R")))
+  expect_true(file.exists(file.path(
+    example_dir, "modules", "realms", "mushroom_swamps_world.R"
+  )))
+  expect_true(file.exists(file.path(asset_dir, "hero", "orc", "hero_orc_idle.png")))
+  expect_true(file.exists(file.path(asset_dir, "enemies", "mushroom_man", "mushroom_man_idle.png")))
+  expect_true(file.exists(file.path(asset_dir, "npc", "wizard", "wizard_idle.png")))
 })

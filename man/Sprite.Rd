@@ -18,6 +18,7 @@ with PhaserGame$add_sprite() method.
 \item \href{#method-Sprite-follow_camera}{\code{Sprite$follow_camera()}}
 \item \href{#method-Sprite-stop_camera_follow}{\code{Sprite$stop_camera_follow()}}
 \item \href{#method-Sprite-set_scroll_factor}{\code{Sprite$set_scroll_factor()}}
+\item \href{#method-Sprite-set_depth}{\code{Sprite$set_depth()}}
 \item \href{#method-Sprite-set_velocity_x}{\code{Sprite$set_velocity_x()}}
 \item \href{#method-Sprite-set_velocity_y}{\code{Sprite$set_velocity_y()}}
 \item \href{#method-Sprite-set_gravity}{\code{Sprite$set_gravity()}}
@@ -211,6 +212,27 @@ Set how much this sprite scrolls with the camera.
 }
 \if{html}{\out{</div>}}
 }
+}
+\if{html}{\out{<hr>}}
+\if{html}{\out{<a id="method-Sprite-set_depth"></a>}}
+\if{latex}{\out{\hypertarget{method-Sprite-set_depth}{}}}
+\subsection{Method \code{set_depth()}}{
+Set the sprite's rendering depth. Objects with a larger
+depth are rendered in front of objects with a smaller depth.
+\subsection{Usage}{
+\if{html}{\out{<div class="r">}}\preformatted{Sprite$set_depth(depth)}\if{html}{\out{</div>}}
+}
+
+\subsection{Arguments}{
+\if{html}{\out{<div class="arguments">}}
+\describe{
+\item{\code{depth}}{Numeric. Phaser rendering depth.}
+}
+\if{html}{\out{</div>}}
+}
+}
+\subsection{Returns}{
+This sprite object, invisibly, to support method chaining.
 }
 \if{html}{\out{<hr>}}
 \if{html}{\out{<a id="method-Sprite-set_velocity_x"></a>}}

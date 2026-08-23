@@ -9,6 +9,17 @@ GameBridge.pendingCameraFollow = GameBridge.pendingCameraFollow || {};
 GameBridge.pendingScrollFactor = GameBridge.pendingScrollFactor || {};
 GameBridge.pendingWorldBounds = GameBridge.pendingWorldBounds || null;
 GameBridge.pendingTerrainColliders = GameBridge.pendingTerrainColliders || [];
+GameBridge.terrainColliderSprites = GameBridge.terrainColliderSprites || [];
+GameBridge.terrainColliders = GameBridge.terrainColliders || {};
+GameBridge.maps = GameBridge.maps || {};
+GameBridge.activeMapKey = GameBridge.activeMapKey || null;
+GameBridge.pendingActiveMap = GameBridge.pendingActiveMap || null;
+GameBridge.mapLoadQueue = GameBridge.mapLoadQueue || [];
+GameBridge.mapLoading = GameBridge.mapLoading || false;
+GameBridge.proximityTriggers = GameBridge.proximityTriggers || {};
+GameBridge.proximityElementVisibility = GameBridge.proximityElementVisibility || {};
+GameBridge.realmObjectVisibility = GameBridge.realmObjectVisibility || {};
+GameBridge.navigationOverlayVisible = GameBridge.navigationOverlayVisible || false;
 GameBridge.lastHeroOverlapState = GameBridge.lastHeroOverlapState || "";
 GameBridge.nextHeroOverlapSendAt = GameBridge.nextHeroOverlapSendAt || 0;
 GameBridge.sounds = GameBridge.sounds || {};
@@ -137,6 +148,7 @@ function initPhaserGame(containerId, config) {
   function update(time, delta) {
       applyPendingCameraFollows();
       applyPendingScrollFactors();
+      updateProximityTriggers();
       sendHeroOverlapState(time);
 
       Object.entries(GameBridge.playerControls).forEach(([name, opts]) => {
@@ -144,6 +156,7 @@ function initPhaserGame(containerId, config) {
           if (!sprite) return;
 
           const { speed, directionMap } = opts;
+          const animationPrefix = opts.animationPrefix || name;
 
           if (directionMap.left || directionMap.right) {
             sprite.body.setVelocityX(0);
@@ -152,30 +165,30 @@ function initPhaserGame(containerId, config) {
             sprite.body.setVelocityY(0);
           }
 
-          let targetAnim = name + '_idle';
+          let targetAnim = animationPrefix + '_idle';
 
           if (cursors.left.isDown && directionMap.left) {
             sprite.body.setVelocityX(-speed);
-            targetAnim = name + '_move_left';
+            targetAnim = animationPrefix + '_move_left';
             rememberMovementDirection(sprite, "left", time);
           } else if (cursors.right.isDown && directionMap.right) {
             sprite.body.setVelocityX(speed);
-            targetAnim = name + '_move_right';
+            targetAnim = animationPrefix + '_move_right';
             rememberMovementDirection(sprite, "right", time);
           } else if (cursors.up.isDown && directionMap.up) {
             sprite.body.setVelocityY(-speed);
-            targetAnim = name + '_move_up';
+            targetAnim = animationPrefix + '_move_up';
             rememberMovementDirection(sprite, "up", time);
           } else if (cursors.down.isDown && directionMap.down) {
             sprite.body.setVelocityY(speed);
-            targetAnim = name + '_move_down';
+            targetAnim = animationPrefix + '_move_down';
             rememberMovementDirection(sprite, "down", time);
           }
 
           const forced = GameBridge.forcedAnimations[name];
           if (forced) {
             if (forced.until === null || time <= forced.until) {
-              const movementKey = targetAnim !== name + '_idle' ? targetAnim : null;
+              const movementKey = targetAnim !== animationPrefix + '_idle' ? targetAnim : null;
               const forcedAnimKey = forcedAnimationForMovement(
                 sprite, forced.key, movementKey, time
               );
@@ -272,6 +285,9 @@ function addText(text, id, x, y, style, visible = true) {
   if (typeof applyPendingScrollFactors === "function") {
     applyPendingScrollFactors();
   }
+  if (typeof applyPendingSpriteActions === "function") {
+    applyPendingSpriteActions(id);
+  }
 }
 
 function setText(text, id) {
@@ -289,6 +305,7 @@ function hideText(id) {
 function addPlayerControls(name, directions, speed) {
   GameBridge.playerControls[name] = {
     speed,
+    animationPrefix: name,
     directionMap: {
       left: directions.includes("left"),
       right: directions.includes("right"),
@@ -297,6 +314,43 @@ function addPlayerControls(name, directions, speed) {
     }
   };
 };
+
+function setPlayerAnimationPrefix(name, prefix) {
+  if (!GameBridge.playerControls[name]) return;
+  const animationPrefix = prefix || name;
+  GameBridge.playerControls[name].animationPrefix = animationPrefix;
+  delete GameBridge.forcedAnimations[name];
+
+  const sprite = scene && scene.children.getByName(name);
+  if (sprite) playIfChanged(sprite, animationPrefix + "_idle");
+}
+
+function setNavigationOverlayVisible(visible) {
+  GameBridge.navigationOverlayVisible = Boolean(visible);
+  const element = document.getElementById("leave_map");
+  if (visible && element) {
+    element.style.display = "none";
+    GameBridge.proximityElementVisibility.leave_map = false;
+  }
+
+  const marker = document.getElementById("realm_character_marker");
+  if (marker) {
+    // Keep the realm marker in the same scrolling coordinate space as the
+    // Phaser canvas instead of pinning it to the browser viewport.
+    const container = game?.canvas?.parentElement;
+    if (container && marker.parentElement !== container) {
+      container.style.position = "relative";
+      container.appendChild(marker);
+    }
+    marker.style.display = visible ? "block" : "none";
+  }
+  const realmLabel = document.getElementById("realm_name_label");
+  if (realmLabel) {
+    const container = game?.canvas?.parentElement;
+    if (container && realmLabel.parentElement !== container) container.appendChild(realmLabel);
+    realmLabel.style.display = visible ? "block" : "none";
+  }
+}
 
 function applyWorldBounds(bounds) {
   if (!bounds || !scene || !scene.physics || !scene.cameras) return;
@@ -358,6 +412,16 @@ function stopCameraFollow(name) {
 }
 
 function addMap(mapKey, mapUrl, tilesetUrls, tilesetNames, layerName) {
+  GameBridge.mapLoadQueue.push({ mapKey, mapUrl, tilesetUrls, tilesetNames, layerName });
+  loadNextMap();
+}
+
+function loadNextMap() {
+  if (GameBridge.mapLoading || GameBridge.mapLoadQueue.length === 0) return;
+  GameBridge.mapLoading = true;
+  const { mapKey, mapUrl, tilesetUrls, tilesetNames, layerName } =
+    GameBridge.mapLoadQueue.shift();
+
   scene.load.tilemapTiledJSON(mapKey, mapUrl);
   for (let i = 0; i < tilesetNames.length; i++) {
     scene.load.image(tilesetNames[i], tilesetUrls[i]);
@@ -376,26 +440,148 @@ function addMap(mapKey, mapUrl, tilesetUrls, tilesetNames, layerName) {
     const groundLayer = map.createLayer(layerName, phaserTilesets, 0, 0);
 
     groundLayer.setCollisionByProperty({ collides: true });
+    // Tilemaps are scenery. Keep them behind sprites and fixed HUD objects
+    // regardless of which asynchronous asset happens to finish loading first.
+    groundLayer.setDepth(-1);
+    GameBridge.maps[mapKey] = { map, layer: groundLayer };
+    groundLayer.setVisible(false).setActive(false);
 
-    scene.physics.world.bounds.width  = map.widthInPixels;
-    scene.physics.world.bounds.height = map.heightInPixels;
-    scene.cameras.main.setBounds(0, 0, map.widthInPixels, map.heightInPixels);
-
-    scene.terrainLayer = groundLayer;
-    applyPendingTerrainColliders();
+    if (!GameBridge.activeMapKey) {
+      activateMap(mapKey);
+    } else if (GameBridge.pendingActiveMap?.mapKey === mapKey) {
+      activateMap(...GameBridge.pendingActiveMap.args);
+    }
+    GameBridge.mapLoading = false;
+    loadNextMap();
   });
 
   scene.load.start();
 }
 
+function activateMap(mapKey, playerName = null, x = null, y = null,
+                     visibleObjects = [], hiddenObjects = []) {
+  // R JSON serializers can simplify a one-item vector to a scalar. Normalize
+  // both arguments so realm activation remains safe for zero, one, or many
+  // objects, including messages produced by older shinyphaser versions.
+  visibleObjects = Array.isArray(visibleObjects)
+    ? visibleObjects
+    : (visibleObjects == null ? [] : [visibleObjects]);
+  hiddenObjects = Array.isArray(hiddenObjects)
+    ? hiddenObjects
+    : (hiddenObjects == null ? [] : [hiddenObjects]);
+
+  const mapEntry = GameBridge.maps[mapKey];
+  if (!mapEntry) {
+    GameBridge.pendingActiveMap = {
+      mapKey,
+      args: [mapKey, playerName, x, y, visibleObjects, hiddenObjects]
+    };
+    return;
+  }
+
+  Object.entries(GameBridge.maps).forEach(([key, entry]) => {
+    const active = key === mapKey;
+    entry.layer.setVisible(active).setActive(active);
+  });
+
+  GameBridge.activeMapKey = mapKey;
+  GameBridge.pendingActiveMap = null;
+  scene.terrainLayer = mapEntry.layer;
+  scene.physics.world.setBounds(0, 0, mapEntry.map.widthInPixels, mapEntry.map.heightInPixels);
+  scene.cameras.main.setBounds(0, 0, mapEntry.map.widthInPixels, mapEntry.map.heightInPixels);
+
+  [...visibleObjects.map((name) => [name, true]),
+   ...hiddenObjects.map((name) => [name, false])].forEach(([name, visible]) => {
+    setRealmObjectVisibility(name, visible);
+  });
+
+  const player = playerName && scene.children.getByName(playerName);
+  if (player && Number.isFinite(x) && Number.isFinite(y)) {
+    player.setPosition(x, y);
+    if (player.body) player.body.reset(x, y);
+  }
+
+  applyPendingTerrainColliders();
+  updateProximityTriggers();
+}
+
+function setRealmObjectVisibility(name, visible) {
+  GameBridge.realmObjectVisibility[name] = Boolean(visible);
+  applyRealmObjectVisibility(name);
+}
+
+function applyRealmObjectVisibility(name) {
+  if (!Object.prototype.hasOwnProperty.call(GameBridge.realmObjectVisibility, name)) return;
+  const object = scene && scene.children.getByName(name);
+  if (!object) return;
+
+  const visible = GameBridge.realmObjectVisibility[name];
+  object.setVisible(visible).setActive(visible);
+  if (object.body) object.body.enable = visible;
+}
+
+function addProximityTrigger(id, objectName, x, y, radius, elementId, context, inputId) {
+  GameBridge.proximityTriggers[id] = {
+    objectName, x, y, radius, elementId, context, inputId, active: false
+  };
+  updateProximityTriggers();
+}
+
+function updateProximityTriggers() {
+  const elementVisibility = Object.fromEntries(
+    Object.keys(GameBridge.proximityElementVisibility).map((elementId) => [elementId, false])
+  );
+
+  Object.entries(GameBridge.proximityTriggers).forEach(([id, trigger]) => {
+    const contextActive = trigger.context === null ||
+      trigger.context === GameBridge.activeMapKey;
+    const object = contextActive && scene && scene.children.getByName(trigger.objectName);
+    const active = Boolean(object && Phaser.Math.Distance.Between(
+      object.x, object.y, trigger.x, trigger.y
+    ) <= trigger.radius);
+
+    if (trigger.elementId) {
+      elementVisibility[trigger.elementId] = Boolean(
+        elementVisibility[trigger.elementId] || active
+      );
+    }
+
+    if (active !== trigger.active) {
+      trigger.active = active;
+      sendPhaserEvent(trigger.inputId, {
+        id, active, objectName: trigger.objectName,
+        x: object?.x, y: object?.y,
+        evt_nonce: Date.now() + Math.random()
+      });
+    }
+  });
+
+  Object.entries(elementVisibility).forEach(([elementId, visible]) => {
+    if (GameBridge.proximityElementVisibility[elementId] === visible) return;
+    const element = document.getElementById(elementId);
+    if (element) element.style.display = visible ? "block" : "none";
+    GameBridge.proximityElementVisibility[elementId] = visible;
+  });
+}
+
 function applyPendingTerrainColliders() {
   if (!scene || !scene.terrainLayer) return;
 
-  GameBridge.pendingTerrainColliders = GameBridge.pendingTerrainColliders.filter((spriteName) => {
+  GameBridge.pendingTerrainColliders.forEach((spriteName) => {
+    if (!GameBridge.terrainColliderSprites.includes(spriteName)) {
+      GameBridge.terrainColliderSprites.push(spriteName);
+    }
+  });
+  GameBridge.pendingTerrainColliders = [];
+
+  Object.values(GameBridge.terrainColliders).forEach((collider) => collider.destroy());
+  GameBridge.terrainColliders = {};
+  GameBridge.terrainColliderSprites.forEach((spriteName) => {
     const sprite = scene.children.getByName(spriteName);
-    if (!sprite) return true;
-    scene.physics.add.collider(sprite, scene.terrainLayer);
-    return false;
+    if (!sprite) return;
+    GameBridge.terrainColliders[spriteName] = scene.physics.add.collider(
+      sprite, scene.terrainLayer
+    );
   });
 }
 
@@ -407,7 +593,10 @@ function addPlayerTerrainCollider(spriteName) {
     }
     return;
   }
-  scene.physics.add.collider(sprite, scene.terrainLayer);
+  if (!GameBridge.terrainColliderSprites.includes(spriteName)) {
+    GameBridge.terrainColliderSprites.push(spriteName);
+  }
+  applyPendingTerrainColliders();
 }
 
 function addCollider(objectOneName, objectTwoName, inputId, browserActions = []) {
@@ -557,6 +746,20 @@ function addRectangle(name, x, y, width, height, fillColor, visible = true, clic
   if (typeof applyPendingScrollFactors === "function") {
     applyPendingScrollFactors();
   }
+  if (typeof applyPendingSpriteActions === "function") {
+    applyPendingSpriteActions(name);
+  }
+}
+
+function addCollisionRectangle(name, x, y, width, height) {
+  const rectangle = scene.add.rectangle(x, y, width, height, 0x000000, 0)
+    .setName(name);
+  scene.physics.add.existing(rectangle, true);
+  scene[name] = rectangle;
+
+  if (typeof applyRealmObjectVisibility === "function") {
+    applyRealmObjectVisibility(name);
+  }
 }
 
 function addGraphics(name, x, y, width, height, fillColor) {
@@ -584,6 +787,55 @@ function sendHeroOverlapState(time) {
   );
 }
 
+// Phaser owns the live transforms, so snapshot them at the instant a save is
+// requested instead of relying on coordinates previously delivered to Shiny.
+function capturePhaserGameState(inputId, requestId, name, options = {}) {
+  if (!scene || !shinyInputReady()) return;
+  const requested = Array.isArray(options.objects) ? new Set(options.objects) : null;
+  const objects = {};
+  scene.children.list.forEach((object) => {
+    if (!object.name || (requested && !requested.has(object.name))) return;
+    objects[object.name] = {
+      x: object.x,
+      y: object.y,
+      visible: object.visible,
+      active: object.active
+    };
+  });
+  Shiny.setInputValue(inputId, {
+    requestId,
+    name,
+    state: options.state || {},
+    objects,
+    evt_nonce: Date.now() + Math.random()
+  }, { priority: "event" });
+}
+
+function restorePhaserGameState(snapshot, attempts = 40) {
+  const pending = [];
+  Object.entries(snapshot?.objects || {}).forEach(([name, saved]) => {
+    const object = scene && scene.children.getByName(name);
+    if (!object) { pending.push(name); return; }
+    if (Number.isFinite(saved.x) && Number.isFinite(saved.y)) {
+      object.setPosition(saved.x, saved.y);
+      // Arcade bodies retain their own previous position; reset both values so
+      // the next physics tick cannot snap the hero back to the old location.
+      if (object.body && typeof object.body.reset === "function") {
+        object.body.reset(saved.x, saved.y);
+      }
+    }
+    if (typeof saved.visible === "boolean") object.setVisible(saved.visible);
+    if (typeof saved.active === "boolean") object.setActive(saved.active);
+  });
+  if (pending.length && attempts > 0) {
+    window.setTimeout(() => restorePhaserGameState(snapshot, attempts - 1), 100);
+  }
+}
+
 Shiny.addCustomMessageHandler("phaser", function (message) {
   eval(message.js);
+});
+
+Shiny.addCustomMessageHandler("phaser-save-complete", function (save) {
+  window.dispatchEvent(new CustomEvent("shinyphaser:saved", { detail: save }));
 });
