@@ -152,6 +152,9 @@ depth are rendered in front of objects with a smaller depth.
 \if{html}{\out{</div>}}
 }
 }
+\subsection{Returns}{
+This rectangle object, invisibly, to support method chaining.
+}
 \if{html}{\out{<hr>}}
 \if{html}{\out{<a id="method-Rectangle-click"></a>}}
 \if{latex}{\out{\hypertarget{method-Rectangle-click}{}}}

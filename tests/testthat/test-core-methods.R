@@ -22,7 +22,7 @@ test_that("Image and Rectangle methods send expected JS", {
   img$follow_camera(lerp_x = 0.2, lerp_y = 0.3, round_pixels = FALSE)
   img$stop_camera_follow()
   img$set_scroll_factor(0)
-  img$set_depth(20)
+  expect_identical(img$set_depth(20), img)
 
   rect <- Rectangle$new("hitbox", 1, 2, 3, 4, "0xff00ff", TRUE, TRUE, session = session)
   rect$show()
@@ -30,7 +30,7 @@ test_that("Image and Rectangle methods send expected JS", {
   rect$follow_camera(lerp_x = 0.4, lerp_y = 0.5, round_pixels = TRUE)
   rect$stop_camera_follow()
   rect$set_scroll_factor(0.25, 0.75)
-  rect$set_depth(30)
+  expect_identical(rect$set_depth(30), rect)
 
   msgs <- vapply(session$get_messages(), function(m) m$message$js, character(1))
   expect_true(any(grepl("addImage\\('ground', 'ground.png', 10, 20, true, false\\);", msgs)))
@@ -73,7 +73,7 @@ test_that("StaticSprite destroy sends expected JS", {
   static_sprite$follow_camera(lerp_x = 0.6, lerp_y = 0.7, round_pixels = FALSE)
   static_sprite$stop_camera_follow()
   static_sprite$set_scroll_factor(0)
-  static_sprite$set_depth(10)
+  expect_identical(static_sprite$set_depth(10), static_sprite)
   static_sprite$destroy()
 
   msgs <- vapply(session$get_messages(), function(m) m$message$js, character(1))
@@ -95,7 +95,7 @@ test_that("Sprite utility methods send expected JS", {
   s$follow_camera(lerp_x = 0.5, lerp_y = 0.75, round_pixels = FALSE)
   s$stop_camera_follow()
   s$set_scroll_factor(1, 0.5)
-  s$set_depth(15)
+  expect_identical(s$set_depth(15), s)
   s$set_velocity_x(120)
   s$set_velocity_y(140)
   s$set_gravity(1, 2)
@@ -132,6 +132,7 @@ test_that("Text methods send expected JS", {
   txt$follow_camera(lerp_x = 0.8, lerp_y = 0.9, round_pixels = TRUE)
   txt$stop_camera_follow()
   txt$set_scroll_factor(0)
+  expect_identical(txt$set_depth(100), txt)
 
   msgs <- vapply(session$get_messages(), function(m) m$message$js, character(1))
   expect_true(any(grepl("addText\\('Score', 'score_text', 15, 25, .*false\\);", msgs)))
@@ -141,12 +142,27 @@ test_that("Text methods send expected JS", {
   expect_true(any(grepl("followSpriteWithCamera\\('score_text', 0.800000, 0.900000, true\\);", msgs)))
   expect_true(any(grepl("stopCameraFollow\\('score_text'\\);", msgs)))
   expect_true(any(grepl("setScrollFactor\\('score_text', 0.000000, 0.000000\\);", msgs)))
+  expect_true(any(grepl("setSpriteDepth\\('score_text', 100.000000\\);", msgs)))
+})
+
+test_that("text and rectangle creation applies queued depth actions", {
+  game_js <- readLines(system.file("www", "phaser-game.js", package = "shinyphaser"), warn = FALSE)
+
+  expect_gte(sum(grepl("applyPendingSpriteActions", game_js, fixed = TRUE)), 2)
 })
 
 test_that("sample app and hedgehog assets are available", {
   sample_app <- system.file("sample_app", "app.R", package = "shinyphaser")
   expect_true(file.exists(sample_app))
   expect_true(file.exists(system.file("assets", "hedgehog", "terrain", "grass.png", package = "shinyphaser")))
+
+  sample_code <- readLines(sample_app, warn = FALSE)
+  expect_true(any(grepl("floor$set_depth(-10)", sample_code, fixed = TRUE)))
+  expect_true(any(grepl(
+    "score_text$set_depth(100)$set_scroll_factor(0)",
+    sample_code,
+    fixed = TRUE
+  )))
 })
 
 test_that("PhaserGame set_world_bounds sends expected JS", {

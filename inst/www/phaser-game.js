@@ -285,6 +285,9 @@ function addText(text, id, x, y, style, visible = true) {
   if (typeof applyPendingScrollFactors === "function") {
     applyPendingScrollFactors();
   }
+  if (typeof applyPendingSpriteActions === "function") {
+    applyPendingSpriteActions(id);
+  }
 }
 
 function setText(text, id) {
@@ -742,6 +745,9 @@ function addRectangle(name, x, y, width, height, fillColor, visible = true, clic
   }
   if (typeof applyPendingScrollFactors === "function") {
     applyPendingScrollFactors();
+  }
+  if (typeof applyPendingSpriteActions === "function") {
+    applyPendingSpriteActions(name);
   }
 }
 
