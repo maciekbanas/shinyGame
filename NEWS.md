@@ -1,7 +1,5 @@
 # shinyphaser (development version)
 
-* Added `show()` and `hide()` methods to `Sprite`, `StaticSprite`, `Group`, and
-  `StaticGroup`; these methods also work in `browser_actions()`.
 * Split event handling into explicit `browser_action` and `server_action`
   parameters. Browser-side calls must now be declared with `browser_actions()`,
   while arbitrary R logic belongs in a server action.
@@ -11,6 +9,7 @@
   both together.
 
 ## Performance improvements
+
 * Reduced high-frequency overlap traffic by keeping immediate actions in the browser and registering server events only when a `server_action` is supplied.
 * Added explicit `browser_action` declarations for immediate browser-side overlap and collision reactions.
 * Extended browser actions with browser state, cooldowns, restricted conditionals,
@@ -56,6 +55,8 @@
 
 ### Other scene objects
 
+* Added `show()` and `hide()` methods to `Sprite`, `StaticSprite`, `Group`, and
+  `StaticGroup`; these methods also work in `browser_actions()`.
 * Added sound support with `PhaserGame$add_sound()` and a new `Sound` API for loading, playing, pausing, resuming, stopping, and configuring audio.
 * Added `set_scroll_factor()` helpers for scene objects so HUD-style elements can stay fixed while the camera follows another target.
 * Added `set_depth()` helpers for sprites, static sprites, images, rectangles, and text
@@ -67,12 +68,14 @@
 * Added `Text$show()` and `Text$hide()` helpers for toggling text objects after creation.
 
 ## Updates in examples
+
 * Added new arcade example game (bear).
 * Added the Swamps RPG game example (`swamps_rpg`).
 * Updated the sample game to layer its background and score display with
   `set_depth()`.
 
 ## README
+
 * Added CRAN downloads badge to README.
 * Added animated gif example to README.
 
