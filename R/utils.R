@@ -174,6 +174,14 @@ compile_phaser_action_call <- function(expr, env) {
   if (inherits(target, c("Image", "Rectangle")) && method == "hide") {
     return(list(hide_text = object_name))
   }
+  if (inherits(target, c("Sprite", "StaticSprite", "Group", "StaticGroup")) &&
+      method == "show") {
+    return(list(show_object = object_name))
+  }
+  if (inherits(target, c("Sprite", "StaticSprite", "Group", "StaticGroup")) &&
+      method == "hide") {
+    return(list(hide_object = object_name))
+  }
   if (inherits(target, "Sound") && method == "play") {
     action <- list(play_sound = object_name)
     volume <- value("volume", 1)

@@ -79,6 +79,18 @@ Sprite <- R6::R6Class(
       send_js(private, sprintf("stopSpriteMotion('%s');", private$name))
     },
 
+    #' @description Show this sprite.
+    #' @return Invisible; sends a custom message to the client.
+    show = function() {
+      send_js(private, sprintf("showObject('%s');", private$name))
+    },
+
+    #' @description Hide this sprite.
+    #' @return Invisible; sends a custom message to the client.
+    hide = function() {
+      send_js(private, sprintf("hideObject('%s');", private$name))
+    },
+
     #' @description Enable movement controls (arrow keys) for a player sprite.
     #' @param directions Character vector. Directions to enable (defaults to c("left","right","down","up")).
     #' @param speed Numeric. Movement speed in pixels/second (default: 200).
@@ -184,7 +196,6 @@ Sprite <- R6::R6Class(
                     private$name)
       send_js(private, js)
     },
-
     #' @description Move sprite along a vector for a set distance.
     #' @param dir_x Numeric. Horizontal direction (-1 = left, +1 = right, 0 = none).
     #' @param dir_y Numeric. Vertical direction (-1 = up, +1 = down, 0 = none).
@@ -262,6 +273,16 @@ StaticSprite <- R6::R6Class(
       js <- sprintf("destroySprite('%s');",
                     private$name)
       send_js(private, js)
+    },
+    #' @description Show this static sprite.
+    #' @return Invisible; sends a custom message to the client.
+    show = function() {
+      send_js(private, sprintf("showObject('%s');", private$name))
+    },
+    #' @description Hide this static sprite.
+    #' @return Invisible; sends a custom message to the client.
+    hide = function() {
+      send_js(private, sprintf("hideObject('%s');", private$name))
     },
     #' @description Make the camera follow this static sprite as it moves through the world.
     #' @param lerp_x Numeric. Horizontal interpolation factor from 0 to 1 (default: 1).

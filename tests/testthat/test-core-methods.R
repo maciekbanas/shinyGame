@@ -54,16 +54,24 @@ test_that("Group and StaticGroup methods send expected JS", {
   g <- Group$new("enemies", session = session)
   g$add_animation("walk", "enemy.png", 16, 16, 4, 10)
   g$create(50, 60)
+  g$hide()
+  g$show()
 
   sg <- StaticGroup$new("obstacles", "box.png", session = session)
   sg$create(5, 6)
+  sg$hide()
+  sg$show()
   sg$disable(list(x2 = 5, y2 = 6))
 
   msgs <- vapply(session$get_messages(), function(m) m$message$js, character(1))
   expect_true(any(grepl("addGroup\\('enemies'\\);", msgs)))
   expect_true(any(grepl("addGroupAnimation\\('enemies','walk','enemy.png',16,16,4,10\\);", msgs)))
   expect_true(any(grepl("addToGroup\\('enemies', 50, 60\\);", msgs)))
+  expect_true(any(grepl("hideObject\\('enemies'\\);", msgs)))
+  expect_true(any(grepl("showObject\\('enemies'\\);", msgs)))
   expect_true(any(grepl("addStaticGroup\\('obstacles','box.png'\\);", msgs)))
+  expect_true(any(grepl("hideObject\\('obstacles'\\);", msgs)))
+  expect_true(any(grepl("showObject\\('obstacles'\\);", msgs)))
   expect_true(any(grepl("disableBody\\('obstacles', 5, 6\\);", msgs)))
 })
 
@@ -73,6 +81,9 @@ test_that("StaticSprite destroy sends expected JS", {
   static_sprite$follow_camera(lerp_x = 0.6, lerp_y = 0.7, round_pixels = FALSE)
   static_sprite$stop_camera_follow()
   static_sprite$set_scroll_factor(0)
+  static_sprite$set_depth(10)
+  static_sprite$hide()
+  static_sprite$show()
   expect_identical(static_sprite$set_depth(10), static_sprite)
   static_sprite$destroy()
 
@@ -82,6 +93,8 @@ test_that("StaticSprite destroy sends expected JS", {
   expect_true(any(grepl("stopCameraFollow\\('rock'\\);", msgs)))
   expect_true(any(grepl("setScrollFactor\\('rock', 0.000000, 0.000000\\);", msgs)))
   expect_true(any(grepl("setSpriteDepth\\('rock', 10.000000\\);", msgs)))
+  expect_true(any(grepl("hideObject\\('rock'\\);", msgs)))
+  expect_true(any(grepl("showObject\\('rock'\\);", msgs)))
   expect_true(any(grepl("destroySprite\\('rock'\\);", msgs)))
 })
 
@@ -281,6 +294,8 @@ test_that("browser_actions compile R6 calls for immediate execution", {
     input = input,
     browser_action = browser_actions({
       prompt$show()
+      hero$hide()
+      hero$show()
       sound$play(volume = 0.5)
       hero$stop_motion()
       hero$play_animation("wave", duration = 250)
@@ -305,6 +320,8 @@ test_that("browser_actions compile R6 calls for immediate execution", {
   msgs <- vapply(session$get_messages(), function(m) m$message$js, character(1))
   expect_true(any(grepl('addOverlap("hero", "wizard"', msgs, fixed = TRUE)))
   expect_true(any(grepl('"show_text":"prompt"', msgs, fixed = TRUE)))
+  expect_true(any(grepl('"hide_object":"hero"', msgs, fixed = TRUE)))
+  expect_true(any(grepl('"show_object":"hero"', msgs, fixed = TRUE)))
   expect_true(any(grepl('"play_sound":"hello","volume":0.5', msgs, fixed = TRUE)))
   expect_true(any(grepl('"stop_motion":"hero"', msgs, fixed = TRUE)))
   expect_true(any(grepl('"play_animation":"wave","sprite":"hero","duration":250', msgs, fixed = TRUE)))

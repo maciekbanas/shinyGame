@@ -45,6 +45,16 @@ Group <- R6::R6Class(
         private$name, x, y
       )
       send_js(private, js)
+    },
+    #' @description Show all current members of this group.
+    #' @return Invisible; sends a custom message to the client.
+    show = function() {
+      send_js(private, sprintf("showObject('%s');", private$name))
+    },
+    #' @description Hide all current members of this group.
+    #' @return Invisible; sends a custom message to the client.
+    hide = function() {
+      send_js(private, sprintf("hideObject('%s');", private$name))
     }
   ),
   private = list(
@@ -82,6 +92,16 @@ StaticGroup <- R6::R6Class(
         private$name, x, y
       )
       send_js(private, js)
+    },
+    #' @description Show all current members of this static group.
+    #' @return Invisible; sends a custom message to the client.
+    show = function() {
+      send_js(private, sprintf("showObject('%s');", private$name))
+    },
+    #' @description Hide all current members of this static group.
+    #' @return Invisible; sends a custom message to the client.
+    hide = function() {
+      send_js(private, sprintf("hideObject('%s');", private$name))
     },
     #' @description Disable a static group member body based on overlap event payload.
     #' @param evt List-like event payload containing x2 and y2 values.
