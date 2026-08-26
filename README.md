@@ -76,8 +76,18 @@ For a full walkthrough (from static background to movement, animation,
 overlap, and collision), see [**Build your first shinyphaser
 game**](https://maciekbanas.github.io/shinyphaser/articles/first-game.html)
 
+For the complete list of supported browser expressions and guidance on when to
+use ordinary R callbacks, see [**Choose between browser and server
+actions**](https://maciekbanas.github.io/shinyphaser/articles/browser-server-actions.html).
+
 ![](man/hedgehog_example.gif)<!-- -->
 
 ## Example games created with `shinyphaser`
 
 - [hedgehog](https://maciekbanas.shinyapps.io/hedgehog)
+
+The package also includes a larger modular example. Run it locally with:
+
+``` r
+shinyphaser::run_swamps_rpg()
+```

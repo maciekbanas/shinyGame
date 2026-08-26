@@ -6,6 +6,10 @@
 \usage{
 run_sample_app()
 }
+\value{
+The value returned by \code{\link[shiny:runApp]{shiny::runApp()}}. This function is normally
+called for its side effect of starting the application.
+}
 \description{
 Launches the sample Shiny application bundled with the package.
 This is a quick way to see a working \code{shinyphaser} game setup.

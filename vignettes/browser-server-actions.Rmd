@@ -72,6 +72,36 @@ game$add_control(
 Move such work to `server_action` instead. Unsupported browser calls fail when
 the handler is registered rather than silently falling back to the server.
 
+### Supported browser expressions
+
+The following table is the complete browser-action surface. Methods not listed
+here are ordinary server-side methods and cannot be placed in
+`browser_actions()`.
+
+| Object | Supported methods inside `browser_actions()` |
+|---|---|
+| `Text` | `show()`, `hide()`, `set()` |
+| `Image`, `Rectangle` | `show()`, `hide()` |
+| `Sound` | `play()`, `pause()`, `resume()`, `stop()` |
+| `Sprite` | `show()`, `hide()`, `play_animation()`, `set_in_motion()`, `set_velocity_x()`, `set_velocity_y()`, `stop_motion()`, `add_player_controls()`, `destroy()` |
+| `StaticSprite` | `show()`, `hide()`, `destroy()` |
+| `Group` | `show()`, `hide()` |
+| `StaticGroup` | `show()`, `hide()`, `disable()` |
+| Browser state returned by `game$add_state()` | `set()`, `increment()`, `decrement()`, `add()`, `subtract()` |
+| Browser cooldown returned by `game$add_cooldown()` | `trigger()` |
+| `PhaserGame` | `alert()`, `emit()`, `after()` |
+
+An `if` block may combine `&&`, `||`, `!`, and the comparison operators `==`,
+`!=`, `<`, `<=`, `>`, and `>=`. Conditions may call `overlaps()` or `exists()`
+on scene objects, `is_true()` or `is_false()` on browser state, and `ready()`
+on a browser cooldown. These condition and state/cooldown methods are a small
+R-like language captured by `browser_actions()`; do not call them as ordinary
+R methods outside an action block.
+
+Literal values, local scalar values, and named arguments are supported. Code
+that calls any other function, mutates an R object, or depends on a reactive
+value belongs in `server_action`.
+
 ## Server actions
 
 A server action is a function that receives the event sent by the browser. It
@@ -223,4 +253,3 @@ A server action is valid for arbitrary R logic, but unnecessary round trips can
 make controls and animations feel delayed. If an operation is fully supported
 by `browser_actions()` and does not require a server decision, keep it in the
 browser.
-
