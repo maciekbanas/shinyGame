@@ -39,9 +39,13 @@ Load a sound file and register it with the Phaser scene.
 \if{html}{\out{<div class="arguments">}}
 \describe{
 \item{\code{name}}{Character. Unique key for the sound.}
+
 \item{\code{url}}{Character. URL or path to the audio file.}
+
 \item{\code{volume}}{Numeric. Initial playback volume from 0 to 1 (default: 1).}
+
 \item{\code{loop}}{Logical. Whether the sound should loop by default (default: FALSE).}
+
 \item{\code{session}}{Shiny session object.}
 }
 \if{html}{\out{</div>}}
@@ -55,11 +59,15 @@ Play the sound.
 \subsection{Usage}{
 \if{html}{\out{<div class="r">}}\preformatted{Sound$play(volume = NULL, loop = NULL)}\if{html}{\out{</div>}}
 }
+
 \subsection{Arguments}{
 \if{html}{\out{<div class="arguments">}}
 \describe{
-\item{\code{volume}}{Numeric. Optional playback volume from 0 to 1. Defaults to the sound's current/default volume.}
-\item{\code{loop}}{Logical. Optional loop setting for this playback. Defaults to the sound's current/default loop setting.}
+\item{\code{volume}}{Numeric. Optional playback volume from 0 to 1. Defaults to
+the sound's current/default volume.}
+
+\item{\code{loop}}{Logical. Optional loop setting for this playback. Defaults to
+the sound's current/default loop setting.}
 }
 \if{html}{\out{</div>}}
 }
@@ -72,6 +80,7 @@ Pause the sound.
 \subsection{Usage}{
 \if{html}{\out{<div class="r">}}\preformatted{Sound$pause()}\if{html}{\out{</div>}}
 }
+
 }
 \if{html}{\out{<hr>}}
 \if{html}{\out{<a id="method-Sound-resume"></a>}}
@@ -81,6 +90,7 @@ Resume a paused sound.
 \subsection{Usage}{
 \if{html}{\out{<div class="r">}}\preformatted{Sound$resume()}\if{html}{\out{</div>}}
 }
+
 }
 \if{html}{\out{<hr>}}
 \if{html}{\out{<a id="method-Sound-stop"></a>}}
@@ -90,6 +100,7 @@ Stop the sound.
 \subsection{Usage}{
 \if{html}{\out{<div class="r">}}\preformatted{Sound$stop()}\if{html}{\out{</div>}}
 }
+
 }
 \if{html}{\out{<hr>}}
 \if{html}{\out{<a id="method-Sound-set_volume"></a>}}
@@ -99,9 +110,12 @@ Set the sound's volume.
 \subsection{Usage}{
 \if{html}{\out{<div class="r">}}\preformatted{Sound$set_volume(volume)}\if{html}{\out{</div>}}
 }
+
 \subsection{Arguments}{
 \if{html}{\out{<div class="arguments">}}
-\describe{\item{\code{volume}}{Numeric. Volume from 0 to 1.}}
+\describe{
+\item{\code{volume}}{Numeric. Volume from 0 to 1.}
+}
 \if{html}{\out{</div>}}
 }
 }
@@ -113,9 +127,12 @@ Set whether the sound loops by default.
 \subsection{Usage}{
 \if{html}{\out{<div class="r">}}\preformatted{Sound$set_loop(loop)}\if{html}{\out{</div>}}
 }
+
 \subsection{Arguments}{
 \if{html}{\out{<div class="arguments">}}
-\describe{\item{\code{loop}}{Logical. Whether playback should loop.}}
+\describe{
+\item{\code{loop}}{Logical. Whether playback should loop.}
+}
 \if{html}{\out{</div>}}
 }
 }
@@ -127,9 +144,12 @@ The objects of this class are cloneable with this method.
 \subsection{Usage}{
 \if{html}{\out{<div class="r">}}\preformatted{Sound$clone(deep = FALSE)}\if{html}{\out{</div>}}
 }
+
 \subsection{Arguments}{
 \if{html}{\out{<div class="arguments">}}
-\describe{\item{\code{deep}}{Whether to make a deep clone.}}
+\describe{
+\item{\code{deep}}{Whether to make a deep clone.}
+}
 \if{html}{\out{</div>}}
 }
 }

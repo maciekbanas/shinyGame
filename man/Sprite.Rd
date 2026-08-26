@@ -14,7 +14,10 @@ with PhaserGame$add_sprite() method.
 \item \href{#method-Sprite-add_animation}{\code{Sprite$add_animation()}}
 \item \href{#method-Sprite-play_animation}{\code{Sprite$play_animation()}}
 \item \href{#method-Sprite-stop_motion}{\code{Sprite$stop_motion()}}
+\item \href{#method-Sprite-show}{\code{Sprite$show()}}
+\item \href{#method-Sprite-hide}{\code{Sprite$hide()}}
 \item \href{#method-Sprite-add_player_controls}{\code{Sprite$add_player_controls()}}
+\item \href{#method-Sprite-set_player_animation_prefix}{\code{Sprite$set_player_animation_prefix()}}
 \item \href{#method-Sprite-follow_camera}{\code{Sprite$follow_camera()}}
 \item \href{#method-Sprite-stop_camera_follow}{\code{Sprite$stop_camera_follow()}}
 \item \href{#method-Sprite-set_scroll_factor}{\code{Sprite$set_scroll_factor()}}
@@ -25,6 +28,7 @@ with PhaserGame$add_sprite() method.
 \item \href{#method-Sprite-set_bounce}{\code{Sprite$set_bounce()}}
 \item \href{#method-Sprite-destroy}{\code{Sprite$destroy()}}
 \item \href{#method-Sprite-set_in_motion}{\code{Sprite$set_in_motion()}}
+\item \href{#method-Sprite-start_approach_on_sight}{\code{Sprite$start_approach_on_sight()}}
 \item \href{#method-Sprite-clone}{\code{Sprite$clone()}}
 }
 }
@@ -142,6 +146,32 @@ Invisible; sends a custom message to the client.
 }
 }
 \if{html}{\out{<hr>}}
+\if{html}{\out{<a id="method-Sprite-show"></a>}}
+\if{latex}{\out{\hypertarget{method-Sprite-show}{}}}
+\subsection{Method \code{show()}}{
+Show this sprite.
+\subsection{Usage}{
+\if{html}{\out{<div class="r">}}\preformatted{Sprite$show()}\if{html}{\out{</div>}}
+}
+
+\subsection{Returns}{
+Invisible; sends a custom message to the client.
+}
+}
+\if{html}{\out{<hr>}}
+\if{html}{\out{<a id="method-Sprite-hide"></a>}}
+\if{latex}{\out{\hypertarget{method-Sprite-hide}{}}}
+\subsection{Method \code{hide()}}{
+Hide this sprite.
+\subsection{Usage}{
+\if{html}{\out{<div class="r">}}\preformatted{Sprite$hide()}\if{html}{\out{</div>}}
+}
+
+\subsection{Returns}{
+Invisible; sends a custom message to the client.
+}
+}
+\if{html}{\out{<hr>}}
 \if{html}{\out{<a id="method-Sprite-add_player_controls"></a>}}
 \if{latex}{\out{\hypertarget{method-Sprite-add_player_controls}{}}}
 \subsection{Method \code{add_player_controls()}}{
@@ -161,6 +191,26 @@ Enable movement controls (arrow keys) for a player sprite.
 \item{\code{speed}}{Numeric. Movement speed in pixels/second (default: 200).}
 }
 \if{html}{\out{</div>}}
+}
+}
+\if{html}{\out{<hr>}}
+\if{html}{\out{<a id="method-Sprite-set_player_animation_prefix"></a>}}
+\if{latex}{\out{\hypertarget{method-Sprite-set_player_animation_prefix}{}}}
+\subsection{Method \code{set_player_animation_prefix()}}{
+Choose the animation prefix used by player controls.
+\subsection{Usage}{
+\if{html}{\out{<div class="r">}}\preformatted{Sprite$set_player_animation_prefix(prefix)}\if{html}{\out{</div>}}
+}
+
+\subsection{Arguments}{
+\if{html}{\out{<div class="arguments">}}
+\describe{
+\item{\code{prefix}}{Character. Prefix for idle and directional movement animation keys.}
+}
+\if{html}{\out{</div>}}
+}
+\subsection{Returns}{
+Invisible; sends a custom message to the client.
 }
 }
 \if{html}{\out{<hr>}}
@@ -230,9 +280,9 @@ depth are rendered in front of objects with a smaller depth.
 }
 \if{html}{\out{</div>}}
 }
-}
 \subsection{Returns}{
 This sprite object, invisibly, to support method chaining.
+}
 }
 \if{html}{\out{<hr>}}
 \if{html}{\out{<a id="method-Sprite-set_velocity_x"></a>}}
@@ -339,6 +389,46 @@ Move sprite along a vector for a set distance.
 \item{\code{distance}}{Numeric. Distance in pixels to travel before stopping.}
 
 \item{\code{lag}}{Numeric. Optional delay before sending the command (defaults to distance/speed).}
+}
+\if{html}{\out{</div>}}
+}
+}
+\if{html}{\out{<hr>}}
+\if{html}{\out{<a id="method-Sprite-start_approach_on_sight"></a>}}
+\if{latex}{\out{\hypertarget{method-Sprite-start_approach_on_sight}{}}}
+\subsection{Method \code{start_approach_on_sight()}}{
+Start client-side sight checks that make this sprite alert,
+wander while the target is out of range, and approach the target when
+it is in range. This is a reusable browser-side behaviour rather than
+an RPG-specific rule.
+\subsection{Usage}{
+\if{html}{\out{<div class="r">}}\preformatted{Sprite$start_approach_on_sight(
+  target_name,
+  sight_range,
+  speed,
+  distance,
+  check_interval = 250,
+  alert_duration = 1200,
+  wander_interval = 1500
+)}\if{html}{\out{</div>}}
+}
+
+\subsection{Arguments}{
+\if{html}{\out{<div class="arguments">}}
+\describe{
+\item{\code{target_name}}{Character. Name of the target sprite to approach.}
+
+\item{\code{sight_range}}{Numeric. Maximum distance in pixels at which the target is noticed.}
+
+\item{\code{speed}}{Numeric. Approach speed in pixels/second.}
+
+\item{\code{distance}}{Numeric. Distance in pixels to travel for each approach step.}
+
+\item{\code{check_interval}}{Numeric. Milliseconds between sight checks.}
+
+\item{\code{alert_duration}}{Numeric. Milliseconds to show the alert while approaching.}
+
+\item{\code{wander_interval}}{Numeric. Milliseconds between random movements while the target is out of sight.}
 }
 \if{html}{\out{</div>}}
 }

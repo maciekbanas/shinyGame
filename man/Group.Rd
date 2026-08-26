@@ -13,6 +13,8 @@ with PhaserGame$add_group() method.
 \item \href{#method-Group-new}{\code{Group$new()}}
 \item \href{#method-Group-add_animation}{\code{Group$add_animation()}}
 \item \href{#method-Group-create}{\code{Group$create()}}
+\item \href{#method-Group-show}{\code{Group$show()}}
+\item \href{#method-Group-hide}{\code{Group$hide()}}
 \item \href{#method-Group-clone}{\code{Group$clone()}}
 }
 }
@@ -86,6 +88,32 @@ Create one group member at a coordinate.
 \item{\code{y}}{Numeric. Y-coordinate in pixels.}
 }
 \if{html}{\out{</div>}}
+}
+}
+\if{html}{\out{<hr>}}
+\if{html}{\out{<a id="method-Group-show"></a>}}
+\if{latex}{\out{\hypertarget{method-Group-show}{}}}
+\subsection{Method \code{show()}}{
+Show all current members of this group.
+\subsection{Usage}{
+\if{html}{\out{<div class="r">}}\preformatted{Group$show()}\if{html}{\out{</div>}}
+}
+
+\subsection{Returns}{
+Invisible; sends a custom message to the client.
+}
+}
+\if{html}{\out{<hr>}}
+\if{html}{\out{<a id="method-Group-hide"></a>}}
+\if{latex}{\out{\hypertarget{method-Group-hide}{}}}
+\subsection{Method \code{hide()}}{
+Hide all current members of this group.
+\subsection{Usage}{
+\if{html}{\out{<div class="r">}}\preformatted{Group$hide()}\if{html}{\out{</div>}}
+}
+
+\subsection{Returns}{
+Invisible; sends a custom message to the client.
 }
 }
 \if{html}{\out{<hr>}}
