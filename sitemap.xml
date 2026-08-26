@@ -1,0 +1,25 @@
+<urlset xmlns = 'http://www.sitemaps.org/schemas/sitemap/0.9'>
+<url><loc>/404.html</loc></url>
+<url><loc>/LICENSE-text.html</loc></url>
+<url><loc>/LICENSE.html</loc></url>
+<url><loc>/articles/browser-server-actions.html</loc></url>
+<url><loc>/articles/first-game.html</loc></url>
+<url><loc>/articles/index.html</loc></url>
+<url><loc>/authors.html</loc></url>
+<url><loc>/index.html</loc></url>
+<url><loc>/news/index.html</loc></url>
+<url><loc>/reference/Group.html</loc></url>
+<url><loc>/reference/Image.html</loc></url>
+<url><loc>/reference/PhaserGame.html</loc></url>
+<url><loc>/reference/Rectangle.html</loc></url>
+<url><loc>/reference/Sound.html</loc></url>
+<url><loc>/reference/Sprite.html</loc></url>
+<url><loc>/reference/StaticGroup.html</loc></url>
+<url><loc>/reference/StaticSprite.html</loc></url>
+<url><loc>/reference/Text.html</loc></url>
+<url><loc>/reference/browser_actions.html</loc></url>
+<url><loc>/reference/index.html</loc></url>
+<url><loc>/reference/run_sample_app.html</loc></url>
+<url><loc>/reference/run_swamps_rpg.html</loc></url>
+</urlset>
+
