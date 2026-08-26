@@ -7,6 +7,28 @@
 R6 class to represent a text object in the Phaser scene, allowing
 dynamic updates to its content. Created with PhaserGame$add_text() method.
 }
+\examples{
+
+## ------------------------------------------------
+## Method `Text$set_depth`
+## ------------------------------------------------
+
+\dontrun{
+background <- game$add_image(
+  "background", "assets/background.png", x = 400, y = 300
+)
+background$set_depth(-10)
+
+control <- game$add_rectangle(
+  "jump_control", x = 720, y = 540, width = 120, height = 48,
+  color = "0x223344"
+)
+control$set_depth(50)$set_scroll_factor(0)
+
+label <- game$add_text("Jump", "jump_label", x = 690, y = 528)
+label$set_depth(51)$set_scroll_factor(0)
+}
+}
 \section{Methods}{
 \subsection{Public methods}{
 \itemize{
@@ -162,14 +184,15 @@ larger depth are rendered in front of objects with a smaller depth.
 }
 \if{html}{\out{</div>}}
 }
+\subsection{Details}{
+Every individually renderable object wrapper supports
+\code{set_depth()}. Larger values draw in front of smaller values. The
+method invisibly returns its object, so it can be chained with other
+object methods.
 }
+
 \subsection{Returns}{
 This text object, invisibly, to support method chaining.
-}
-\subsection{Details}{
-Every individually renderable object wrapper supports \code{set_depth()}. Larger
-values draw in front of smaller values. The method invisibly returns its object,
-so it can be chained with other object methods.
 }
 \subsection{Examples}{
 \if{html}{\out{<div class="r example copy">}}
@@ -190,6 +213,8 @@ label$set_depth(51)$set_scroll_factor(0)
 }
 }
 \if{html}{\out{</div>}}
+
+}
 
 }
 \if{html}{\out{<hr>}}

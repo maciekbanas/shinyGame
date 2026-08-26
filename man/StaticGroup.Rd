@@ -12,6 +12,8 @@ Created with PhaserGame$add_static_group() method.
 \itemize{
 \item \href{#method-StaticGroup-new}{\code{StaticGroup$new()}}
 \item \href{#method-StaticGroup-create}{\code{StaticGroup$create()}}
+\item \href{#method-StaticGroup-show}{\code{StaticGroup$show()}}
+\item \href{#method-StaticGroup-hide}{\code{StaticGroup$hide()}}
 \item \href{#method-StaticGroup-disable}{\code{StaticGroup$disable()}}
 \item \href{#method-StaticGroup-clone}{\code{StaticGroup$clone()}}
 }
@@ -54,6 +56,32 @@ Create one static group member at a coordinate.
 \item{\code{y}}{Numeric. Y-coordinate in pixels.}
 }
 \if{html}{\out{</div>}}
+}
+}
+\if{html}{\out{<hr>}}
+\if{html}{\out{<a id="method-StaticGroup-show"></a>}}
+\if{latex}{\out{\hypertarget{method-StaticGroup-show}{}}}
+\subsection{Method \code{show()}}{
+Show all current members of this static group.
+\subsection{Usage}{
+\if{html}{\out{<div class="r">}}\preformatted{StaticGroup$show()}\if{html}{\out{</div>}}
+}
+
+\subsection{Returns}{
+Invisible; sends a custom message to the client.
+}
+}
+\if{html}{\out{<hr>}}
+\if{html}{\out{<a id="method-StaticGroup-hide"></a>}}
+\if{latex}{\out{\hypertarget{method-StaticGroup-hide}{}}}
+\subsection{Method \code{hide()}}{
+Hide all current members of this static group.
+\subsection{Usage}{
+\if{html}{\out{<div class="r">}}\preformatted{StaticGroup$hide()}\if{html}{\out{</div>}}
+}
+
+\subsection{Returns}{
+Invisible; sends a custom message to the client.
 }
 }
 \if{html}{\out{<hr>}}
