@@ -44,23 +44,24 @@ pak::pak("maciekbanas/shinyphaser")
 ## API scope
 
 `shinyphaser` is intentionally more than a one-to-one translation of the
-Phaser API. Alongside wrappers for scene objects and physics operations, it
-includes reusable, browser-side behaviours when they remove substantial Shiny
-round trips and are useful across game genres. For example,
-`Sprite$start_approach_on_sight()` can drive guards, animals, vehicles, or
-simulation agents.
+Phaser API. Alongside wrappers for scene objects and physics operations,
+it includes reusable, browser-side behaviours when they remove
+substantial Shiny round trips and are useful across game genres. For
+example, `Sprite$start_approach_on_sight()` can drive guards, animals,
+vehicles, or simulation agents.
 
 Higher-level helpers belong in the package when they:
 
-- operate on generic Phaser concepts rather than an example’s story or rules,
+- operate on generic Phaser concepts rather than an example’s story or
+  rules,
 - need browser-speed updates that would be inefficient through the Shiny
   server, and
-- remain composable with lower-level methods such as `set_in_motion()` and
-  `stop_motion()`.
+- remain composable with lower-level methods such as `set_in_motion()`
+  and `stop_motion()`.
 
-Example-specific quests, combat rules, dialogue, and map progression remain in
-example applications. This keeps the core API broadly useful without limiting
-it to thin Phaser bindings.
+Example-specific quests, combat rules, dialogue, and map progression
+remain in example applications. This keeps the core API broadly useful
+without limiting it to thin Phaser bindings.
 
 ## Quick start
 
@@ -76,8 +77,9 @@ For a full walkthrough (from static background to movement, animation,
 overlap, and collision), see [**Build your first shinyphaser
 game**](https://maciekbanas.github.io/shinyphaser/articles/first-game.html)
 
-For the complete list of supported browser expressions and guidance on when to
-use ordinary R callbacks, see [**Choose between browser and server
+For the complete list of supported browser expressions and guidance on
+when to use ordinary R callbacks, see [**Choose between browser and
+server
 actions**](https://maciekbanas.github.io/shinyphaser/articles/browser-server-actions.html).
 
 ![](man/hedgehog_example.gif)<!-- -->

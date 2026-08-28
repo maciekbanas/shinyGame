@@ -82,55 +82,6 @@ For a full walkthrough (from static background to movement, animation, overlap, 
 For the complete list of supported browser expressions and guidance on when to
 use ordinary R callbacks, see [**Choose between browser and server actions**](https://maciekbanas.github.io/shinyphaser/articles/browser-server-actions.html).
 
-### Immediate overlap and collision actions
-
-Use `browser_action = browser_actions(...)` to declare browser-speed reactions
-with supported R6 methods. The constructor captures its calls and compiles them
-to safe browser commands; they are not run in the R session when the collision
-happens.
-
-```r
-game$add_overlap(
-  "hero", "wizard", input = input,
-  browser_action = browser_actions({
-    prompt$show()
-    greeting$play(volume = 0.5)
-    hero$play_animation("wave", duration = 500)
-  })
-)
-
-game$add_collider(
-  "hero", "rock", input = input,
-  browser_action = browser_actions(warning_sound$play())
-)
-```
-
-An immediate action can use supported methods on `Text`, `Image`, `Rectangle`,
-`Sound`, `Sprite`, `StaticSprite`, and `StaticGroup` objects. Arbitrary R code (for example,
-updating a reactive value or querying a database) cannot run in a browser. Put
-arbitrary R logic in `server_action = function(event) { ... }`; supplying a
-server action automatically enables the corresponding Shiny event.
-
-Browser-resident state, cooldowns, conditions, alerts, and semantic events can
-also be expressed with R-looking calls:
-
-```r
-has_sword <- game$add_state("has_sword", FALSE)
-attack <- game$add_cooldown("attack", 750)
-
-game$add_control("Space", input = input, browser_action = browser_actions({
-  if (hero$overlaps(sword) && sword$exists()) {
-    sword$destroy()
-    has_sword$set(TRUE)
-    inventory$set("weapon: sword")
-  } else if (attack$ready()) {
-    attack$trigger()
-    attack_sound$play()
-    game$emit("hero_attack")
-  }
-}))
-```
-
 ```{r, echo=FALSE}
 knitr::include_graphics("man/hedgehog_example.gif")
 ```
