@@ -36,6 +36,17 @@ function setSpriteDepth(name, depth) {
   withSprite(name, (sprite) => sprite.setDepth(depth), "setSpriteDepth()");
 }
 
+function setSpritePosition(name, x, y) {
+  withSprite(name, (sprite) => {
+    scene.tweens.killTweensOf(sprite);
+    if (sprite.body && typeof sprite.body.stop === "function") sprite.body.stop();
+    sprite.setPosition(Number(x), Number(y));
+    if (sprite.body && typeof sprite.body.reset === "function") {
+      sprite.body.reset(Number(x), Number(y));
+    }
+  }, "setSpritePosition()");
+}
+
 function resolveFrameCount(textureKey, frameWidth, frameHeight, frameCount) {
   if (Number.isFinite(frameCount) && frameCount > 0) {
     return Math.floor(frameCount);
@@ -355,6 +366,9 @@ function runBrowserAction(action, overlapObjectOne, overlapObjectTwo) {
   }
   if (action.set_velocity_x) setVelocityX(action.set_velocity_x.name, action.set_velocity_x.value);
   if (action.set_velocity_y) setVelocityY(action.set_velocity_y.name, action.set_velocity_y.value);
+  if (action.set_position) {
+    setSpritePosition(action.set_position.name, action.set_position.x, action.set_position.y);
+  }
   if (action.player_controls) {
     addPlayerControls(action.player_controls.name, action.player_controls.directions, action.player_controls.speed);
   }
