@@ -216,6 +216,13 @@ compile_phaser_action_call <- function(expr, env) {
   if (inherits(target, "Sprite") && method %in% c("set_velocity_x", "set_velocity_y")) {
     return(stats::setNames(list(list(name = object_name, value = value("x", 1, 100))), method))
   }
+  if (inherits(target, "Sprite") && method == "set_position") {
+    return(list(set_position = list(
+      name = object_name,
+      x = value("x", 1),
+      y = value("y", 2)
+    )))
+  }
   if (inherits(target, "Sprite") && method == "stop_motion") {
     return(list(stop_motion = object_name))
   }

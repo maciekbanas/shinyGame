@@ -169,6 +169,15 @@ Sprite <- R6::R6Class(
       send_js(private, js)
     },
 
+    #' @description Move the sprite immediately to a world coordinate.
+    #' @param x Numeric. Horizontal world coordinate.
+    #' @param y Numeric. Vertical world coordinate.
+    set_position = function(x, y) {
+      js <- sprintf("setSpritePosition('%s', %f, %f);",
+                    private$name, x, y)
+      send_js(private, js)
+    },
+
     #' @description Set the sprite's velocity in both x and y directions.
     #' @param x Numeric. Velocity in pixels/second (positive = right, negative =
     #'  left).

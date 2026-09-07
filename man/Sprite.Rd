@@ -24,6 +24,7 @@ with PhaserGame$add_sprite() method.
 \item \href{#method-Sprite-set_depth}{\code{Sprite$set_depth()}}
 \item \href{#method-Sprite-set_velocity_x}{\code{Sprite$set_velocity_x()}}
 \item \href{#method-Sprite-set_velocity_y}{\code{Sprite$set_velocity_y()}}
+\item \href{#method-Sprite-set_position}{\code{Sprite$set_position()}}
 \item \href{#method-Sprite-set_gravity}{\code{Sprite$set_gravity()}}
 \item \href{#method-Sprite-set_bounce}{\code{Sprite$set_bounce()}}
 \item \href{#method-Sprite-destroy}{\code{Sprite$destroy()}}
@@ -316,6 +317,25 @@ Set the sprite's velocity in the y direction.
 \describe{
 \item{\code{x}}{Numeric. Velocity in pixels/second (positive = down, negative =
 up).}
+}
+\if{html}{\out{</div>}}
+}
+}
+\if{html}{\out{<hr>}}
+\if{html}{\out{<a id="method-Sprite-set_position"></a>}}
+\if{latex}{\out{\hypertarget{method-Sprite-set_position}{}}}
+\subsection{Method \code{set_position()}}{
+Move the sprite immediately to a world coordinate.
+\subsection{Usage}{
+\if{html}{\out{<div class="r">}}\preformatted{Sprite$set_position(x, y)}\if{html}{\out{</div>}}
+}
+
+\subsection{Arguments}{
+\if{html}{\out{<div class="arguments">}}
+\describe{
+\item{\code{x}}{Numeric. Horizontal world coordinate.}
+
+\item{\code{y}}{Numeric. Vertical world coordinate.}
 }
 \if{html}{\out{</div>}}
 }
